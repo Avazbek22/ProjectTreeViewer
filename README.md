@@ -41,7 +41,7 @@
 1. **Клонировать репозиторий**
 
    ```bash
-   git clone https://github.com/your-username/project-tree-viewer.git
+   git clone https://github.com/Avazbek22/ProjectTreeViewer.git
    cd project-tree-viewer
    ```
 2. **Открыть в Visual Studio 2022+ или JetBrains Rider**
