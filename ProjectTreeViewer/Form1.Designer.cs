@@ -1,37 +1,25 @@
-﻿namespace ProjectTreeViewer
+﻿// ─────────────────────────────────────────────────────────────
+//  Form1.Designer.cs   (полная версия, совместимая с WinForms-Designer)
+// ─────────────────────────────────────────────────────────────
+namespace ProjectTreeViewer
 {
 	partial class Form1
 	{
-		private System.ComponentModel.IContainer components = null;
-		private System.Windows.Forms.Panel panelToolbar;
-		private System.Windows.Forms.Button btnOpen;
-		private System.Windows.Forms.Button btnCopy;
-		private System.Windows.Forms.Button btnSettings;
-		private System.Windows.Forms.Panel panelSettings;
-		private System.Windows.Forms.CheckBox cbIgnoreBin;
-		private System.Windows.Forms.CheckBox cbIgnoreObj;
-		private System.Windows.Forms.CheckBox cbIgnoreDot;
-		private System.Windows.Forms.Label labelExtensions;
-		private System.Windows.Forms.CheckedListBox lstExtensions;
-		private System.Windows.Forms.Label labelRootFolders;
-		private System.Windows.Forms.CheckedListBox lstRootFolders;
-		private System.Windows.Forms.Label labelFont;
-		private System.Windows.Forms.ComboBox cboFont;
-		private System.Windows.Forms.Button btnApply;
-		private System.Windows.Forms.TextBox txtTree;
-
+		/// <inheritdoc/>
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && (components != null)) components.Dispose();
+			if (disposing && components != null) components.Dispose();
 			base.Dispose(disposing);
 		}
 
+		#region Windows Form Designer generated code
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			panelToolbar = new Panel();
 			btnOpen = new Button();
 			btnCopy = new Button();
+			btnRefresh = new Button();
 			btnSettings = new Button();
 			panelSettings = new Panel();
 			cbIgnoreBin = new CheckBox();
@@ -53,6 +41,7 @@
 			// 
 			panelToolbar.Controls.Add(btnOpen);
 			panelToolbar.Controls.Add(btnCopy);
+			panelToolbar.Controls.Add(btnRefresh);
 			panelToolbar.Controls.Add(btnSettings);
 			panelToolbar.Dock = DockStyle.Top;
 			panelToolbar.Location = new Point(0, 0);
@@ -67,6 +56,7 @@
 			btnOpen.Size = new Size(140, 30);
 			btnOpen.TabIndex = 0;
 			btnOpen.Text = "Открыть папку";
+			btnOpen.UseVisualStyleBackColor = true;
 			btnOpen.Click += btnOpen_Click;
 			// 
 			// btnCopy
@@ -76,15 +66,28 @@
 			btnCopy.Size = new Size(140, 30);
 			btnCopy.TabIndex = 1;
 			btnCopy.Text = "Скопировать всё";
+			btnCopy.UseVisualStyleBackColor = true;
 			btnCopy.Click += btnCopy_Click;
+			// 
+			// btnRefresh
+			// 
+			btnRefresh.Enabled = false;
+			btnRefresh.Location = new Point(310, 5);
+			btnRefresh.Name = "btnRefresh";
+			btnRefresh.Size = new Size(140, 30);
+			btnRefresh.TabIndex = 2;
+			btnRefresh.Text = "Обновить";
+			btnRefresh.UseVisualStyleBackColor = true;
+			btnRefresh.Click += btnRefresh_Click;
 			// 
 			// btnSettings
 			// 
-			btnSettings.Location = new Point(310, 5);
+			btnSettings.Location = new Point(460, 5);
 			btnSettings.Name = "btnSettings";
 			btnSettings.Size = new Size(140, 30);
-			btnSettings.TabIndex = 2;
+			btnSettings.TabIndex = 3;
 			btnSettings.Text = "Настройки";
+			btnSettings.UseVisualStyleBackColor = true;
 			btnSettings.Click += btnSettings_Click;
 			// 
 			// panelSettings
@@ -122,7 +125,7 @@
 			cbIgnoreObj.AutoSize = true;
 			cbIgnoreObj.Checked = true;
 			cbIgnoreObj.CheckState = CheckState.Checked;
-			cbIgnoreObj.Location = new Point(10, 77);
+			cbIgnoreObj.Location = new Point(10, 40);
 			cbIgnoreObj.Name = "cbIgnoreObj";
 			cbIgnoreObj.Size = new Size(202, 24);
 			cbIgnoreObj.TabIndex = 1;
@@ -133,7 +136,7 @@
 			cbIgnoreDot.AutoSize = true;
 			cbIgnoreDot.Checked = true;
 			cbIgnoreDot.CheckState = CheckState.Checked;
-			cbIgnoreDot.Location = new Point(10, 43);
+			cbIgnoreDot.Location = new Point(10, 70);
 			cbIgnoreDot.Name = "cbIgnoreDot";
 			cbIgnoreDot.Size = new Size(431, 24);
 			cbIgnoreDot.TabIndex = 2;
@@ -141,6 +144,7 @@
 			// 
 			// labelExtensions
 			// 
+			labelExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			labelExtensions.AutoSize = true;
 			labelExtensions.Location = new Point(476, 11);
 			labelExtensions.Name = "labelExtensions";
@@ -150,6 +154,7 @@
 			// 
 			// lstExtensions
 			// 
+			lstExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			lstExtensions.CheckOnClick = true;
 			lstExtensions.Location = new Point(476, 33);
 			lstExtensions.Name = "lstExtensions";
@@ -158,6 +163,7 @@
 			// 
 			// labelRootFolders
 			// 
+			labelRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			labelRootFolders.AutoSize = true;
 			labelRootFolders.Location = new Point(694, 10);
 			labelRootFolders.Name = "labelRootFolders";
@@ -167,6 +173,7 @@
 			// 
 			// lstRootFolders
 			// 
+			lstRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			lstRootFolders.CheckOnClick = true;
 			lstRootFolders.Location = new Point(694, 33);
 			lstRootFolders.Name = "lstRootFolders";
@@ -178,9 +185,9 @@
 			labelFont.AutoSize = true;
 			labelFont.Location = new Point(12, 126);
 			labelFont.Name = "labelFont";
-			labelFont.Size = new Size(60, 20);
+			labelFont.Size = new Size(113, 20);
 			labelFont.TabIndex = 7;
-			labelFont.Text = "Шрифт:";
+			labelFont.Text = "Шрифт дерева:";
 			// 
 			// cboFont
 			// 
@@ -195,9 +202,10 @@
 			// 
 			btnApply.Location = new Point(10, 183);
 			btnApply.Name = "btnApply";
-			btnApply.Size = new Size(202, 30);
+			btnApply.Size = new Size(202, 37);
 			btnApply.TabIndex = 9;
 			btnApply.Text = "Применить настройки";
+			btnApply.UseVisualStyleBackColor = true;
 			btnApply.Click += btnApply_Click;
 			// 
 			// txtTree
@@ -230,5 +238,28 @@
 			ResumeLayout(false);
 			PerformLayout();
 		}
+		#endregion
+
+		// ────── поля компонентов ──────
+		private System.ComponentModel.IContainer components = null!;
+		private System.Windows.Forms.Panel panelToolbar;
+		private System.Windows.Forms.Button btnOpen;
+		private System.Windows.Forms.Button btnCopy;
+		private System.Windows.Forms.Button btnRefresh;
+		private System.Windows.Forms.Button btnSettings;
+
+		private System.Windows.Forms.Panel panelSettings;
+		private System.Windows.Forms.CheckBox cbIgnoreBin;
+		private System.Windows.Forms.CheckBox cbIgnoreObj;
+		private System.Windows.Forms.CheckBox cbIgnoreDot;
+		private System.Windows.Forms.Label labelExtensions;
+		private System.Windows.Forms.CheckedListBox lstExtensions;
+		private System.Windows.Forms.Label labelRootFolders;
+		private System.Windows.Forms.CheckedListBox lstRootFolders;
+		private System.Windows.Forms.Label labelFont;
+		private System.Windows.Forms.ComboBox cboFont;
+		private System.Windows.Forms.Button btnApply;
+
+		private System.Windows.Forms.TextBox txtTree;
 	}
 }
