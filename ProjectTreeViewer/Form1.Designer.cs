@@ -19,194 +19,242 @@ namespace ProjectTreeViewer
 		#region Windows Form Designer generated code
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources =
-				new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-
-			// ────── создание компонентов ──────
-			this.components = new System.ComponentModel.Container();
-			this.panelToolbar = new Panel();
-			this.btnOpen = new Button();
-			this.btnCopy = new Button();
-			this.btnRefresh = new Button();
-			this.btnSettings = new Button();
-			this.panelSettings = new Panel();
-			this.cbIgnoreBin = new CheckBox();
-			this.cbIgnoreObj = new CheckBox();
-			this.cbIgnoreDot = new CheckBox();
-			this.labelExtensions = new Label();
-			this.lstExtensions = new CheckedListBox();
-			this.labelRootFolders = new Label();
-			this.lstRootFolders = new CheckedListBox();
-			this.labelFont = new Label();
-			this.cboFont = new ComboBox();
-			this.btnApply = new Button();
-			this.txtTree = new TextBox();
-
-			this.panelToolbar.SuspendLayout();
-			this.panelSettings.SuspendLayout();
-			this.SuspendLayout();
-
-			// ────── panelToolbar ──────
-			this.panelToolbar.Controls.AddRange(new Control[]
-			{
-				this.btnOpen, this.btnCopy, this.btnRefresh, this.btnSettings
-			});
-			this.panelToolbar.Dock = DockStyle.Top;
-			this.panelToolbar.Location = new Point(0, 0);
-			this.panelToolbar.Name = "panelToolbar";
-			this.panelToolbar.Size = new Size(893, 40);
-
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+			panelToolbar = new Panel();
+			btnOpen = new Button();
+			btnCopy = new Button();
+			btnRefresh = new Button();
+			btnSettings = new Button();
+			panelSettings = new Panel();
+			checkBox1 = new CheckBox();
+			cbIgnoreBin = new CheckBox();
+			cbIgnoreObj = new CheckBox();
+			cbIgnoreDot = new CheckBox();
+			labelExtensions = new Label();
+			lstExtensions = new CheckedListBox();
+			labelRootFolders = new Label();
+			lstRootFolders = new CheckedListBox();
+			labelFont = new Label();
+			cboFont = new ComboBox();
+			btnApply = new Button();
+			txtTree = new TextBox();
+			panelToolbar.SuspendLayout();
+			panelSettings.SuspendLayout();
+			SuspendLayout();
+			// 
+			// panelToolbar
+			// 
+			panelToolbar.Controls.Add(btnOpen);
+			panelToolbar.Controls.Add(btnCopy);
+			panelToolbar.Controls.Add(btnRefresh);
+			panelToolbar.Controls.Add(btnSettings);
+			panelToolbar.Dock = DockStyle.Top;
+			panelToolbar.Location = new Point(0, 0);
+			panelToolbar.Name = "panelToolbar";
+			panelToolbar.Size = new Size(893, 40);
+			panelToolbar.TabIndex = 2;
+			// 
 			// btnOpen
-			this.btnOpen.Location = new Point(10, 5);
-			this.btnOpen.Name = "btnOpen";
-			this.btnOpen.Size = new Size(140, 30);
-			this.btnOpen.Text = "Открыть папку";
-			this.btnOpen.Click += this.btnOpen_Click;
-
+			// 
+			btnOpen.Location = new Point(10, 5);
+			btnOpen.Name = "btnOpen";
+			btnOpen.Size = new Size(140, 30);
+			btnOpen.TabIndex = 0;
+			btnOpen.Text = "Открыть папку";
+			btnOpen.Click += btnOpen_Click;
+			// 
 			// btnCopy
-			this.btnCopy.Location = new Point(160, 5);
-			this.btnCopy.Name = "btnCopy";
-			this.btnCopy.Size = new Size(140, 30);
-			this.btnCopy.Text = "Скопировать всё";
-			this.btnCopy.Click += this.btnCopy_Click;
-
+			// 
+			btnCopy.Location = new Point(160, 5);
+			btnCopy.Name = "btnCopy";
+			btnCopy.Size = new Size(140, 30);
+			btnCopy.TabIndex = 1;
+			btnCopy.Text = "Скопировать всё";
+			btnCopy.Click += btnCopy_Click;
+			// 
 			// btnRefresh
-			this.btnRefresh.Location = new Point(310, 5);
-			this.btnRefresh.Name = "btnRefresh";
-			this.btnRefresh.Size = new Size(140, 30);
-			this.btnRefresh.Text = "Обновить";
-			this.btnRefresh.Enabled = false;
-			this.btnRefresh.Click += this.btnRefresh_Click;
-
+			// 
+			btnRefresh.Enabled = false;
+			btnRefresh.Location = new Point(310, 5);
+			btnRefresh.Name = "btnRefresh";
+			btnRefresh.Size = new Size(140, 30);
+			btnRefresh.TabIndex = 2;
+			btnRefresh.Text = "Обновить";
+			btnRefresh.Click += btnRefresh_Click;
+			// 
 			// btnSettings
-			this.btnSettings.Location = new Point(460, 5);
-			this.btnSettings.Name = "btnSettings";
-			this.btnSettings.Size = new Size(140, 30);
-			this.btnSettings.Text = "Настройки";
-			this.btnSettings.Click += this.btnSettings_Click;
-
-			// ────── panelSettings ──────
-			this.panelSettings.Controls.AddRange(new Control[]
-			{
-				this.cbIgnoreBin, this.cbIgnoreObj, this.cbIgnoreDot,
-				this.labelExtensions, this.lstExtensions,
-				this.labelRootFolders, this.lstRootFolders,
-				this.labelFont, this.cboFont,
-				this.btnApply
-			});
-			this.panelSettings.Dock = DockStyle.Top;
-			this.panelSettings.Location = new Point(0, 40);
-			this.panelSettings.Name = "panelSettings";
-			this.panelSettings.Size = new Size(893, 223);
-			this.panelSettings.Visible = false;
-			this.panelSettings.BackColor = SystemColors.Control;
-			this.panelSettings.BorderStyle = BorderStyle.FixedSingle;
-
+			// 
+			btnSettings.Location = new Point(460, 5);
+			btnSettings.Name = "btnSettings";
+			btnSettings.Size = new Size(140, 30);
+			btnSettings.TabIndex = 3;
+			btnSettings.Text = "Настройки";
+			btnSettings.Click += btnSettings_Click;
+			// 
+			// panelSettings
+			// 
+			panelSettings.BackColor = SystemColors.Control;
+			panelSettings.BorderStyle = BorderStyle.FixedSingle;
+			panelSettings.Controls.Add(checkBox1);
+			panelSettings.Controls.Add(cbIgnoreBin);
+			panelSettings.Controls.Add(cbIgnoreObj);
+			panelSettings.Controls.Add(cbIgnoreDot);
+			panelSettings.Controls.Add(labelExtensions);
+			panelSettings.Controls.Add(lstExtensions);
+			panelSettings.Controls.Add(labelRootFolders);
+			panelSettings.Controls.Add(lstRootFolders);
+			panelSettings.Controls.Add(labelFont);
+			panelSettings.Controls.Add(cboFont);
+			panelSettings.Controls.Add(btnApply);
+			panelSettings.Dock = DockStyle.Top;
+			panelSettings.Location = new Point(0, 40);
+			panelSettings.Name = "panelSettings";
+			panelSettings.Size = new Size(893, 227);
+			panelSettings.TabIndex = 1;
+			panelSettings.Visible = false;
+			// 
+			// checkBox1
+			// 
+			checkBox1.AutoSize = true;
+			checkBox1.Checked = true;
+			checkBox1.CheckState = CheckState.Checked;
+			checkBox1.Location = new Point(606, 10);
+			checkBox1.Name = "checkBox1";
+			checkBox1.Size = new Size(55, 24);
+			checkBox1.TabIndex = 10;
+			checkBox1.Text = "Все";
+			checkBox1.CheckedChanged += checkBox1_CheckedChanged;
+			// 
 			// cbIgnoreBin
-			this.cbIgnoreBin.AutoSize = true;
-			this.cbIgnoreBin.Checked = true;
-			this.cbIgnoreBin.Location = new Point(10, 10);
-			this.cbIgnoreBin.Name = "cbIgnoreBin";
-			this.cbIgnoreBin.Size = new Size(230, 24);
-			this.cbIgnoreBin.Text = "Игнорировать все папки bin";
-			this.cbIgnoreBin.CheckedChanged += this.cbIgnoreBin_CheckedChanged;
-
+			// 
+			cbIgnoreBin.AutoSize = true;
+			cbIgnoreBin.Checked = true;
+			cbIgnoreBin.CheckState = CheckState.Checked;
+			cbIgnoreBin.Location = new Point(10, 10);
+			cbIgnoreBin.Name = "cbIgnoreBin";
+			cbIgnoreBin.Size = new Size(230, 24);
+			cbIgnoreBin.TabIndex = 0;
+			cbIgnoreBin.Text = "Игнорировать все папки bin";
+			cbIgnoreBin.CheckedChanged += cbIgnoreBin_CheckedChanged;
+			// 
 			// cbIgnoreObj
-			this.cbIgnoreObj.AutoSize = true;
-			this.cbIgnoreObj.Checked = true;
-			this.cbIgnoreObj.Location = new Point(10, 40);
-			this.cbIgnoreObj.Name = "cbIgnoreObj";
-			this.cbIgnoreObj.Size = new Size(231, 24);
-			this.cbIgnoreObj.Text = "Игнорировать все папки obj";
-			this.cbIgnoreObj.CheckedChanged += this.cbIgnoreObj_CheckedChanged;
-
+			// 
+			cbIgnoreObj.AutoSize = true;
+			cbIgnoreObj.Checked = true;
+			cbIgnoreObj.CheckState = CheckState.Checked;
+			cbIgnoreObj.Location = new Point(9, 40);
+			cbIgnoreObj.Name = "cbIgnoreObj";
+			cbIgnoreObj.Size = new Size(231, 24);
+			cbIgnoreObj.TabIndex = 1;
+			cbIgnoreObj.Text = "Игнорировать все папки obj";
+			cbIgnoreObj.CheckedChanged += cbIgnoreObj_CheckedChanged;
+			// 
 			// cbIgnoreDot
-			this.cbIgnoreDot.AutoSize = true;
-			this.cbIgnoreDot.Checked = true;
-			this.cbIgnoreDot.Location = new Point(10, 70);
-			this.cbIgnoreDot.Name = "cbIgnoreDot";
-			this.cbIgnoreDot.Size = new Size(431, 24);
-			this.cbIgnoreDot.Text = "Игнорировать скрытые файлы/папки (с точкой в начале)";
-			this.cbIgnoreDot.CheckedChanged += this.cbIgnoreDot_CheckedChanged;
-
+			// 
+			cbIgnoreDot.AutoSize = true;
+			cbIgnoreDot.Checked = true;
+			cbIgnoreDot.CheckState = CheckState.Checked;
+			cbIgnoreDot.Location = new Point(10, 70);
+			cbIgnoreDot.Name = "cbIgnoreDot";
+			cbIgnoreDot.Size = new Size(431, 24);
+			cbIgnoreDot.TabIndex = 2;
+			cbIgnoreDot.Text = "Игнорировать скрытые файлы/папки (с точкой в начале)";
+			cbIgnoreDot.CheckedChanged += cbIgnoreDot_CheckedChanged;
+			// 
 			// labelExtensions
-			this.labelExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			this.labelExtensions.AutoSize = true;
-			this.labelExtensions.Location = new Point(460, 10);
-			this.labelExtensions.Name = "labelExtensions";
-			this.labelExtensions.Size = new Size(105, 20);
-			this.labelExtensions.Text = "Типы файлов:";
-
+			// 
+			labelExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			labelExtensions.AutoSize = true;
+			labelExtensions.Location = new Point(458, 10);
+			labelExtensions.Name = "labelExtensions";
+			labelExtensions.Size = new Size(105, 20);
+			labelExtensions.TabIndex = 3;
+			labelExtensions.Text = "Типы файлов:";
+			// 
 			// lstExtensions
-			this.lstExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			this.lstExtensions.CheckOnClick = true;
-			this.lstExtensions.Location = new Point(463, 33);
-			this.lstExtensions.Name = "lstExtensions";
-			this.lstExtensions.Size = new Size(200, 180);
-
+			// 
+			lstExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			lstExtensions.CheckOnClick = true;
+			lstExtensions.Location = new Point(461, 36);
+			lstExtensions.Name = "lstExtensions";
+			lstExtensions.Size = new Size(200, 180);
+			lstExtensions.TabIndex = 4;
+			// 
 			// labelRootFolders
-			this.labelRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			this.labelRootFolders.AutoSize = true;
-			this.labelRootFolders.Location = new Point(681, 10);
-			this.labelRootFolders.Name = "labelRootFolders";
-			this.labelRootFolders.Size = new Size(178, 20);
-			this.labelRootFolders.Text = "Папки верхнего уровня:";
-
+			// 
+			labelRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			labelRootFolders.AutoSize = true;
+			labelRootFolders.Location = new Point(679, 10);
+			labelRootFolders.Name = "labelRootFolders";
+			labelRootFolders.Size = new Size(178, 20);
+			labelRootFolders.TabIndex = 5;
+			labelRootFolders.Text = "Папки верхнего уровня:";
+			// 
 			// lstRootFolders
-			this.lstRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			this.lstRootFolders.CheckOnClick = true;
-			this.lstRootFolders.Location = new Point(681, 33);
-			this.lstRootFolders.Name = "lstRootFolders";
-			this.lstRootFolders.Size = new Size(200, 180);
-
+			// 
+			lstRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			lstRootFolders.CheckOnClick = true;
+			lstRootFolders.Location = new Point(679, 36);
+			lstRootFolders.Name = "lstRootFolders";
+			lstRootFolders.Size = new Size(200, 180);
+			lstRootFolders.TabIndex = 6;
+			// 
 			// labelFont
-			this.labelFont.AutoSize = true;
-			this.labelFont.Location = new Point(12, 126);
-			this.labelFont.Name = "labelFont";
-			this.labelFont.Size = new Size(113, 20);
-			this.labelFont.Text = "Шрифт дерева:";
-
+			// 
+			labelFont.AutoSize = true;
+			labelFont.Location = new Point(12, 126);
+			labelFont.Name = "labelFont";
+			labelFont.Size = new Size(113, 20);
+			labelFont.TabIndex = 7;
+			labelFont.Text = "Шрифт дерева:";
+			// 
 			// cboFont
-			this.cboFont.DropDownStyle = ComboBoxStyle.DropDownList;
-			this.cboFont.Location = new Point(12, 149);
-			this.cboFont.Name = "cboFont";
-			this.cboFont.Size = new Size(200, 28);
-			this.cboFont.SelectedIndexChanged += this.cboFont_SelectedIndexChanged;
-
+			// 
+			cboFont.DropDownStyle = ComboBoxStyle.DropDownList;
+			cboFont.Location = new Point(12, 149);
+			cboFont.Name = "cboFont";
+			cboFont.Size = new Size(200, 28);
+			cboFont.TabIndex = 8;
+			cboFont.SelectedIndexChanged += cboFont_SelectedIndexChanged;
+			// 
 			// btnApply
-			this.btnApply.Location = new Point(10, 183);
-			this.btnApply.Name = "btnApply";
-			this.btnApply.Size = new Size(202, 37);
-			this.btnApply.Text = "Применить настройки";
-			this.btnApply.Click += this.btnApply_Click;
-
+			// 
+			btnApply.Location = new Point(10, 183);
+			btnApply.Name = "btnApply";
+			btnApply.Size = new Size(202, 37);
+			btnApply.TabIndex = 9;
+			btnApply.Text = "Применить настройки";
+			btnApply.Click += btnApply_Click;
+			// 
 			// txtTree
-			this.txtTree.Dock = DockStyle.Fill;
-			this.txtTree.Font = new Font("Consolas", 9F);
-			this.txtTree.Location = new Point(0, 263);
-			this.txtTree.Multiline = true;
-			this.txtTree.Name = "txtTree";
-			this.txtTree.ReadOnly = true;
-			this.txtTree.ScrollBars = ScrollBars.Both;
-			this.txtTree.WordWrap = false;
-			this.txtTree.Size = new Size(893, 659);
-
-			// ────── Form ──────
-			this.AutoScaleMode = AutoScaleMode.None;
-			this.ClientSize = new Size(893, 922);
-			this.Controls.Add(this.txtTree);
-			this.Controls.Add(this.panelSettings);
-			this.Controls.Add(this.panelToolbar);
-			this.Icon = (Icon)resources.GetObject("$this.Icon");
-			this.MinimumSize = new Size(600, 400);
-			this.Name = "Form1";
-			this.Text = "Project Tree Viewer by Avazbek";
-
-			this.panelToolbar.ResumeLayout(false);
-			this.panelSettings.ResumeLayout(false);
-			this.panelSettings.PerformLayout();
-			this.ResumeLayout(false);
-			this.PerformLayout();
+			// 
+			txtTree.Dock = DockStyle.Fill;
+			txtTree.Font = new Font("Consolas", 9F);
+			txtTree.Location = new Point(0, 267);
+			txtTree.Multiline = true;
+			txtTree.Name = "txtTree";
+			txtTree.ReadOnly = true;
+			txtTree.ScrollBars = ScrollBars.Both;
+			txtTree.Size = new Size(893, 655);
+			txtTree.TabIndex = 0;
+			txtTree.WordWrap = false;
+			// 
+			// Form1
+			// 
+			AutoScaleMode = AutoScaleMode.None;
+			ClientSize = new Size(893, 922);
+			Controls.Add(txtTree);
+			Controls.Add(panelSettings);
+			Controls.Add(panelToolbar);
+			Icon = (Icon)resources.GetObject("$this.Icon");
+			MinimumSize = new Size(600, 400);
+			Name = "Form1";
+			Text = "Project Tree Viewer by Avazbek";
+			panelToolbar.ResumeLayout(false);
+			panelSettings.ResumeLayout(false);
+			panelSettings.PerformLayout();
+			ResumeLayout(false);
+			PerformLayout();
 		}
 		#endregion
 
@@ -231,5 +279,6 @@ namespace ProjectTreeViewer
 		private Button btnApply;
 
 		private TextBox txtTree;
+		private CheckBox checkBox1;
 	}
 }

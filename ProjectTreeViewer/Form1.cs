@@ -1,4 +1,10 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
 
 namespace ProjectTreeViewer
 {
@@ -50,6 +56,7 @@ namespace ProjectTreeViewer
 			if (txtTree.Font.FontFamily.Name != _pendingFontName)
 				txtTree.Font = new Font(_pendingFontName, txtTree.Font.Size);
 
+			// Применяем все чекбоксы к дереву только здесь
 			RefreshTree();
 		}
 
@@ -57,6 +64,15 @@ namespace ProjectTreeViewer
 		private void cbIgnoreBin_CheckedChanged(object? s, EventArgs e) => PopulateRootFolders(_currentPath ?? "");
 		private void cbIgnoreObj_CheckedChanged(object? s, EventArgs e) => PopulateRootFolders(_currentPath ?? "");
 		private void cbIgnoreDot_CheckedChanged(object? s, EventArgs e) => PopulateRootFolders(_currentPath ?? "");
+
+		// ┐ Новое: галочка "Все" — просто отмечает/снимает все расширения (без обновления дерева)
+		private void checkBox1_CheckedChanged(object? sender, EventArgs e)
+		{
+			bool selectAll = checkBox1.Checked;
+			for (int i = 0; i < lstExtensions.Items.Count; i++)
+				lstExtensions.SetItemChecked(i, selectAll);
+			// Никаких RefreshTree здесь
+		}
 
 		// ───────────────────────────────────────── Core
 		private void ReloadProject()
@@ -127,6 +143,13 @@ namespace ProjectTreeViewer
 						   (prev.Count == 0 && _defaultExts.Contains(ext, StringComparer.OrdinalIgnoreCase));
 				lstExtensions.Items.Add(ext, chk);
 			}
+
+			// Если "Все" включено — просто отметить все (дерево не трогаем до Apply)
+			if (checkBox1.Checked)
+			{
+				for (int i = 0; i < lstExtensions.Items.Count; i++)
+					lstExtensions.SetItemChecked(i, true);
+			}
 		}
 
 		private void PopulateRootFolders(string path)
@@ -176,14 +199,14 @@ namespace ProjectTreeViewer
 		}
 
 		private void PrintTree(
-			string path,
-			string indent,
-			StringBuilder sb,
-			HashSet<string> allowedExt,
-			HashSet<string> allowedRoot,
-			bool ignoreBin,
-			bool ignoreObj,
-			bool ignoreDot)
+	string path,
+	string indent,
+	StringBuilder sb,
+	HashSet<string> allowedExt,
+	HashSet<string> allowedRoot,
+	bool ignoreBin,
+	bool ignoreObj,
+	bool ignoreDot)
 		{
 			FileSystemInfo[] entries;
 			try
@@ -203,19 +226,29 @@ namespace ProjectTreeViewer
 				var name = e.Name;
 				bool isDir = e.Attributes.HasFlag(FileAttributes.Directory);
 
+				// На корневом уровне показываем только отмеченные в lstRootFolders папки
 				if (isDir && path == _currentPath && !allowedRoot.Contains(name)) continue;
 
 				if (isDir)
 				{
+					// Фильтры папок
 					if ((ignoreBin && name.Equals("bin", StringComparison.OrdinalIgnoreCase)) ||
 						(ignoreObj && name.Equals("obj", StringComparison.OrdinalIgnoreCase)) ||
 						(ignoreDot && name.StartsWith("."))) continue;
 				}
 				else
 				{
+					// Фильтры файлов
 					if (ignoreDot && name.StartsWith(".")) continue;
+
 					var ext = Path.GetExtension(name);
-					if (allowedExt.Count > 0 && !allowedExt.Contains(ext)) continue;
+
+					// КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
+					// Если ни один тип не выбран — вообще не показываем файлы.
+					if (allowedExt.Count == 0) continue;
+
+					// Иначе показываем только выбранные расширения
+					if (!allowedExt.Contains(ext)) continue;
 				}
 
 				bool last = i == entries.Length - 1;
@@ -228,5 +261,6 @@ namespace ProjectTreeViewer
 				}
 			}
 		}
+
 	}
 }
