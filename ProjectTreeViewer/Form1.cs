@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ProjectTreeViewer
@@ -13,12 +12,43 @@ namespace ProjectTreeViewer
 		private string? _currentPath;
 		private string _pendingFontName = "Consolas";
 
-		public Form1()
+		private readonly CommandLineOptions _startupOptions;
+		private readonly LocalizationService _localization;
+		private readonly ElevationService _elevationService = new();
+		private readonly FileSystemScanner _fileSystemScanner = new();
+		private readonly ProjectTreeService _projectTreeService = new();
+
+		private bool _elevationAttempted;
+
+		public Form1() : this(CommandLineOptions.Empty)
 		{
+		}
+
+		public Form1(CommandLineOptions startupOptions)
+		{
+			_startupOptions = startupOptions;
+			_elevationAttempted = startupOptions.ElevationAttempted;
+
 			InitializeComponent();
+
+			_localization = new LocalizationService(startupOptions.Language ?? LocalizationService.DetectSystemLanguage());
+			_localization.LanguageChanged += (_, _) => ApplyLocalization();
+
 			LoadFonts();
 			_pendingFontName = (string?)cboFont.SelectedItem ?? "Consolas";
 			SetButtonsEnabled(false);
+
+			ApplyLocalization();
+
+			Shown += Form1_Shown;
+		}
+
+		private void Form1_Shown(object? sender, EventArgs e)
+		{
+			if (string.IsNullOrWhiteSpace(_startupOptions.Path))
+				return;
+
+			TryOpenFolder(_startupOptions.Path!, openDialog: false);
 		}
 
 		// ───────────────────────────────────────── UI helpers
@@ -28,50 +58,122 @@ namespace ProjectTreeViewer
 			btnCopy.Enabled = enabled;
 		}
 
-		private void UpdateTitle() =>
+		private void UpdateTitle()
+		{
 			Text = _currentPath is null
-				? "Project Tree Viewer by Avazbek"
-				: $"Project Tree Viewer - {_currentPath}";
+				? _localization["Title.Default"]
+				: _localization.Format("Title.WithPath", _currentPath);
+		}
+
+		private void ApplyLocalization()
+		{
+			btnOpen.Text = _localization["Button.Open"];
+			btnCopy.Text = _localization["Button.Copy"];
+			btnRefresh.Text = _localization["Button.Refresh"];
+			btnSettings.Text = _localization["Button.Settings"];
+			btnApply.Text = _localization["Button.Apply"];
+
+			labelExtensions.Text = _localization["Label.Extensions"];
+			labelRootFolders.Text = _localization["Label.RootFolders"];
+			labelFont.Text = _localization["Label.Font"];
+
+			checkBoxAll.Text = _localization["Check.All"];
+			cbIgnoreBin.Text = _localization["Check.IgnoreBin"];
+			cbIgnoreObj.Text = _localization["Check.IgnoreObj"];
+			cbIgnoreDot.Text = _localization["Check.IgnoreDot"];
+
+			// Кнопка показывает язык, НА КОТОРЫЙ переключится
+			btnLanguage.Text = _localization.CurrentLanguage == AppLanguage.Ru ? "EN" : "RU";
+
+			UpdateTitle();
+		}
 
 		// ───────────────────────────────────────── Toolbar
 		private void btnOpen_Click(object? sender, EventArgs e)
 		{
-			using var dlg = new FolderBrowserDialog { Description = "Выберите корневую папку проекта" };
+			using var dlg = new FolderBrowserDialog { Description = _localization["Dialog.SelectRoot"] };
 			if (dlg.ShowDialog() != DialogResult.OK) return;
 
-			_currentPath = dlg.SelectedPath;
+			TryOpenFolder(dlg.SelectedPath, openDialog: true);
+		}
+
+		private void TryOpenFolder(string path, bool openDialog)
+		{
+			if (!Directory.Exists(path))
+			{
+				MessageBox.Show(
+					_localization.Format("Msg.PathNotFound", path),
+					_localization["Msg.ErrorTitle"],
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+
+				return;
+			}
+
+			_currentPath = path;
 			UpdateTitle();
-			ReloadProject();
 			SetButtonsEnabled(true);
+
+			ReloadProject();
 		}
 
 		private void btnRefresh_Click(object? sender, EventArgs e) => ReloadProject();
 
-		// ───────────────────────────────────────── Settings
+		private void btnCopy_Click(object? sender, EventArgs e)
+		{
+			if (!string.IsNullOrEmpty(txtTree.Text))
+				Clipboard.SetText(txtTree.Text);
+		}
+
 		private void btnSettings_Click(object? sender, EventArgs e) =>
 			panelSettings.Visible = !panelSettings.Visible;
 
+		private void btnLanguage_Click(object? sender, EventArgs e) =>
+			_localization.ToggleLanguage();
+
+		// ───────────────────────────────────────── Settings
 		private void btnApply_Click(object? sender, EventArgs e)
 		{
 			if (txtTree.Font.FontFamily.Name != _pendingFontName)
 				txtTree.Font = new Font(_pendingFontName, txtTree.Font.Size);
 
-			// Применяем все чекбоксы к дереву только здесь
 			RefreshTree();
 		}
 
-		// чек-боксы — меняют только список
-		private void cbIgnoreBin_CheckedChanged(object? s, EventArgs e) => PopulateRootFolders(_currentPath ?? "");
-		private void cbIgnoreObj_CheckedChanged(object? s, EventArgs e) => PopulateRootFolders(_currentPath ?? "");
-		private void cbIgnoreDot_CheckedChanged(object? s, EventArgs e) => PopulateRootFolders(_currentPath ?? "");
+		// чек-боксы — меняют только список (дерево трогаем только Apply)
+		private void cbIgnoreBin_CheckedChanged(object? s, EventArgs e)
+		{
+			PopulateRootFolders(_currentPath ?? "");
+			PopulateExtensions(_currentPath ?? "");
+		}
 
-		// ┐ Новое: галочка "Все" — просто отмечает/снимает все расширения (без обновления дерева)
+		private void cbIgnoreObj_CheckedChanged(object? s, EventArgs e)
+		{
+			PopulateRootFolders(_currentPath ?? "");
+			PopulateExtensions(_currentPath ?? "");
+		}
+
+		private void cbIgnoreDot_CheckedChanged(object? s, EventArgs e)
+		{
+			PopulateRootFolders(_currentPath ?? "");
+			PopulateExtensions(_currentPath ?? "");
+		}
+
+		// "Все" — просто отмечает/снимает все расширения (без обновления дерева)
 		private void checkBox1_CheckedChanged(object? sender, EventArgs e)
 		{
-			bool selectAll = checkBox1.Checked;
+			bool selectAll = checkBoxAll.Checked;
 			for (int i = 0; i < lstExtensions.Items.Count; i++)
 				lstExtensions.SetItemChecked(i, selectAll);
-			// Никаких RefreshTree здесь
+		}
+
+		private void cboFont_SelectedIndexChanged(object? sender, EventArgs e) =>
+			_pendingFontName = (string?)cboFont.SelectedItem ?? _pendingFontName;
+
+		private void LoadFonts()
+		{
+			cboFont.Items.AddRange(new[] { "Consolas", "Courier New", "Lucida Console", "Fira Code", "Times New Roman", "Tahoma" });
+			cboFont.SelectedItem = "Consolas";
 		}
 
 		// ───────────────────────────────────────── Core
@@ -87,38 +189,24 @@ namespace ProjectTreeViewer
 		private void RefreshTree()
 		{
 			if (string.IsNullOrEmpty(_currentPath)) return;
-			txtTree.Text = BuildTree(_currentPath);
-		}
-
-		// ───────────────────────────────────────── Build-Tree
-		private string BuildTree(string path)
-		{
-			var sb = new StringBuilder();
-			sb.AppendLine($"├── {new DirectoryInfo(path).Name}");
 
 			var allowedExt = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 			var allowedRoot = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 
-			PrintTree(path, "│   ", sb, allowedExt, allowedRoot,
-					  cbIgnoreBin.Checked, cbIgnoreObj.Checked, cbIgnoreDot.Checked);
+			var options = new ProjectTreeOptions(
+				AllowedExtensions: allowedExt,
+				AllowedRootFolders: allowedRoot,
+				IgnoreBin: cbIgnoreBin.Checked,
+				IgnoreObj: cbIgnoreObj.Checked,
+				IgnoreDot: cbIgnoreDot.Checked,
+				IncludePathHeader: true);
 
-			return sb.ToString();
-		}
+			var result = _projectTreeService.BuildTree(_currentPath, options);
+			txtTree.Text = result.Text;
 
-		// ───────────────────────────────────────── Misc-UI
-		private void btnCopy_Click(object? sender, EventArgs e)
-		{
-			if (!string.IsNullOrEmpty(txtTree.Text))
-				Clipboard.SetText(txtTree.Text);
-		}
-
-		private void cboFont_SelectedIndexChanged(object? sender, EventArgs e) =>
-			_pendingFontName = (string?)cboFont.SelectedItem ?? _pendingFontName;
-
-		private void LoadFonts()
-		{
-			cboFont.Items.AddRange(new[] { "Consolas", "Courier New", "Lucida Console", "Fira Code", "Times New Roman", "Tahoma" });
-			cboFont.SelectedItem = "Consolas";
+			// Автозапуск от админа только если корень реально недоступен
+			if (result.RootAccessDenied)
+				TryElevateAndRestart(_currentPath);
 		}
 
 		// ───────────────────────────────────────── Populate
@@ -126,26 +214,26 @@ namespace ProjectTreeViewer
 
 		private void PopulateExtensions(string path)
 		{
+			if (string.IsNullOrEmpty(path)) return;
+
 			var prev = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 
-			var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-			foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
-			{
-				if (ShouldSkipPath(file, path, cbIgnoreBin.Checked, cbIgnoreObj.Checked, cbIgnoreDot.Checked)) continue;
-				var ext = Path.GetExtension(file);
-				if (!string.IsNullOrEmpty(ext)) exts.Add(ext);
-			}
+			var scan = _fileSystemScanner.GetExtensions(path, cbIgnoreBin.Checked, cbIgnoreObj.Checked, cbIgnoreDot.Checked);
+			if (scan.RootAccessDenied)
+				TryElevateAndRestart(path);
 
 			lstExtensions.Items.Clear();
-			foreach (var ext in exts.OrderBy(e => e))
+
+			foreach (var ext in scan.Value.OrderBy(e => e, StringComparer.OrdinalIgnoreCase))
 			{
 				bool chk = prev.Contains(ext) ||
 						   (prev.Count == 0 && _defaultExts.Contains(ext, StringComparer.OrdinalIgnoreCase));
+
 				lstExtensions.Items.Add(ext, chk);
 			}
 
 			// Если "Все" включено — просто отметить все (дерево не трогаем до Apply)
-			if (checkBox1.Checked)
+			if (checkBoxAll.Checked)
 			{
 				for (int i = 0; i < lstExtensions.Items.Count; i++)
 					lstExtensions.SetItemChecked(i, true);
@@ -154,113 +242,54 @@ namespace ProjectTreeViewer
 
 		private void PopulateRootFolders(string path)
 		{
-			var prev = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
-
-			bool showBin = !cbIgnoreBin.Checked;
-			bool showObj = !cbIgnoreObj.Checked;
-			bool showDot = !cbIgnoreDot.Checked;
-
-			lstRootFolders.Items.Clear();
 			if (string.IsNullOrEmpty(path)) return;
 
-			foreach (var dir in Directory.GetDirectories(path))
+			var prev = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
+
+			var scan = _fileSystemScanner.GetRootFolderNames(path, cbIgnoreBin.Checked, cbIgnoreObj.Checked, cbIgnoreDot.Checked);
+			if (scan.RootAccessDenied)
+				TryElevateAndRestart(path);
+
+			lstRootFolders.Items.Clear();
+
+			foreach (var name in scan.Value)
 			{
-				var name = Path.GetFileName(dir);
-				bool hidden = name.StartsWith(".");
+				bool hiddenDot = name.StartsWith(".", StringComparison.Ordinal);
 				bool isBin = name.Equals("bin", StringComparison.OrdinalIgnoreCase);
 				bool isObj = name.Equals("obj", StringComparison.OrdinalIgnoreCase);
 
-				if ((isBin && !showBin) || (isObj && !showObj) || (hidden && !showDot))
-					continue;
-
 				bool chk = prev.Contains(name) ||
-						   (prev.Count == 0 && !hidden && !isBin && !isObj);
+						   (prev.Count == 0 && !hiddenDot && !isBin && !isObj);
 
 				lstRootFolders.Items.Add(name, chk);
 			}
 		}
 
-		// ───────────────────────────────────────── Helpers
-		private static bool ShouldSkipPath(string file, string root, bool ignoreBin, bool ignoreObj, bool ignoreDot)
+		// ───────────────────────────────────────── Admin
+		private void TryElevateAndRestart(string path)
 		{
-			var di = new DirectoryInfo(Path.GetDirectoryName(file)!);
-			while (di.FullName.Length >= root.Length)
-			{
-				if ((ignoreBin && di.Name.Equals("bin", StringComparison.OrdinalIgnoreCase)) ||
-					(ignoreObj && di.Name.Equals("obj", StringComparison.OrdinalIgnoreCase)) ||
-					(ignoreDot && di.Name.StartsWith(".")))
-					return true;
+			if (_elevationService.IsAdministrator) return;
+			if (_elevationAttempted) return;
 
-				if (di.FullName.Length == root.Length) break;
-				di = di.Parent!;
+			_elevationAttempted = true;
+
+			var options = new CommandLineOptions(
+				Path: path,
+				Language: _localization.CurrentLanguage,
+				ElevationAttempted: true);
+
+			bool started = _elevationService.TryRelaunchAsAdministrator(options);
+			if (started)
+			{
+				Environment.Exit(0);
+				return;
 			}
 
-			return ignoreDot && Path.GetFileName(file).StartsWith(".");
+			MessageBox.Show(
+				_localization["Msg.ElevationCanceled"],
+				_localization["Msg.ErrorTitle"],
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Warning);
 		}
-
-		private void PrintTree(
-	string path,
-	string indent,
-	StringBuilder sb,
-	HashSet<string> allowedExt,
-	HashSet<string> allowedRoot,
-	bool ignoreBin,
-	bool ignoreObj,
-	bool ignoreDot)
-		{
-			FileSystemInfo[] entries;
-			try
-			{
-				entries = new DirectoryInfo(path)
-					.GetFileSystemInfos()
-					.Where(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
-					.OrderBy(fi => !fi.Attributes.HasFlag(FileAttributes.Directory))
-					.ThenBy(fi => fi.Name)
-					.ToArray();
-			}
-			catch { return; }
-
-			for (int i = 0; i < entries.Length; i++)
-			{
-				var e = entries[i];
-				var name = e.Name;
-				bool isDir = e.Attributes.HasFlag(FileAttributes.Directory);
-
-				// На корневом уровне показываем только отмеченные в lstRootFolders папки
-				if (isDir && path == _currentPath && !allowedRoot.Contains(name)) continue;
-
-				if (isDir)
-				{
-					// Фильтры папок
-					if ((ignoreBin && name.Equals("bin", StringComparison.OrdinalIgnoreCase)) ||
-						(ignoreObj && name.Equals("obj", StringComparison.OrdinalIgnoreCase)) ||
-						(ignoreDot && name.StartsWith("."))) continue;
-				}
-				else
-				{
-					// Фильтры файлов
-					if (ignoreDot && name.StartsWith(".")) continue;
-
-					var ext = Path.GetExtension(name);
-
-					// КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
-					// Если ни один тип не выбран — вообще не показываем файлы.
-					if (allowedExt.Count == 0) continue;
-
-					// Иначе показываем только выбранные расширения
-					if (!allowedExt.Contains(ext)) continue;
-				}
-
-				bool last = i == entries.Length - 1;
-				sb.Append(indent).Append(last ? "└── " : "├── ").AppendLine(name);
-
-				if (isDir)
-				{
-					var nxt = indent + (last ? "    " : "│   ");
-					PrintTree(e.FullName, nxt, sb, allowedExt, allowedRoot, ignoreBin, ignoreObj, ignoreDot);
-				}
-			}
-		}
-
 	}
 }

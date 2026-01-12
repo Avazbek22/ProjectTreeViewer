@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 //  Form1.Designer.cs   (полный, рабочий)
 // ─────────────────────────────────────────────────────────────
 using System;
@@ -25,8 +25,9 @@ namespace ProjectTreeViewer
 			btnCopy = new Button();
 			btnRefresh = new Button();
 			btnSettings = new Button();
+			btnLanguage = new Button();
 			panelSettings = new Panel();
-			checkBox1 = new CheckBox();
+			checkBoxAll = new CheckBox();
 			cbIgnoreBin = new CheckBox();
 			cbIgnoreObj = new CheckBox();
 			cbIgnoreDot = new CheckBox();
@@ -48,6 +49,7 @@ namespace ProjectTreeViewer
 			panelToolbar.Controls.Add(btnCopy);
 			panelToolbar.Controls.Add(btnRefresh);
 			panelToolbar.Controls.Add(btnSettings);
+			panelToolbar.Controls.Add(btnLanguage);
 			panelToolbar.Dock = DockStyle.Top;
 			panelToolbar.Location = new Point(0, 0);
 			panelToolbar.Name = "panelToolbar";
@@ -91,11 +93,20 @@ namespace ProjectTreeViewer
 			btnSettings.Text = "Настройки";
 			btnSettings.Click += btnSettings_Click;
 			// 
+			// btnLanguage
+			// 
+			btnLanguage.Location = new Point(610, 5);
+			btnLanguage.Name = "btnLanguage";
+			btnLanguage.Size = new Size(70, 30);
+			btnLanguage.TabIndex = 4;
+			btnLanguage.Text = "EN";
+			btnLanguage.Click += btnLanguage_Click;
+			// 
 			// panelSettings
 			// 
 			panelSettings.BackColor = SystemColors.Control;
 			panelSettings.BorderStyle = BorderStyle.FixedSingle;
-			panelSettings.Controls.Add(checkBox1);
+			panelSettings.Controls.Add(checkBoxAll);
 			panelSettings.Controls.Add(cbIgnoreBin);
 			panelSettings.Controls.Add(cbIgnoreObj);
 			panelSettings.Controls.Add(cbIgnoreDot);
@@ -113,17 +124,18 @@ namespace ProjectTreeViewer
 			panelSettings.TabIndex = 1;
 			panelSettings.Visible = false;
 			// 
-			// checkBox1
+			// checkBoxAll
 			// 
-			checkBox1.AutoSize = true;
-			checkBox1.Checked = true;
-			checkBox1.CheckState = CheckState.Checked;
-			checkBox1.Location = new Point(606, 10);
-			checkBox1.Name = "checkBox1";
-			checkBox1.Size = new Size(55, 24);
-			checkBox1.TabIndex = 10;
-			checkBox1.Text = "Все";
-			checkBox1.CheckedChanged += checkBox1_CheckedChanged;
+			checkBoxAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			checkBoxAll.AutoSize = true;
+			checkBoxAll.Checked = true;
+			checkBoxAll.CheckState = CheckState.Checked;
+			checkBoxAll.Location = new Point(606, 10);
+			checkBoxAll.Name = "checkBox1";
+			checkBoxAll.Size = new Size(55, 24);
+			checkBoxAll.TabIndex = 10;
+			checkBoxAll.Text = "Все";
+			checkBoxAll.CheckedChanged += checkBox1_CheckedChanged;
 			// 
 			// cbIgnoreBin
 			// 
@@ -265,6 +277,7 @@ namespace ProjectTreeViewer
 		private Button btnCopy;
 		private Button btnRefresh;
 		private Button btnSettings;
+		private Button btnLanguage;
 
 		private Panel panelSettings;
 		private CheckBox cbIgnoreBin;
@@ -279,6 +292,6 @@ namespace ProjectTreeViewer
 		private Button btnApply;
 
 		private TextBox txtTree;
-		private CheckBox checkBox1;
+		private CheckBox checkBoxAll;
 	}
 }
