@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 namespace ProjectTreeViewer
@@ -29,6 +30,19 @@ namespace ProjectTreeViewer
 
 		private bool _elevationAttempted;
 
+		private const string ClipboardBlankLine = "\u00A0"; // NBSP: выглядит как пустая строка, но не “схлопывается” при вставке
+		private static void AppendClipboardBlankLine(StringBuilder sb) => sb.AppendLine(ClipboardBlankLine);
+
+		// ───────────────────────────────────────── Tree icons
+		private const int TreeIconSize = 24;
+
+		private ImageList? _treeImages;
+
+		private const string IconKeyFolder = "folder";
+		private const string IconKeyFile = "file";
+		private const string IconKeyCSharp = "csharp";
+		private const string IconKeyPython = "python";
+
 		public Form1() : this(CommandLineOptions.Empty)
 		{
 		}
@@ -38,6 +52,13 @@ namespace ProjectTreeViewer
 			_startupOptions = startupOptions;
 
 			InitializeComponent();
+
+			InitTreeIcons();
+
+			treeProject.BeforeExpand -= treeProject_BeforeExpand;
+			treeProject.BeforeExpand += treeProject_BeforeExpand;
+
+			RemoveUnneededMenuMargins();
 
 			_treeFontSize = treeProject.Font.Size;
 
@@ -55,6 +76,194 @@ namespace ProjectTreeViewer
 			ApplyLocalization();
 
 			Shown += Form1_Shown;
+		}
+
+		// ───────────────────────────────────────── Tree icons init
+		private void InitTreeIcons()
+		{
+			_treeImages = new ImageList
+			{
+				ColorDepth = ColorDepth.Depth32Bit,
+				ImageSize = new Size(TreeIconSize, TreeIconSize)
+			};
+
+			// Важно:
+			// 1) сначала пробуем EmbeddedResource (надежно при publish)
+			// 2) если не нашли — пробуем с диска рядом с exe (для Debug/локального запуска)
+			var folder = LoadImageEmbeddedOrFile(
+				"ProjectTreeViewer.Resources.Icons.folder24.png",
+				Path.Combine("Resources", "Icons", "folder24.png"));
+
+			var csharp = LoadImageEmbeddedOrFile(
+				"ProjectTreeViewer.Resources.Icons.csharp24.png",
+				Path.Combine("Resources", "Icons", "csharp24.png"));
+
+			var python = LoadImageEmbeddedOrFile(
+				"ProjectTreeViewer.Resources.Icons.python24.png",
+				Path.Combine("Resources", "Icons", "python24.png"));
+
+			// Добавляем даже если что-то не нашлось (на крайний случай — заглушки)
+			_treeImages.Images.Add(IconKeyFolder, folder ?? CreateTransparentFallbackIcon());
+			_treeImages.Images.Add(IconKeyCSharp, csharp ?? CreateTransparentFallbackIcon());
+			_treeImages.Images.Add(IconKeyPython, python ?? CreateTransparentFallbackIcon());
+
+			// Общая иконка файла: используем C# как дефолт (если нет отдельной file24.png)
+			_treeImages.Images.Add(IconKeyFile, csharp ?? CreateTransparentFallbackIcon());
+
+			treeProject.ImageList = _treeImages;
+
+			UpdateTreeItemHeight();
+		}
+
+		private static Image? LoadImageEmbeddedOrFile(string embeddedResourceName, string relativeFilePath)
+		{
+			// Embedded
+			var embedded = TryLoadEmbedded(embeddedResourceName);
+			if (embedded is not null) return embedded;
+
+			// File рядом с exe
+			var fromDisk = TryLoadFromDisk(relativeFilePath);
+			return fromDisk;
+
+			static Image? TryLoadEmbedded(string resourceName)
+			{
+				var asm = typeof(Form1).Assembly;
+				using var stream = asm.GetManifestResourceStream(resourceName);
+				if (stream is null) return null;
+
+				using var img = Image.FromStream(stream);
+				return (Image)img.Clone();
+			}
+
+			static Image? TryLoadFromDisk(string rel)
+			{
+				var fullPath = Path.Combine(AppContext.BaseDirectory, rel);
+				if (!File.Exists(fullPath)) return null;
+
+				using var fs = File.OpenRead(fullPath);
+				using var img = Image.FromStream(fs);
+				return (Image)img.Clone();
+			}
+		}
+
+		private static Image CreateTransparentFallbackIcon()
+		{
+			var bmp = new Bitmap(TreeIconSize, TreeIconSize);
+			using var g = Graphics.FromImage(bmp);
+			g.Clear(Color.Transparent);
+			return bmp;
+		}
+
+		private void ApplyIconsToTree()
+		{
+			if (_treeImages is null) return;
+			if (treeProject.ImageList != _treeImages)
+				treeProject.ImageList = _treeImages;
+
+			foreach (TreeNode node in treeProject.Nodes)
+				ApplyIconRecursive(node);
+		}
+
+		private void ApplyIconRecursive(TreeNode node)
+		{
+			ApplyIconToNode(node);
+
+			foreach (TreeNode child in node.Nodes)
+				ApplyIconRecursive(child);
+		}
+
+		private void ApplyIconToNode(TreeNode node)
+		{
+			if (node.Tag is not string path) return;
+
+			// Папка
+			if (Directory.Exists(path))
+			{
+				node.ImageKey = IconKeyFolder;
+				node.SelectedImageKey = IconKeyFolder;
+				return;
+			}
+
+			// Файл
+			if (File.Exists(path))
+			{
+				var ext = Path.GetExtension(path);
+
+				var key = ext.Equals(".cs", StringComparison.OrdinalIgnoreCase) ? IconKeyCSharp
+					: ext.Equals(".py", StringComparison.OrdinalIgnoreCase) ? IconKeyPython
+					: IconKeyFile;
+
+				node.ImageKey = key;
+				node.SelectedImageKey = key;
+			}
+		}
+
+		private void UpdateTreeItemHeight()
+		{
+			// чтобы 24x24 не обрезались и не конфликтовали с масштабированием текста
+			var height = Math.Max(treeProject.Font.Height + 6, TreeIconSize + 2);
+			treeProject.ItemHeight = height;
+		}
+
+		// ───────────────────────────────────────── Expand “layer-by-layer”
+		private void treeProject_BeforeExpand(object? sender, TreeViewCancelEventArgs e)
+		{
+			treeProject.BeginUpdate();
+			try
+			{
+				// раскрываем строго 1 уровень: все потомки делаем свернутыми
+				CollapseAllDescendants(e.Node);
+			}
+			finally
+			{
+				treeProject.EndUpdate();
+			}
+		}
+
+		private static void CollapseAllDescendants(TreeNode node)
+		{
+			foreach (TreeNode child in node.Nodes)
+				CollapseDeep(child);
+		}
+
+		private static void CollapseDeep(TreeNode node)
+		{
+			foreach (TreeNode child in node.Nodes)
+				CollapseDeep(child);
+
+			node.Collapse();
+		}
+
+		// ───────────────────────────────────────── Menu margins
+		private void RemoveUnneededMenuMargins()
+		{
+			// Везде убираем серую колонку
+			ConfigureDropDownMenu(miFile, showCheckMargin: false);
+			ConfigureDropDownMenu(miCopy, showCheckMargin: false);
+			ConfigureDropDownMenu(miView, showCheckMargin: false);
+			ConfigureDropDownMenu(miOptions, showCheckMargin: false);
+			ConfigureDropDownMenu(miHelp, showCheckMargin: false);
+
+			// В “Язык” оставляем чекмарки
+			ConfigureDropDownMenu(miLanguage, showCheckMargin: true);
+		}
+
+		private static void ConfigureDropDownMenu(ToolStripMenuItem menuItem, bool showCheckMargin)
+		{
+			if (menuItem.DropDown is ToolStripDropDownMenu dd)
+			{
+				dd.ShowImageMargin = false;
+				dd.ShowCheckMargin = showCheckMargin;
+			}
+
+			foreach (ToolStripItem child in menuItem.DropDownItems)
+			{
+				if (child is ToolStripMenuItem childMi)
+				{
+					// Для вложенных меню по умолчанию тоже убираем колонку.
+					ConfigureDropDownMenu(childMi, showCheckMargin: false);
+				}
+			}
 		}
 
 		private void Form1_Shown(object? sender, EventArgs e)
@@ -232,29 +441,80 @@ namespace ProjectTreeViewer
 		{
 			try
 			{
-				if (treeProject.Nodes.Count == 0)
-					return;
+				if (treeProject.Nodes.Count == 0) return;
 
-				var files = TreeExportService.GetCheckedFilePaths(treeProject.Nodes).ToList();
+				var files = GetCheckedFilePaths(treeProject.Nodes)
+					.Distinct(StringComparer.OrdinalIgnoreCase)
+					.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+					.ToList();
+
 				if (files.Count == 0)
 				{
-					_messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
+					MessageBox.Show(
+						"Не выбрано ни одного файла.",
+						"Копирование",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information);
+
 					return;
 				}
 
-				var text = _contentExport.Build(files);
-				if (string.IsNullOrWhiteSpace(text))
+				var sb = new StringBuilder();
+
+				for (int i = 0; i < files.Count; i++)
 				{
-					_messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
-					return;
+					var file = files[i];
+
+					sb.AppendLine($"{file}:");
+
+					// после пути — 1 “пустая” строка (не схлопнется)
+					AppendClipboardBlankLine(sb);
+
+					try
+					{
+						sb.AppendLine(ReadFileTextForClipboard(file));
+					}
+					catch (Exception ex)
+					{
+						sb.AppendLine($"[Не удалось прочитать файл: {ex.Message}]");
+					}
+
+					// перед следующим путём — 2 “пустые” строки (не схлопнутся)
+					if (i < files.Count - 1)
+					{
+						AppendClipboardBlankLine(sb);
+						AppendClipboardBlankLine(sb);
+					}
 				}
 
-				Clipboard.SetText(text);
+				Clipboard.SetText(sb.ToString(), TextDataFormat.UnicodeText);
 			}
 			catch (Exception ex)
 			{
 				_messages.ShowException(ex);
 			}
+		}
+
+		private static IEnumerable<string> GetCheckedFilePaths(TreeNodeCollection nodes)
+		{
+			foreach (TreeNode node in nodes)
+			{
+				if (node.Checked && node.Tag is string path && File.Exists(path))
+					yield return path;
+
+				foreach (var child in GetCheckedFilePaths(node.Nodes))
+					yield return child;
+			}
+		}
+
+		private static string ReadFileTextForClipboard(string path)
+		{
+			var text = File.ReadAllText(path, Encoding.UTF8);
+
+			if (text.IndexOf('\0') >= 0)
+				return "[Файл выглядит как бинарный, содержимое не вставлено]";
+
+			return text.TrimEnd('\r', '\n');
 		}
 
 		private bool EnsureTreeReady()
@@ -289,7 +549,6 @@ namespace ProjectTreeViewer
 				return;
 			}
 
-			// Если корень не читается — повышаем права и перезапускаем (один раз)
 			if (!_scanner.CanReadRoot(path))
 			{
 				if (TryElevateAndRestart(path)) return;
@@ -337,6 +596,7 @@ namespace ProjectTreeViewer
 				if (treeProject.Font.FontFamily.Name != _pendingFontName)
 					treeProject.Font = new Font(_pendingFontName, _treeFontSize);
 
+				UpdateTreeItemHeight();
 				RefreshTree();
 			}
 			catch (Exception ex)
@@ -409,12 +669,16 @@ namespace ProjectTreeViewer
 			{
 				var result = _treeBuilder.Build(_currentPath, options);
 
-				// Если корень недоступен — повышаем права
 				if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
 					return;
 
-				// Требование: раскрыть на 100%
-				_renderer.Render(treeProject, result.Root, expandAll: true);
+				_renderer.Render(treeProject, result.Root, expandAll: false);
+
+				if (treeProject.Nodes.Count > 0)
+					treeProject.Nodes[0].Expand();
+
+				ApplyIconsToTree();
+				UpdateTreeItemHeight();
 			}
 			finally
 			{
@@ -548,6 +812,8 @@ namespace ProjectTreeViewer
 
 			var family = treeProject.Font.FontFamily.Name;
 			treeProject.Font = new Font(family, _treeFontSize);
+
+			UpdateTreeItemHeight();
 		}
 	}
 }
