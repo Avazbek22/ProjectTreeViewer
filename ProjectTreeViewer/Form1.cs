@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 namespace ProjectTreeViewer
@@ -28,6 +29,11 @@ namespace ProjectTreeViewer
 		private readonly SelectedContentExportService _contentExport = new();
 
 		private bool _elevationAttempted;
+		private const string ClipboardBlankLine = "\u00A0"; // NBSP: выглядит как пустая строка, но не “схлопывается” при вставке
+
+		private static void AppendClipboardBlankLine(StringBuilder sb) =>
+			sb.AppendLine(ClipboardBlankLine);
+
 
 		public Form1() : this(CommandLineOptions.Empty)
 		{
@@ -38,6 +44,11 @@ namespace ProjectTreeViewer
 			_startupOptions = startupOptions;
 
 			InitializeComponent();
+
+			treeProject.BeforeExpand -= treeProject_BeforeExpand;
+			treeProject.BeforeExpand += treeProject_BeforeExpand;
+
+			RemoveUnneededMenuMargins();
 
 			_treeFontSize = treeProject.Font.Size;
 
@@ -56,6 +67,70 @@ namespace ProjectTreeViewer
 
 			Shown += Form1_Shown;
 		}
+
+		private void treeProject_BeforeExpand(object? sender, TreeViewCancelEventArgs e)
+		{
+			treeProject.BeginUpdate();
+			try
+			{
+				// раскрываем строго 1 уровень: все потомки делаем свернутыми
+				CollapseAllDescendants(e.Node);
+			}
+			finally
+			{
+				treeProject.EndUpdate();
+			}
+		}
+
+
+		private static void CollapseAllDescendants(TreeNode node)
+		{
+			foreach (TreeNode child in node.Nodes)
+				CollapseDeep(child);
+		}
+
+		private static void CollapseDeep(TreeNode node)
+		{
+			foreach (TreeNode child in node.Nodes)
+				CollapseDeep(child);
+
+			node.Collapse();
+		}
+
+
+		private void RemoveUnneededMenuMargins()
+		{
+			// Везде убираем серую колонку
+			ConfigureDropDownMenu(miFile, showCheckMargin: false);
+			ConfigureDropDownMenu(miCopy, showCheckMargin: false);
+			ConfigureDropDownMenu(miView, showCheckMargin: false);
+			ConfigureDropDownMenu(miOptions, showCheckMargin: false);
+			ConfigureDropDownMenu(miHelp, showCheckMargin: false);
+
+			// В “Язык” оставляем чекмарки
+			ConfigureDropDownMenu(miLanguage, showCheckMargin: true);
+		}
+
+		private static void ConfigureDropDownMenu(ToolStripMenuItem menuItem, bool showCheckMargin)
+		{
+			if (menuItem.DropDown is ToolStripDropDownMenu dd)
+			{
+				dd.ShowImageMargin = false;
+				dd.ShowCheckMargin = showCheckMargin;
+			}
+
+			foreach (ToolStripItem child in menuItem.DropDownItems)
+			{
+				if (child is ToolStripMenuItem childMi)
+				{
+					// Для вложенных меню по умолчанию тоже убираем колонку.
+					// Если в будущем добавите “галочные” пункты — включите там showCheckMargin вручную.
+					ConfigureDropDownMenu(childMi, showCheckMargin: false);
+				}
+			}
+		}
+
+
 
 		private void Form1_Shown(object? sender, EventArgs e)
 		{
@@ -230,32 +305,83 @@ namespace ProjectTreeViewer
 
 		private void miCopySelectedContent_Click(object? sender, EventArgs e)
 		{
-			try
+			if (treeProject.Nodes.Count == 0) return;
+
+			var files = GetCheckedFilePaths(treeProject.Nodes)
+				.Distinct(StringComparer.OrdinalIgnoreCase)
+				.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+				.ToList();
+
+			if (files.Count == 0)
 			{
-				if (treeProject.Nodes.Count == 0)
-					return;
+				MessageBox.Show(
+					"Не выбрано ни одного файла.",
+					"Копирование",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
 
-				var files = TreeExportService.GetCheckedFilePaths(treeProject.Nodes).ToList();
-				if (files.Count == 0)
-				{
-					_messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
-					return;
-				}
-
-				var text = _contentExport.Build(files);
-				if (string.IsNullOrWhiteSpace(text))
-				{
-					_messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
-					return;
-				}
-
-				Clipboard.SetText(text);
+				return;
 			}
-			catch (Exception ex)
+
+			var sb = new StringBuilder();
+
+			for (int i = 0; i < files.Count; i++)
 			{
-				_messages.ShowException(ex);
+				var file = files[i];
+
+				sb.AppendLine($"{file}:");
+
+				// после пути — 1 “пустая” строка (не схлопнется)
+				AppendClipboardBlankLine(sb);
+
+				try
+				{
+					sb.AppendLine(ReadFileTextForClipboard(file));
+				}
+				catch (Exception ex)
+				{
+					sb.AppendLine($"[Не удалось прочитать файл: {ex.Message}]");
+				}
+
+				// перед следующим путём — 2 “пустые” строки (не схлопнутся)
+				if (i < files.Count - 1)
+				{
+					AppendClipboardBlankLine(sb);
+					AppendClipboardBlankLine(sb);
+				}
+			}
+
+			Clipboard.SetText(sb.ToString(), TextDataFormat.UnicodeText);
+		}
+
+
+		private static IEnumerable<string> GetCheckedFilePaths(TreeNodeCollection nodes)
+		{
+			foreach (TreeNode node in nodes)
+			{
+				if (node.Checked && node.Tag is string path && File.Exists(path))
+					yield return path;
+
+				foreach (var child in GetCheckedFilePaths(node.Nodes))
+					yield return child;
 			}
 		}
+
+		private static string ReadFileTextForClipboard(string path)
+		{
+			// Для стабильного форматирования под ИИ:
+			// 1) читаем как текст (UTF8)
+			// 2) убираем только хвостовые переносы строк, чтобы не ломать “пустые строки между файлами”
+			var text = File.ReadAllText(path, Encoding.UTF8);
+
+			// Быстрая защита от бинарщины: если в тексте есть '\0' — считаем бинарным
+			if (text.IndexOf('\0') >= 0)
+				return "[Файл выглядит как бинарный, содержимое не вставлено]";
+
+			return text.TrimEnd('\r', '\n');
+		}
+
+
 
 		private bool EnsureTreeReady()
 		{
@@ -414,7 +540,13 @@ namespace ProjectTreeViewer
 					return;
 
 				// Требование: раскрыть на 100%
-				_renderer.Render(treeProject, result.Root, expandAll: true);
+				// Строим дерево без ExpandAll — раскрытие будет “слой за слоем”
+				_renderer.Render(treeProject, result.Root, expandAll: false);
+
+				// По умолчанию раскрываем только корень (первый уровень виден сразу)
+				if (treeProject.Nodes.Count > 0)
+					treeProject.Nodes[0].Expand();
+
 			}
 			finally
 			{
