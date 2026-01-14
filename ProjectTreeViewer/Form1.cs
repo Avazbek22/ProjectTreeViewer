@@ -30,18 +30,224 @@ namespace ProjectTreeViewer
 
 		private bool _elevationAttempted;
 
-		private const string ClipboardBlankLine = "\u00A0"; // NBSP: выглядит как пустая строка, но не “схлопывается” при вставке
+		private const string ClipboardBlankLine = "\u00A0"; // NBSP: looks like an empty line, but does NOT collapse on paste
 		private static void AppendClipboardBlankLine(StringBuilder sb) => sb.AppendLine(ClipboardBlankLine);
 
 		// ───────────────────────────────────────── Tree icons
+		// NOTE:
+		// - TreeView does NOT scale icons with font zoom automatically.
+		// - Icons are strictly controlled by ImageList.ImageSize (here 24x24).
+		// - If later you want icon scaling with zoom, we will rebuild ImageList on zoom.
 		private const int TreeIconSize = 24;
 
 		private ImageList? _treeImages;
 
+		// Keys are internal IDs inside ImageList.
+		// Keep them stable — other code relies on these string keys.
 		private const string IconKeyFolder = "folder";
-		private const string IconKeyFile = "file";
+		private const string IconKeyGrayFolder = "grayFolder";
+		private const string IconKeyUnknownFile = "unknownFile";
+		private const string IconKeyFile = "file";          // generic file icon (we map it to text icon for readability)
+		private const string IconKeyText = "text";
 		private const string IconKeyCSharp = "csharp";
 		private const string IconKeyPython = "python";
+		private const string IconKeyPyc = "pyc";
+		private const string IconKeyC = "c";
+		private const string IconKeyCpp = "cpp";
+		private const string IconKeyGo = "go";
+		private const string IconKeyRust = "rust";
+		private const string IconKeyJava = "java";
+		private const string IconKeyKotlin = "kotlin";
+		private const string IconKeySwift = "swift";
+		private const string IconKeyPhp = "php";
+		private const string IconKeyJs = "js";
+		private const string IconKeyTypeScript = "typescript";
+		private const string IconKeyHtml = "html";
+		private const string IconKeyCss = "css";
+		private const string IconKeyJson = "json";
+		private const string IconKeyXml = "xml";
+		private const string IconKeyXaml = "xaml";
+		private const string IconKeySql = "sql";
+		private const string IconKeyMd = "md";
+		private const string IconKeySln = "sln";
+		private const string IconKeyDll = "dll";
+		private const string IconKeyExe = "exe";
+		private const string IconKeyPdf = "pdf";
+		private const string IconKeyPicture = "picture";
+		private const string IconKeyVideo = "video";
+		private const string IconKeyAudio = "audio";
+		private const string IconKeyGit = "git";
+		private const string IconKeyConf = "conf";
+
+		// "Unwanted" folders we want to show as gray even if user decided to include them.
+		// This is purely visual, not filtering logic.
+		private static readonly HashSet<string> _grayFolderNames = new(StringComparer.OrdinalIgnoreCase)
+		{
+			"bin", "obj",
+			".git",
+			"node_modules",
+			".idea",
+			".vs",
+			".vscode"
+		};
+
+		// Main association: extension -> icon key.
+		// The goal is MAX coverage with the icons you have.
+		private static readonly Dictionary<string, string> _extensionToIconKey = new(StringComparer.OrdinalIgnoreCase)
+		{
+			// Solutions / .NET
+			[".sln"] = IconKeySln,
+			[".cs"] = IconKeyCSharp,
+			[".csx"] = IconKeyCSharp,
+			[".csproj"] = IconKeyCSharp,
+			[".props"] = IconKeyConf,
+			[".targets"] = IconKeyConf,
+			[".editorconfig"] = IconKeyConf,
+			[".resx"] = IconKeyXml,
+			[".config"] = IconKeyConf,
+
+			// C / C++
+			[".c"] = IconKeyC,
+			[".h"] = IconKeyCpp,       // header file: could be C or C++ — using cpp icon as "generic native"
+			[".hpp"] = IconKeyCpp,
+			[".hh"] = IconKeyCpp,
+			[".hxx"] = IconKeyCpp,
+			[".cpp"] = IconKeyCpp,
+			[".cc"] = IconKeyCpp,
+			[".cxx"] = IconKeyCpp,
+
+			// Python
+			[".py"] = IconKeyPython,
+			[".pyw"] = IconKeyPython,
+			[".pyi"] = IconKeyPython,
+			[".pyc"] = IconKeyPyc,
+			[".pyo"] = IconKeyPyc,
+
+			// JS / TS
+			[".js"] = IconKeyJs,
+			[".mjs"] = IconKeyJs,
+			[".cjs"] = IconKeyJs,
+			[".jsx"] = IconKeyJs,
+			[".ts"] = IconKeyTypeScript,
+			[".tsx"] = IconKeyTypeScript,
+
+			// Web
+			[".html"] = IconKeyHtml,
+			[".htm"] = IconKeyHtml,
+			[".css"] = IconKeyCss,
+			[".scss"] = IconKeyCss,
+			[".sass"] = IconKeyCss,
+			[".less"] = IconKeyCss,
+
+			// Data / Markup
+			[".json"] = IconKeyJson,
+			[".jsonc"] = IconKeyJson,
+			[".xml"] = IconKeyXml,
+			[".xsd"] = IconKeyXml,
+			[".xslt"] = IconKeyXml,
+			[".xsl"] = IconKeyXml,
+			[".xaml"] = IconKeyXaml,
+
+			// DB / SQL
+			[".sql"] = IconKeySql,
+
+			// Docs / text
+			[".md"] = IconKeyMd,
+			[".markdown"] = IconKeyMd,
+			[".txt"] = IconKeyText,
+			[".log"] = IconKeyText,
+			[".rtf"] = IconKeyText,
+			[".csv"] = IconKeyText,
+			[".tsv"] = IconKeyText,
+			[".yml"] = IconKeyConf,
+			[".yaml"] = IconKeyConf,
+			[".toml"] = IconKeyConf,
+			[".ini"] = IconKeyConf,
+			[".cfg"] = IconKeyConf,
+			[".conf"] = IconKeyConf,
+
+			// Languages
+			[".go"] = IconKeyGo,
+			[".rs"] = IconKeyRust,
+			[".java"] = IconKeyJava,
+			[".kt"] = IconKeyKotlin,
+			[".kts"] = IconKeyKotlin,
+			[".swift"] = IconKeySwift,
+			[".php"] = IconKeyPhp,
+
+			// Binaries
+			[".dll"] = IconKeyDll,
+			[".exe"] = IconKeyExe,
+			[".msi"] = IconKeyExe,
+			[".bat"] = IconKeyConf,
+			[".cmd"] = IconKeyConf,
+			[".ps1"] = IconKeyConf,
+			[".sh"] = IconKeyConf,
+
+			// PDF
+			[".pdf"] = IconKeyPdf,
+
+			// Pictures
+			[".png"] = IconKeyPicture,
+			[".jpg"] = IconKeyPicture,
+			[".jpeg"] = IconKeyPicture,
+			[".gif"] = IconKeyPicture,
+			[".bmp"] = IconKeyPicture,
+			[".tif"] = IconKeyPicture,
+			[".tiff"] = IconKeyPicture,
+			[".webp"] = IconKeyPicture,
+			[".svg"] = IconKeyPicture,
+			[".ico"] = IconKeyPicture,
+
+			// Video
+			[".mp4"] = IconKeyVideo,
+			[".mkv"] = IconKeyVideo,
+			[".mov"] = IconKeyVideo,
+			[".avi"] = IconKeyVideo,
+			[".webm"] = IconKeyVideo,
+			[".wmv"] = IconKeyVideo,
+			[".m4v"] = IconKeyVideo,
+			[".flv"] = IconKeyVideo,
+
+			// Audio
+			[".mp3"] = IconKeyAudio,
+			[".wav"] = IconKeyAudio,
+			[".flac"] = IconKeyAudio,
+			[".aac"] = IconKeyAudio,
+			[".ogg"] = IconKeyAudio,
+			[".m4a"] = IconKeyAudio,
+			[".wma"] = IconKeyAudio,
+			[".opus"] = IconKeyAudio,
+			[".aiff"] = IconKeyAudio,
+		};
+
+		// File name based associations (important for dotfiles and extension-less files).
+		// NOTE:
+		// - If IgnoreDot is enabled in your TreeBuilder, dotfiles might not appear at all.
+		// - Still keeping mappings here for maximum coverage when they do appear.
+		private static readonly Dictionary<string, string> _fileNameToIconKey = new(StringComparer.OrdinalIgnoreCase)
+		{
+			["readme"] = IconKeyMd,
+			["readme.md"] = IconKeyMd,
+			["license"] = IconKeyText,
+			["license.txt"] = IconKeyText,
+			["dockerfile"] = IconKeyConf,
+			["makefile"] = IconKeyConf,
+
+			// Git specific
+			[".gitignore"] = IconKeyGit,
+			[".gitattributes"] = IconKeyGit,
+			[".gitmodules"] = IconKeyGit,
+			[".gitkeep"] = IconKeyGit,
+
+			// Common configs
+			[".env"] = IconKeyConf,
+			[".env.example"] = IconKeyConf,
+			["nuget.config"] = IconKeyConf,
+			["global.json"] = IconKeyJson,
+			["appsettings.json"] = IconKeyJson,
+			["appsettings.development.json"] = IconKeyJson,
+		};
 
 		public Form1() : this(CommandLineOptions.Empty)
 		{
@@ -87,32 +293,61 @@ namespace ProjectTreeViewer
 				ImageSize = new Size(TreeIconSize, TreeIconSize)
 			};
 
-			// Важно:
-			// 1) сначала пробуем EmbeddedResource (надежно при publish)
-			// 2) если не нашли — пробуем с диска рядом с exe (для Debug/локального запуска)
-			var folder = LoadImageEmbeddedOrFile(
-				"ProjectTreeViewer.Resources.Icons.folder24.png",
-				Path.Combine("Resources", "Icons", "folder24.png"));
+			// We load icons by file name (24x24) with two strategies:
+			// 1) EmbeddedResource (best for single-file publish)
+			// 2) File from disk relative to executable folder (best for Debug / portable folder)
+			//
+			// IMPORTANT:
+			// If you publish and icons disappear, it means they were not embedded and not copied to output.
+			// We keep both approaches to be resilient.
+			AddIcon(IconKeyFolder, "folder24.png");
+			AddIcon(IconKeyGrayFolder, "grayFolder24.png");
+			AddIcon(IconKeyUnknownFile, "uknownFile24.png"); // file name has your exact spelling
+			AddIcon(IconKeyText, "text24.png");
+			AddIcon(IconKeyFile, "text24.png"); // generic file -> text icon
 
-			var csharp = LoadImageEmbeddedOrFile(
-				"ProjectTreeViewer.Resources.Icons.csharp24.png",
-				Path.Combine("Resources", "Icons", "csharp24.png"));
-
-			var python = LoadImageEmbeddedOrFile(
-				"ProjectTreeViewer.Resources.Icons.python24.png",
-				Path.Combine("Resources", "Icons", "python24.png"));
-
-			// Добавляем даже если что-то не нашлось (на крайний случай — заглушки)
-			_treeImages.Images.Add(IconKeyFolder, folder ?? CreateTransparentFallbackIcon());
-			_treeImages.Images.Add(IconKeyCSharp, csharp ?? CreateTransparentFallbackIcon());
-			_treeImages.Images.Add(IconKeyPython, python ?? CreateTransparentFallbackIcon());
-
-			// Общая иконка файла: используем C# как дефолт (если нет отдельной file24.png)
-			_treeImages.Images.Add(IconKeyFile, csharp ?? CreateTransparentFallbackIcon());
+			AddIcon(IconKeyCSharp, "csharp24.png");
+			AddIcon(IconKeyPython, "python24.png");
+			AddIcon(IconKeyPyc, "pyc24.png");
+			AddIcon(IconKeyC, "c24.png");
+			AddIcon(IconKeyCpp, "cpp24.png");
+			AddIcon(IconKeyGo, "go24.png");
+			AddIcon(IconKeyRust, "rust24.png");
+			AddIcon(IconKeyJava, "java24.png");
+			AddIcon(IconKeyKotlin, "kotlin24.png");
+			AddIcon(IconKeySwift, "swift24.png");
+			AddIcon(IconKeyPhp, "php24.png");
+			AddIcon(IconKeyJs, "js24.png");
+			AddIcon(IconKeyTypeScript, "typescript24.png");
+			AddIcon(IconKeyHtml, "html24.png");
+			AddIcon(IconKeyCss, "css24.png");
+			AddIcon(IconKeyJson, "json24.png");
+			AddIcon(IconKeyXml, "xml24.png");
+			AddIcon(IconKeyXaml, "xaml24.png");
+			AddIcon(IconKeySql, "sql24.png");
+			AddIcon(IconKeyMd, "md24.png");
+			AddIcon(IconKeySln, "sln24.png");
+			AddIcon(IconKeyDll, "dll24.png");
+			AddIcon(IconKeyExe, "exe24.png");
+			AddIcon(IconKeyPdf, "pdf24.png");
+			AddIcon(IconKeyPicture, "picture24.png");
+			AddIcon(IconKeyVideo, "video24.png");
+			AddIcon(IconKeyAudio, "audio24.png");
+			AddIcon(IconKeyGit, "git24.png");
+			AddIcon(IconKeyConf, "conf24.png");
 
 			treeProject.ImageList = _treeImages;
 
 			UpdateTreeItemHeight();
+
+			void AddIcon(string key, string fileName)
+			{
+				var img = LoadImageEmbeddedOrFile(
+					embeddedResourceName: $"ProjectTreeViewer.Resources.Icons.{fileName}",
+					relativeFilePath: Path.Combine("Resources", "Icons", fileName));
+
+				_treeImages!.Images.Add(key, img ?? CreateTransparentFallbackIcon());
+			}
 		}
 
 		private static Image? LoadImageEmbeddedOrFile(string embeddedResourceName, string relativeFilePath)
@@ -121,7 +356,7 @@ namespace ProjectTreeViewer
 			var embedded = TryLoadEmbedded(embeddedResourceName);
 			if (embedded is not null) return embedded;
 
-			// File рядом с exe
+			// File near exe
 			var fromDisk = TryLoadFromDisk(relativeFilePath);
 			return fromDisk;
 
@@ -148,6 +383,7 @@ namespace ProjectTreeViewer
 
 		private static Image CreateTransparentFallbackIcon()
 		{
+			// Transparent placeholder prevents exceptions and keeps layout stable.
 			var bmp = new Bitmap(TreeIconSize, TreeIconSize);
 			using var g = Graphics.FromImage(bmp);
 			g.Clear(Color.Transparent);
@@ -176,31 +412,63 @@ namespace ProjectTreeViewer
 		{
 			if (node.Tag is not string path) return;
 
-			// Папка
+			// Directory icon decision
 			if (Directory.Exists(path))
 			{
-				node.ImageKey = IconKeyFolder;
-				node.SelectedImageKey = IconKeyFolder;
-				return;
-			}
+				var dirName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 
-			// Файл
-			if (File.Exists(path))
-			{
-				var ext = Path.GetExtension(path);
+				// Gray folder for "unwanted" directories:
+				// - dot-prefixed directories (".something")
+				// - common build/system folders (bin/obj/node_modules/.git/etc)
+				//
+				// NOTE:
+				// Hidden folders may not appear at all due to TreeBuilder filtering hidden attributes.
+				// But we still keep dot-name rule for when IgnoreDot is disabled.
+				bool isGray =
+					(!string.IsNullOrEmpty(dirName) && dirName.StartsWith(".", StringComparison.Ordinal)) ||
+					_grayFolderNames.Contains(dirName);
 
-				var key = ext.Equals(".cs", StringComparison.OrdinalIgnoreCase) ? IconKeyCSharp
-					: ext.Equals(".py", StringComparison.OrdinalIgnoreCase) ? IconKeyPython
-					: IconKeyFile;
+				var key = isGray ? IconKeyGrayFolder : IconKeyFolder;
 
 				node.ImageKey = key;
 				node.SelectedImageKey = key;
+				return;
+			}
+
+			// File icon decision
+			if (File.Exists(path))
+			{
+				var fileName = Path.GetFileName(path);
+
+				// 1) File name rules first (dotfiles, extension-less, special names)
+				if (!string.IsNullOrWhiteSpace(fileName) && _fileNameToIconKey.TryGetValue(fileName, out var nameKey))
+				{
+					node.ImageKey = nameKey;
+					node.SelectedImageKey = nameKey;
+					return;
+				}
+
+				// 2) Extension based rules
+				var ext = Path.GetExtension(fileName);
+
+				if (!string.IsNullOrWhiteSpace(ext) && _extensionToIconKey.TryGetValue(ext, out var extKey))
+				{
+					node.ImageKey = extKey;
+					node.SelectedImageKey = extKey;
+					return;
+				}
+
+				// 3) If we don't know the format -> unknownFile
+				// This matches your requirement: unknown formats must not be treated as generic file.
+				node.ImageKey = IconKeyUnknownFile;
+				node.SelectedImageKey = IconKeyUnknownFile;
 			}
 		}
 
 		private void UpdateTreeItemHeight()
 		{
-			// чтобы 24x24 не обрезались и не конфликтовали с масштабированием текста
+			// Ensure icons are not clipped and work with font zoom.
+			// +6 gives some breathing space for checkbox + icon + text.
 			var height = Math.Max(treeProject.Font.Height + 6, TreeIconSize + 2);
 			treeProject.ItemHeight = height;
 		}
@@ -211,7 +479,8 @@ namespace ProjectTreeViewer
 			treeProject.BeginUpdate();
 			try
 			{
-				// раскрываем строго 1 уровень: все потомки делаем свернутыми
+				// Show only one level down:
+				// collapse all descendants so user doesn't lose the structure.
 				CollapseAllDescendants(e.Node);
 			}
 			finally
@@ -237,14 +506,14 @@ namespace ProjectTreeViewer
 		// ───────────────────────────────────────── Menu margins
 		private void RemoveUnneededMenuMargins()
 		{
-			// Везде убираем серую колонку
+			// Remove image margin everywhere to avoid the gray column.
 			ConfigureDropDownMenu(miFile, showCheckMargin: false);
 			ConfigureDropDownMenu(miCopy, showCheckMargin: false);
 			ConfigureDropDownMenu(miView, showCheckMargin: false);
 			ConfigureDropDownMenu(miOptions, showCheckMargin: false);
 			ConfigureDropDownMenu(miHelp, showCheckMargin: false);
 
-			// В “Язык” оставляем чекмарки
+			// Language menu uses checked items, so we keep check margin there.
 			ConfigureDropDownMenu(miLanguage, showCheckMargin: true);
 		}
 
@@ -260,7 +529,8 @@ namespace ProjectTreeViewer
 			{
 				if (child is ToolStripMenuItem childMi)
 				{
-					// Для вложенных меню по умолчанию тоже убираем колонку.
+					// Default for submenus: no check margin.
+					// If you add checkable items later, enable explicitly for that submenu.
 					ConfigureDropDownMenu(childMi, showCheckMargin: false);
 				}
 			}
@@ -300,7 +570,7 @@ namespace ProjectTreeViewer
 			miHelp.Text = _localization["Menu.Help"];
 			miHelpAbout.Text = _localization["Menu.Help.About"];
 
-			// В панели настроек
+			// Settings panel
 			cbIgnoreBin.Text = _localization["Settings.IgnoreBin"];
 			cbIgnoreObj.Text = _localization["Settings.IgnoreObj"];
 			cbIgnoreDot.Text = _localization["Settings.IgnoreDot"];
@@ -467,7 +737,7 @@ namespace ProjectTreeViewer
 
 					sb.AppendLine($"{file}:");
 
-					// после пути — 1 “пустая” строка (не схлопнется)
+					// After path: 1 "blank" line that won't collapse on paste
 					AppendClipboardBlankLine(sb);
 
 					try
@@ -479,7 +749,7 @@ namespace ProjectTreeViewer
 						sb.AppendLine($"[Не удалось прочитать файл: {ex.Message}]");
 					}
 
-					// перед следующим путём — 2 “пустые” строки (не схлопнутся)
+					// Before next file: 2 "blank" lines that won't collapse
 					if (i < files.Count - 1)
 					{
 						AppendClipboardBlankLine(sb);
@@ -511,6 +781,7 @@ namespace ProjectTreeViewer
 		{
 			var text = File.ReadAllText(path, Encoding.UTF8);
 
+			// Fast binary guard: if text contains NUL -> treat as binary
 			if (text.IndexOf('\0') >= 0)
 				return "[Файл выглядит как бинарный, содержимое не вставлено]";
 
@@ -672,11 +943,14 @@ namespace ProjectTreeViewer
 				if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
 					return;
 
+				// Render without ExpandAll: expansion is "layer-by-layer"
 				_renderer.Render(treeProject, result.Root, expandAll: false);
 
 				if (treeProject.Nodes.Count > 0)
 					treeProject.Nodes[0].Expand();
 
+				// Apply icons after render: TreeViewRenderer creates nodes with Text+Tag,
+				// then we assign ImageKey/SelectedImageKey based on file/folder rules.
 				ApplyIconsToTree();
 				UpdateTreeItemHeight();
 			}
