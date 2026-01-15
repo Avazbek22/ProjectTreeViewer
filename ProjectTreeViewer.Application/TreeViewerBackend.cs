@@ -11,6 +11,8 @@ public sealed class TreeViewerBackend
 	public ISelectedContentExportService ContentExporter { get; }
 
 	public RootScanService RootScan { get; }
+	public ITreeTextExportService TreeTextExporter { get; }
+
 
 	// Новый “кусок бэкенда”: ресурсы/иконки/локализация
 	public IIconPackService Icons { get; }
@@ -21,7 +23,8 @@ public sealed class TreeViewerBackend
 		ITreeBuilder builder,
 		ISelectedContentExportService contentExporter,
 		IIconPackService icons,
-		ILocalizationCatalog localizationCatalog)
+		ILocalizationCatalog localizationCatalog,
+		ITreeTextExportService treeTextExporter)
 	{
 		Scanner = scanner ?? throw new ArgumentNullException(nameof(scanner));
 		Builder = builder ?? throw new ArgumentNullException(nameof(builder));
@@ -29,6 +32,8 @@ public sealed class TreeViewerBackend
 
 		Icons = icons ?? throw new ArgumentNullException(nameof(icons));
 		LocalizationCatalog = localizationCatalog ?? throw new ArgumentNullException(nameof(localizationCatalog));
+
+		TreeTextExporter = treeTextExporter ?? throw new ArgumentNullException(nameof(treeTextExporter));
 
 		RootScan = new RootScanService(Scanner);
 	}
@@ -44,7 +49,10 @@ public sealed class TreeViewerBackend
 		// Catalog для локализации тот же, что использует LocalizationService по умолчанию
 		var catalog = CreateDefaultLocalizationCatalog();
 
-		return new TreeViewerBackend(scanner, builder, exporter, icons, catalog);
+		var treeTextExporter = new TreeTextExportService();
+
+		return new TreeViewerBackend(scanner, builder, exporter, icons, catalog, treeTextExporter);
+
 	}
 
 	private static ILocalizationCatalog CreateDefaultLocalizationCatalog()
@@ -61,4 +69,11 @@ public sealed class TreeViewerBackend
 
 	public string BuildSelectedContent(IEnumerable<string> filePaths)
 		=> ContentExporter.Build(filePaths);
+
+	public string ExportFullTree(string rootPath, FileSystemNode root)
+		=> TreeTextExporter.BuildFullTree(rootPath, root);
+
+	public string ExportSelectedTree(string rootPath, FileSystemNode root, IEnumerable<string> selectedPaths)
+		=> TreeTextExporter.BuildSelectedTree(rootPath, root, selectedPaths);
+
 }
