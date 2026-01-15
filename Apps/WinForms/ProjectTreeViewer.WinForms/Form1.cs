@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
@@ -33,6 +32,7 @@ namespace ProjectTreeViewer.WinForms
         private readonly TreeViewRenderer _renderer;
         private readonly TreeExportService _treeExport;
         private readonly SelectedContentExportService _contentExport;
+        private readonly TreeAndContentExportService _treeAndContentExport;
         private readonly TreeSelectionService _selection;
         private readonly IIconStore _iconStore;
 
@@ -40,14 +40,9 @@ namespace ProjectTreeViewer.WinForms
 
         private bool _elevationAttempted;
 
-		private const string
-			ClipboardBlankLine = "\u00A0"; // NBSP: looks like an empty line, but does NOT collapse on paste
-
 		private const int IgnoreIndexBin = 0;
 		private const int IgnoreIndexObj = 1;
 		private const int IgnoreIndexDot = 2;
-
-        private static void AppendClipboardBlankLine(StringBuilder sb) => sb.AppendLine(ClipboardBlankLine);
 
         private const int TreeIconSize = 24;
 
@@ -66,6 +61,7 @@ namespace ProjectTreeViewer.WinForms
             _buildTree = services.BuildTreeUseCase;
             _treeExport = services.TreeExportService;
             _contentExport = services.ContentExportService;
+            _treeAndContentExport = services.TreeAndContentExportService;
             _renderer = services.TreeViewRenderer;
             _selection = services.TreeSelectionService;
             _iconStore = services.IconStore;
@@ -513,34 +509,9 @@ namespace ProjectTreeViewer.WinForms
 			try
 			{
 				if (!EnsureTreeReady()) return;
-
-				var files = _selection.GetCheckedPaths(treeProject.Nodes)
-					.Where(File.Exists)
-					.Distinct(StringComparer.OrdinalIgnoreCase)
-					.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
-					.ToList();
-
-				if (files.Count == 0)
-				{
-					_messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
-					return;
-				}
-
-				var content = BuildContentForClipboard(files);
-				if (string.IsNullOrWhiteSpace(content))
-				{
-					_messages.ShowInfo(_localization["Msg.NoTextContent"]);
-					return;
-				}
-
-				var treeText = _treeExport.BuildFullTree(_currentPath!, _currentTree!.Root);
-
-				var sb = new StringBuilder(treeText);
-				AppendClipboardBlankLine(sb);
-				AppendClipboardBlankLine(sb);
-				sb.Append(content);
-
-				Clipboard.SetText(sb.ToString(), TextDataFormat.UnicodeText);
+				var selectedPaths = new HashSet<string>(_selection.GetCheckedPaths(treeProject.Nodes), StringComparer.OrdinalIgnoreCase);
+				var text = _treeAndContentExport.Build(_currentPath!, _currentTree!.Root, selectedPaths);
+				Clipboard.SetText(text, TextDataFormat.UnicodeText);
 			}
 			catch (Exception ex)
 			{

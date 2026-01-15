@@ -11,6 +11,7 @@ public sealed record WinFormsAppServices(
 	BuildTreeUseCase BuildTreeUseCase,
 	TreeExportService TreeExportService,
 	SelectedContentExportService ContentExportService,
+	TreeAndContentExportService TreeAndContentExportService,
 	TreeViewRenderer TreeViewRenderer,
 	TreeSelectionService TreeSelectionService,
 	IIconStore IconStore);

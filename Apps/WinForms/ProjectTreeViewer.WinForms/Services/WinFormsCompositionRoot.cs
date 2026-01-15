@@ -21,7 +21,8 @@ public static class WinFormsCompositionRoot
 		var scanOptionsUseCase = new ScanOptionsUseCase(scanner);
 		var buildTreeUseCase = new BuildTreeUseCase(treeBuilder, treePresenter);
 		var treeExportService = new TreeExportService();
-		var contentExportService = new SelectedContentExportService(localization);
+		var contentExportService = new SelectedContentExportService();
+		var treeAndContentExportService = new TreeAndContentExportService(treeExportService, contentExportService);
 		var renderer = new TreeViewRenderer();
 		var selection = new TreeSelectionService();
 		var elevation = new ElevationService();
@@ -33,6 +34,7 @@ public static class WinFormsCompositionRoot
 			BuildTreeUseCase: buildTreeUseCase,
 			TreeExportService: treeExportService,
 			ContentExportService: contentExportService,
+			TreeAndContentExportService: treeAndContentExportService,
 			TreeViewRenderer: renderer,
 			TreeSelectionService: selection,
 			IconStore: iconStore);
