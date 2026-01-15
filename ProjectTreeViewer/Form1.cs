@@ -276,17 +276,36 @@ namespace ProjectTreeViewer
             ["appsettings.development.json"] = IconKeyJson,
         };
 
-        // For clipboard content export: we skip binary/non-text files entirely (NO path, NO placeholder).
         private static readonly HashSet<string> _contentExcludedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
+            // Executables / binaries
             ".dll", ".exe", ".msi",
+
+            // Images
             ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp", ".svg", ".ico",
+
+            // Video
             ".mp4", ".mkv", ".mov", ".avi", ".webm", ".wmv", ".m4v", ".flv",
+
+            // Audio
             ".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a", ".wma", ".opus", ".aiff",
+
+            // Documents that are typically binary (skip entirely; no path, no placeholders)
             ".pdf",
+            ".doc", ".docx", ".dot", ".dotx",
+            ".xls", ".xlsx", ".xlsm", ".xlt", ".xltx",
+            ".ppt", ".pptx", ".pps", ".ppsx",
+
+            // Databases (binary)
+            ".mdb", ".accdb",
+
+            // Archives
             ".zip", ".7z", ".rar", ".tar", ".gz",
+
+            // Debug / symbols
             ".pdb"
         };
+
 
         // Ignore list indices (CheckedListBox near "Типы файлов")
         private const int IgnoreIndexBin = 0;
@@ -338,17 +357,42 @@ namespace ProjectTreeViewer
         // ───────────────────────────────────────── Layout: MenuStrip must stay on top
         private void EnsureDockLayout()
         {
+            // Stable manual layout:
+            // Menu stays on top, settings panel is on the right, tree uses the remaining space.
             menuStripMain.Dock = DockStyle.Top;
-            panelSettings.Dock = DockStyle.Top;
-            treeProject.Dock = DockStyle.Fill;
 
-            // Dock order depends on z-order. Index 0 is top of z-order.
-            Controls.SetChildIndex(menuStripMain, 0);
-            Controls.SetChildIndex(panelSettings, 1);
-            Controls.SetChildIndex(treeProject, 2);
+            panelSettings.Dock = DockStyle.None;
+            treeProject.Dock = DockStyle.None;
 
-            menuStripMain.BringToFront();
+            panelSettings.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            treeProject.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            ApplyStableLayout();
         }
+
+        private void ApplyStableLayout()
+        {
+            int top = menuStripMain.Height;
+
+            int panelWidth = panelSettings.Visible ? panelSettings.Width : 0;
+
+            // Tree always starts from the left and never goes under the panel.
+            treeProject.Location = new Point(0, top);
+            treeProject.Size = new Size(
+                Math.Max(0, ClientSize.Width - panelWidth),
+                Math.Max(0, ClientSize.Height - top));
+
+            // Panel is always on the right.
+            panelSettings.Location = new Point(ClientSize.Width - panelSettings.Width, top);
+            panelSettings.Height = Math.Max(0, ClientSize.Height - top);
+
+            // Keep menu always above everything.
+            menuStripMain.BringToFront();
+            if (panelSettings.Visible)
+                panelSettings.BringToFront();
+        }
+
+
 
         // ───────────────────────────────────────── Ignore list init (replaces 3 left checkboxes)
         private void InitIgnoreList()
@@ -751,7 +795,7 @@ namespace ProjectTreeViewer
             miFileRefresh.Text = _localization["Menu.File.Refresh"];
             miFileExit.Text = _localization["Menu.File.Exit"];
 
-            miCopy.Text = _localization["Menu.Copy"];
+            miCopy.Text = GetCopyMenuText();
             miCopyFullTree.Text = _localization["Menu.Copy.FullTree"];
             miCopySelectedTree.Text = _localization["Menu.Copy.SelectedTree"];
             miCopySelectedContent.Text = _localization["Menu.Copy.SelectedContent"];
@@ -767,7 +811,6 @@ namespace ProjectTreeViewer
             miViewZoomReset.Text = _localization["Menu.View.ZoomReset"];
 
             miOptions.Text = _localization["Menu.Options"];
-            miOptionsTreeSettings.Text = _localization["Menu.Options.TreeSettings"];
 
             miLanguage.Text = _localization["Menu.Language"];
 
@@ -786,6 +829,20 @@ namespace ProjectTreeViewer
             UpdateLanguageChecks();
             UpdateTitle();
         }
+
+        private string GetCopyMenuText() => _localization.CurrentLanguage switch
+        {
+            AppLanguage.Ru => "Копирование",
+            AppLanguage.En => "Copy",
+            AppLanguage.Uz => "Nusxalash",
+            AppLanguage.Tg => "Нусхабардорӣ",
+            AppLanguage.Kk => "Көшіру",
+            AppLanguage.Fr => "Copie",
+            AppLanguage.De => "Kopieren",
+            AppLanguage.It => "Copia",
+            _ => "Copy"
+        };
+
 
         private void UpdateLanguageChecks()
         {
@@ -812,7 +869,7 @@ namespace ProjectTreeViewer
             miViewExpandAll.Enabled = enabled;
             miViewCollapseAll.Enabled = enabled;
 
-            miOptionsTreeSettings.Enabled = enabled;
+            miOptions.Enabled = enabled;
         }
 
         private void UpdateTitle()
@@ -851,12 +908,6 @@ namespace ProjectTreeViewer
         }
 
         private void miFileExit_Click(object? sender, EventArgs e) => Close();
-
-        private void miOptionsTreeSettings_Click(object? sender, EventArgs e)
-        {
-            panelSettings.Visible = !panelSettings.Visible;
-            ApplyStableLayout();
-        }
 
         private void miViewExpandAll_Click(object? sender, EventArgs e)
         {
@@ -927,9 +978,12 @@ namespace ProjectTreeViewer
 
                 if (files.Count == 0)
                 {
-                    _messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
+                    // We do NOT depend on LocalizationCatalog keys here.
+                    // Some builds may not have Msg.NoCheckedFiles, and that could crash or show raw key.
+                    _messages.ShowInfo(GetNoCheckedFilesMessage());
                     return;
                 }
+
 
                 var content = BuildContentForClipboard(files);
                 if (string.IsNullOrWhiteSpace(content))
@@ -945,6 +999,20 @@ namespace ProjectTreeViewer
                 _messages.ShowException(ex);
             }
         }
+
+        private string GetNoCheckedFilesMessage() => _localization.CurrentLanguage switch
+        {
+            AppLanguage.Ru => "Не выбрано ни одного файла.",
+            AppLanguage.En => "No files selected.",
+            AppLanguage.Uz => "Hech qanday fayl tanlanmagan.",
+            AppLanguage.Tg => "Ягон файл интихоб нашудааст.",
+            AppLanguage.Kk => "Ешбір файл таңдалмаған.",
+            AppLanguage.Fr => "Aucun fichier sélectionné.",
+            AppLanguage.De => "Keine Dateien ausgewählt.",
+            AppLanguage.It => "Nessun file selezionato.",
+            _ => "No files selected."
+        };
+
 
         // Fix #4: Copy full tree + content (auto: selected if any checked, else full)
         private void miCopyFullTreeAndContent_Click(object? sender, EventArgs e)
@@ -998,17 +1066,10 @@ namespace ProjectTreeViewer
         // ───────────────────────────────────────── Stable layout (prevents MenuStrip from moving)
         private void SetupStableLayout()
         {
-            // Menu always stays on top
-            menuStripMain.Dock = DockStyle.Top;
+            // Manual layout ensures the tree never disappears under the settings panel.
+            panelSettings.AutoScroll = true;
 
-            // We manually position settings panel and tree to avoid Dock-order issues.
-            panelSettings.Dock = DockStyle.None;
-            treeProject.Dock = DockStyle.None;
-
-            panelSettings.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            treeProject.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-
-            ApplyStableLayout();
+            EnsureDockLayout();
 
             Resize -= Form1_ResizeRelayout;
             Resize += Form1_ResizeRelayout;
@@ -1018,22 +1079,16 @@ namespace ProjectTreeViewer
         }
 
         private void Form1_ResizeRelayout(object? sender, EventArgs e) => ApplyStableLayout();
+
         private void PanelSettings_VisibleChanged(object? sender, EventArgs e) => ApplyStableLayout();
 
-        private void ApplyStableLayout()
+        private void miOptions_Click(object? sender, EventArgs e)
         {
-            int top = menuStripMain.Height;
-
-            panelSettings.Location = new Point(0, top);
-            panelSettings.Width = ClientSize.Width;
-
-            int panelHeight = panelSettings.Visible ? panelSettings.Height : 0;
-
-            treeProject.Location = new Point(0, top + panelHeight);
-            treeProject.Size = new Size(ClientSize.Width, Math.Max(0, ClientSize.Height - treeProject.Top));
+            panelSettings.Visible = !panelSettings.Visible;
+            ApplyStableLayout();
         }
 
-// ───────────────────────────────────────── Root node visibility fix
+        // ───────────────────────────────────────── Root node visibility fix
         private void EnsureRootNodeVisible(string rootPath)
         {
             if (string.IsNullOrWhiteSpace(rootPath))
