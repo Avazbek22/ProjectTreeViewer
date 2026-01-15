@@ -1,8 +1,72 @@
-﻿################################################################################
-# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
-################################################################################
+﻿# ===============================
+# .NET / C#
+# ===============================
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+AnyCPU/
 
-/.idea/.idea.ProjectTreeViewer/.idea
-/.vs
-/ProjectTreeViewer/obj
-/ProjectTreeViewer/bin/Debug/net9.0-windows
+# .NET user-specific
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+
+# ===============================
+# Logs & temp
+# ===============================
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.orig
+
+# ===============================
+# NuGet
+# ===============================
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# ===============================
+# Publish output
+# ===============================
+publish/
+artifacts/
+
+# ===============================
+# OS
+# ===============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===============================
+# Test results
+# ===============================
+TestResults/
+
+# ===============================
+# WinForms / WPF specific
+# ===============================
+*.pdb
+*.cache
+
+# ===============================
+# Local configs (optional)
+# ===============================
+appsettings.Local.json
