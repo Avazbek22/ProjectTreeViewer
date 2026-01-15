@@ -8,6 +8,11 @@ public static class IconPackProvider
     public static IIconPackService CreateDefault()
     {
         var store = AssetsResourceStoreFactory.CreateEmbeddedAssetsStore();
-        return new IconPackService(store, packId: "Default");
+        return CreateDefault(store);
+    }
+
+    public static IIconPackService CreateDefault(IResourceStore store)
+    {
+        return new IconPackService(store, defaultPackId: "Default");
     }
 }

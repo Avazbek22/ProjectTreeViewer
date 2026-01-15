@@ -1,138 +1,171 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Text.Json;
 using ProjectTreeViewer.Kernel.Abstractions;
 
 namespace ProjectTreeViewer.Infrastructure.Icons;
 
 public sealed class IconPackService : IIconPackService
 {
-	private readonly IconPackManifest _manifest;
+	private readonly IResourceStore _resourceStore;
 
-	public string PackId => _manifest.PackId;
+	private readonly object _sync = new();
+	private string _packId;
+	private IconPackManifest _manifest;
 
-	public IconPackService(IResourceStore store, string packId = "Default")
+	public IconPackService(IResourceStore resourceStore, string defaultPackId = "Default")
 	{
-		if (store is null) throw new ArgumentNullException(nameof(store));
-
-		var loader = new IconPackManifestLoader(store);
-		_manifest = loader.Load(packId);
+		_resourceStore = resourceStore ?? throw new ArgumentNullException(nameof(resourceStore));
+		_packId = string.IsNullOrWhiteSpace(defaultPackId) ? "Default" : defaultPackId;
+		_manifest = LoadManifest(_packId);
 	}
 
-	public string ResolveIconKey(string itemName, bool isDirectory)
+	public string PackId
 	{
-		var nameOnly = NormalizeFileName(itemName);
+		get { lock (_sync) return _packId; }
+	}
 
-		if (isDirectory)
+	public IconPackManifest Manifest
+	{
+		get { lock (_sync) return _manifest; }
+	}
+
+	public void SetPack(string packId)
+	{
+		if (string.IsNullOrWhiteSpace(packId))
+			throw new ArgumentException("Pack id is empty.", nameof(packId));
+
+		lock (_sync)
 		{
-			if (IsGrayFolder(nameOnly))
-				return "grayFolder";
+			if (string.Equals(_packId, packId, StringComparison.OrdinalIgnoreCase))
+				return;
 
-			return "folder";
+			_packId = packId;
+			_manifest = LoadManifest(_packId);
+		}
+	}
+
+	public bool IsGrayFolderName(string folderName)
+	{
+		if (string.IsNullOrWhiteSpace(folderName))
+			return false;
+
+		var m = Manifest;
+		foreach (var n in m.GrayFolders)
+		{
+			if (folderName.Equals(n, StringComparison.OrdinalIgnoreCase))
+				return true;
 		}
 
-		// 1) fileNameToIconKey (readme, dockerfile, .gitignore и т.п.)
-		if (_manifest.FileNameToIconKey.TryGetValue(nameOnly, out var byName) && !string.IsNullOrWhiteSpace(byName))
-			return byName;
-
-		// 2) special rules (blazor .razor.cs etc)
-		var special = ResolveSpecialRules(nameOnly);
-		if (!string.IsNullOrWhiteSpace(special))
-			return special;
-
-		// 3) extension mapping
-		var ext = Path.GetExtension(nameOnly);
-		if (!string.IsNullOrWhiteSpace(ext) &&
-		    _manifest.ExtensionToIconKey.TryGetValue(ext, out var byExt) &&
-		    !string.IsNullOrWhiteSpace(byExt))
-			return byExt;
-
-		// fallback
-		if (_manifest.Icons.ContainsKey("unknownFile"))
-			return "unknownFile";
-
-		if (_manifest.Icons.ContainsKey("file"))
-			return "file";
-
-		return "text";
+		return false;
 	}
 
-	public string ResolveIconResourceId(string itemName, bool isDirectory)
+	public bool IsContentExcludedFile(string fileName)
 	{
-		var key = ResolveIconKey(itemName, isDirectory);
-		return ResolveIconResourceIdByKey(key);
-	}
-
-	public string ResolveIconResourceIdByKey(string iconKey)
-	{
-		if (string.IsNullOrWhiteSpace(iconKey))
-			iconKey = "unknownFile";
-
-		if (!_manifest.Icons.TryGetValue(iconKey, out var fileName) || string.IsNullOrWhiteSpace(fileName))
-		{
-			if (_manifest.Icons.TryGetValue("unknownFile", out var unk) && !string.IsNullOrWhiteSpace(unk))
-				fileName = unk;
-			else if (_manifest.Icons.TryGetValue("file", out var f) && !string.IsNullOrWhiteSpace(f))
-				fileName = f;
-			else
-				fileName = string.Empty;
-		}
-
 		if (string.IsNullOrWhiteSpace(fileName))
-			return $"IconPacks/{_manifest.PackId}/icons/uknownFile24.png";
+			return false;
 
-		return $"IconPacks/{_manifest.PackId}/icons/{fileName}";
-	}
-
-	public bool IsContentExcludedByName(string fileName)
-	{
-		var nameOnly = NormalizeFileName(fileName);
-		var ext = Path.GetExtension(nameOnly);
+		var ext = Path.GetExtension(fileName);
 		if (string.IsNullOrWhiteSpace(ext))
 			return false;
 
-		return _manifest.ContentExcludedExtensions.Contains(ext);
-	}
-
-	private bool IsGrayFolder(string folderName)
-	{
-		if (_manifest.GrayFolders.Count == 0) return false;
-
-		return _manifest.GrayFolders.Any(x =>
-			string.Equals(x, folderName, StringComparison.OrdinalIgnoreCase));
-	}
-
-	private string ResolveSpecialRules(string fileName)
-	{
-		var rules = _manifest.SpecialRules;
-		if (rules.BlazorCodeBehindSuffixes.Count == 0)
-			return string.Empty;
-
-		foreach (var suffix in rules.BlazorCodeBehindSuffixes)
+		var m = Manifest;
+		foreach (var e in m.ContentExcludedExtensions)
 		{
-			if (string.IsNullOrWhiteSpace(suffix))
-				continue;
+			if (ext.Equals(e, StringComparison.OrdinalIgnoreCase))
+				return true;
+		}
 
-			if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+		return false;
+	}
+
+	public string GetIconResourceIdForPath(string fullPath, bool isDirectory)
+	{
+		var name = isDirectory ? Path.GetFileName(fullPath) : Path.GetFileName(fullPath);
+		if (string.IsNullOrWhiteSpace(name))
+			name = fullPath;
+
+		var iconKey = isDirectory ? GetDirectoryIconKey(name) : GetFileIconKey(name);
+		return ToResourceId(iconKey);
+	}
+
+	private string GetDirectoryIconKey(string directoryName)
+	{
+		if (IsGrayFolderName(directoryName))
+			return "grayFolder";
+
+		return "folder";
+	}
+
+	private string GetFileIconKey(string fileName)
+	{
+		var m = Manifest;
+
+		// 1) filename rules
+		if (m.FileNameToIconKey.TryGetValue(fileName, out var byName))
+			return byName;
+
+		var lower = fileName.ToLowerInvariant();
+		if (m.FileNameToIconKey.TryGetValue(lower, out var byLowerName))
+			return byLowerName;
+
+		// 2) special rules: blazor code-behind
+		foreach (var suf in m.SpecialRules.BlazorCodeBehindSuffixes)
+		{
+			if (!string.IsNullOrWhiteSpace(suf) && lower.EndsWith(suf, StringComparison.OrdinalIgnoreCase))
 				return "blazor";
 		}
 
-		return string.Empty;
+		// 3) extension rules
+		var ext = Path.GetExtension(fileName);
+		if (!string.IsNullOrWhiteSpace(ext) && m.ExtensionToIconKey.TryGetValue(ext, out var byExt))
+			return byExt;
+
+		// fallback
+		if (m.Icons.ContainsKey("file"))
+			return "file";
+
+		return "unknownFile";
 	}
 
-	private static string NormalizeFileName(string value)
+	private string ToResourceId(string iconKey)
 	{
-		var name = string.IsNullOrWhiteSpace(value) ? string.Empty : value;
+		var m = Manifest;
+
+		if (!m.Icons.TryGetValue(iconKey, out var file))
+		{
+			if (!m.Icons.TryGetValue("unknownFile", out file))
+				file = "uknownFile24.png";
+		}
+
+		return $"IconPacks/{PackId}/icons/{file}";
+	}
+
+	private IconPackManifest LoadManifest(string packId)
+	{
+		var resourceId = $"IconPacks/{packId}/manifest.json";
+
+		if (!_resourceStore.TryOpenRead(resourceId, out var stream))
+			return IconPackManifest.Empty(packId);
 
 		try
 		{
-			name = Path.GetFileName(name);
+			using (stream)
+			{
+				var parsed = JsonSerializer.Deserialize<IconPackManifest>(stream, new JsonSerializerOptions
+				{
+					ReadCommentHandling = JsonCommentHandling.Skip,
+					AllowTrailingCommas = true,
+					PropertyNameCaseInsensitive = true
+				});
+
+				return parsed?.Normalize(packId) ?? IconPackManifest.Empty(packId);
+			}
 		}
 		catch
 		{
-			// ignore
+			return IconPackManifest.Empty(packId);
 		}
-
-		return name.Trim().ToLowerInvariant();
 	}
 }

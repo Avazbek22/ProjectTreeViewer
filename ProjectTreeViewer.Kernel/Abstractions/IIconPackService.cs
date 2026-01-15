@@ -3,12 +3,13 @@
 public interface IIconPackService
 {
     string PackId { get; }
+    IconPackManifest Manifest { get; }
 
-    string ResolveIconKey(string itemName, bool isDirectory);
+    void SetPack(string packId);
 
-    string ResolveIconResourceId(string itemName, bool isDirectory);
+    string GetIconResourceIdForPath(string fullPath, bool isDirectory);
 
-    string ResolveIconResourceIdByKey(string iconKey);
+    bool IsGrayFolderName(string folderName);
 
-    bool IsContentExcludedByName(string fileName);
+    bool IsContentExcludedFile(string fileName);
 }
