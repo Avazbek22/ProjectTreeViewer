@@ -8,6 +8,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ProjectTreeViewer.Kernel\ProjectTreeViewer.Kernel.csproj" />
+        <ProjectReference Include="..\ProjectTreeViewer.Infrastructure\ProjectTreeViewer.Infrastructure.csproj" />
+        <ProjectReference Include="..\ProjectTreeViewer.Assets\ProjectTreeViewer.Assets.csproj" />
     </ItemGroup>
 
 </Project>
