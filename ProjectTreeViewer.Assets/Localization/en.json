@@ -1,0 +1,50 @@
+﻿{
+  "Menu.File": "File",
+  "Menu.File.Open": "Open folder...",
+  "Menu.File.Refresh": "Refresh",
+  "Menu.File.Exit": "Exit",
+
+  "Menu.Copy": "Copy",
+  "Menu.Copy.FullTree": "Copy full tree",
+  "Menu.Copy.SelectedTree": "Copy selected tree",
+  "Menu.Copy.SelectedContent": "Copy content of selected files",
+  "Menu.Copy.FullTreeAndContent": "Copy full tree and content",
+
+  "Menu.View": "View",
+  "Menu.View.ExpandAll": "Expand all",
+  "Menu.View.CollapseAll": "Collapse all",
+  "Menu.View.ZoomIn": "Zoom in",
+  "Menu.View.ZoomOut": "Zoom out",
+  "Menu.View.ZoomReset": "Reset zoom",
+
+  "Menu.Options": "Options",
+  "Menu.Language": "Language",
+  "Menu.Help": "Help",
+  "Menu.Help.About": "About",
+
+  "Title.Default": "Project Tree Viewer by Avazbek",
+  "Title.WithPath": "Project Tree Viewer - {0}",
+
+  "Dialog.SelectRoot": "Select the project root folder",
+
+  "Settings.IgnoreTitle": "Ignore:",
+  "Settings.IgnoreBin": "Ignore all bin folders",
+  "Settings.IgnoreObj": "Ignore all obj folders",
+  "Settings.IgnoreDot": "Ignore dot files/folders",
+  "Settings.All": "All",
+  "Settings.Extensions": "File types:",
+  "Settings.RootFolders": "Top-level folders:",
+  "Settings.Font": "Tree font:",
+  "Settings.Apply": "Apply settings",
+
+  "Msg.ErrorTitle": "Error",
+  "Msg.InfoTitle": "Info",
+  "Msg.PathNotFound": "Folder not found:\n{0}",
+  "Msg.NoCheckedTree": "No checked files or folders (use checkboxes in the tree).",
+  "Msg.NoCheckedFiles": "No checked files (checkboxes must be on files).",
+  "Msg.NoCheckedFilesShort": "No files selected.",
+  "Msg.NoTextContent": "No text content to copy (selected files are empty or binary).",
+  "Msg.ElevationCanceled": "Elevation was canceled. The folder may not be fully accessible.",
+  "Msg.AccessDeniedRoot": "Access denied for the selected folder. Try running as administrator.",
+  "Msg.AboutStub": "Program information will be here (stub)."
+}

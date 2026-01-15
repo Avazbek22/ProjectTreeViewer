@@ -1,0 +1,50 @@
+﻿{
+  "Menu.File": "Файл",
+  "Menu.File.Open": "Кушодани ҷузвдон...",
+  "Menu.File.Refresh": "Навсозӣ",
+  "Menu.File.Exit": "Баромад",
+
+  "Menu.Copy": "Нусха",
+  "Menu.Copy.FullTree": "Нусхаи дарахти пурра",
+  "Menu.Copy.SelectedTree": "Нусхаи дарахти интихобшуда",
+  "Menu.Copy.SelectedContent": "Нусхаи мундариҷаи файлҳои интихобшуда",
+  "Menu.Copy.FullTreeAndContent": "Нусхаи дарахти пурра ва мундариҷа",
+
+  "Menu.View": "Намоиш",
+  "Menu.View.ExpandAll": "Кушодани ҳама",
+  "Menu.View.CollapseAll": "Пӯшидани ҳама",
+  "Menu.View.ZoomIn": "Калон кардан",
+  "Menu.View.ZoomOut": "Хурд кардан",
+  "Menu.View.ZoomReset": "Барқарор кардани миқёс",
+
+  "Menu.Options": "Танзимот",
+  "Menu.Language": "Забон",
+  "Menu.Help": "Ёрӣ",
+  "Menu.Help.About": "Дар бораи барнома",
+
+  "Title.Default": "Project Tree Viewer by Avazbek",
+  "Title.WithPath": "Project Tree Viewer - {0}",
+
+  "Dialog.SelectRoot": "Ҷузвдони решаи лоиҳаро интихоб кунед",
+
+  "Settings.IgnoreTitle": "Нодида гирифтан:",
+  "Settings.IgnoreBin": "Нодида гирифтани ҷузвдонҳои bin",
+  "Settings.IgnoreObj": "Нодида гирифтани ҷузвдонҳои obj",
+  "Settings.IgnoreDot": "Нодида гирифтани файл/ҷузвдонҳои пинҳонӣ (бо нуқта оғоз мешаванд)",
+  "Settings.All": "Ҳама",
+  "Settings.Extensions": "Навъҳои файл:",
+  "Settings.RootFolders": "Ҷузвдонҳои сатҳи боло:",
+  "Settings.Font": "Шрифти дарахт:",
+  "Settings.Apply": "Истифодаи танзимот",
+
+  "Msg.ErrorTitle": "Хато",
+  "Msg.InfoTitle": "Маълумот",
+  "Msg.PathNotFound": "Ҷузвдон ёфт нашуд:\n{0}",
+  "Msg.NoCheckedTree": "Файл ё ҷузвдони интихобшуда нест (қуттиҳои интихобро истифода баред).",
+  "Msg.NoCheckedFiles": "Файлҳои интихобшуда нестанд (қуттиҳо бояд дар файлҳо бошанд).",
+  "Msg.NoCheckedFilesShort": "Ягон файл интихоб нашудааст.",
+  "Msg.NoTextContent": "Барои нусхабардорӣ мундариҷаи матнӣ нест (файлҳо холӣ ё бинарӣ мебошанд).",
+  "Msg.ElevationCanceled": "Баланд бардоштани ҳуқуқҳо бекор шуд. Шояд ҷузвдон пурра дастрас набошад.",
+  "Msg.AccessDeniedRoot": "Ба ҷузвдони интихобшуда дастрасӣ нест. Бо ҳуқуқи админ оғоз кунед.",
+  "Msg.AboutStub": "Дар ин ҷо маълумоти барнома хоҳад буд (stub)."
+}

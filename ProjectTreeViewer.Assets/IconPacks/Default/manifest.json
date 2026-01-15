@@ -1,0 +1,239 @@
+﻿{
+  "packId": "Default",
+  "icons": {
+    "folder": "folder24.png",
+    "grayFolder": "grayFolder24.png",
+    "unknownFile": "uknownFile24.png",
+    "file": "text24.png",
+    "text": "text24.png",
+
+    "csharp": "csharp24.png",
+    "python": "python24.png",
+    "pyc": "pyc24.png",
+    "c": "c24.png",
+    "cpp": "cpp24.png",
+    "go": "go24.png",
+    "rust": "rust24.png",
+    "java": "java24.png",
+    "kotlin": "kotlin24.png",
+    "swift": "swift24.png",
+    "php": "php24.png",
+    "js": "js24.png",
+    "typescript": "typescript24.png",
+    "html": "html24.png",
+    "css": "css24.png",
+    "json": "json24.png",
+    "xml": "xml24.png",
+    "xaml": "xaml24.png",
+    "sql": "sql24.png",
+    "md": "md24.png",
+    "sln": "sln24.png",
+    "dll": "dll24.png",
+    "exe": "exe24.png",
+    "pdf": "pdf24.png",
+    "picture": "picture24.png",
+    "video": "video24.png",
+    "audio": "audio24.png",
+    "git": "git24.png",
+    "conf": "conf24.png",
+
+    "blazor": "blazor48.png",
+    "excel": "excel48.png",
+    "word": "word48.png",
+    "access": "access48.png",
+    "powerpoint": "powerpoint48.png"
+  },
+
+  "grayFolders": [
+    "bin",
+    "obj",
+    ".git",
+    "node_modules",
+    ".idea",
+    ".vs",
+    ".vscode"
+  ],
+
+  "specialRules": {
+    "blazorCodeBehindSuffixes": [
+      ".razor.cs",
+      ".razor.css",
+      ".razor.js",
+      ".razor.ts"
+    ]
+  },
+
+  "extensionToIconKey": {
+    ".sln": "sln",
+    ".cs": "csharp",
+    ".csx": "csharp",
+    ".csproj": "csharp",
+    ".props": "conf",
+    ".targets": "conf",
+    ".editorconfig": "conf",
+    ".resx": "xml",
+    ".config": "conf",
+
+    ".razor": "blazor",
+
+    ".c": "c",
+    ".h": "cpp",
+    ".hpp": "cpp",
+    ".hh": "cpp",
+    ".hxx": "cpp",
+    ".cpp": "cpp",
+    ".cc": "cpp",
+    ".cxx": "cpp",
+
+    ".py": "python",
+    ".pyw": "python",
+    ".pyi": "python",
+    ".pyc": "pyc",
+    ".pyo": "pyc",
+
+    ".js": "js",
+    ".mjs": "js",
+    ".cjs": "js",
+    ".jsx": "js",
+    ".ts": "typescript",
+    ".tsx": "typescript",
+
+    ".html": "html",
+    ".htm": "html",
+    ".css": "css",
+    ".scss": "css",
+    ".sass": "css",
+    ".less": "css",
+
+    ".json": "json",
+    ".jsonc": "json",
+    ".xml": "xml",
+    ".xsd": "xml",
+    ".xslt": "xml",
+    ".xsl": "xml",
+    ".xaml": "xaml",
+
+    ".sql": "sql",
+
+    ".md": "md",
+    ".markdown": "md",
+    ".txt": "text",
+    ".log": "text",
+    ".rtf": "word",
+    ".csv": "text",
+    ".tsv": "text",
+    ".yml": "conf",
+    ".yaml": "conf",
+    ".toml": "conf",
+    ".ini": "conf",
+    ".cfg": "conf",
+    ".conf": "conf",
+
+    ".xls": "excel",
+    ".xlsx": "excel",
+    ".xlsm": "excel",
+    ".xlt": "excel",
+    ".xltx": "excel",
+
+    ".doc": "word",
+    ".docx": "word",
+
+    ".ppt": "powerpoint",
+    ".pptx": "powerpoint",
+    ".pps": "powerpoint",
+    ".ppsx": "powerpoint",
+
+    ".mdb": "access",
+    ".accdb": "access",
+
+    ".go": "go",
+    ".rs": "rust",
+    ".java": "java",
+    ".kt": "kotlin",
+    ".kts": "kotlin",
+    ".swift": "swift",
+    ".php": "php",
+
+    ".dll": "dll",
+    ".exe": "exe",
+    ".msi": "exe",
+    ".bat": "conf",
+    ".cmd": "conf",
+    ".ps1": "conf",
+    ".sh": "conf",
+
+    ".pdf": "pdf",
+
+    ".png": "picture",
+    ".jpg": "picture",
+    ".jpeg": "picture",
+    ".gif": "picture",
+    ".bmp": "picture",
+    ".tif": "picture",
+    ".tiff": "picture",
+    ".webp": "picture",
+    ".svg": "picture",
+    ".ico": "picture",
+
+    ".mp4": "video",
+    ".mkv": "video",
+    ".mov": "video",
+    ".avi": "video",
+    ".webm": "video",
+    ".wmv": "video",
+    ".m4v": "video",
+    ".flv": "video",
+
+    ".mp3": "audio",
+    ".wav": "audio",
+    ".flac": "audio",
+    ".aac": "audio",
+    ".ogg": "audio",
+    ".m4a": "audio",
+    ".wma": "audio",
+    ".opus": "audio",
+    ".aiff": "audio"
+  },
+
+  "fileNameToIconKey": {
+    "readme": "md",
+    "readme.md": "md",
+    "license": "text",
+    "license.txt": "text",
+    "dockerfile": "conf",
+    "makefile": "conf",
+
+    ".gitignore": "git",
+    ".gitattributes": "git",
+    ".gitmodules": "git",
+    ".gitkeep": "git",
+
+    ".env": "conf",
+    ".env.example": "conf",
+    "nuget.config": "conf",
+    "global.json": "json",
+    "appsettings.json": "json",
+    "appsettings.development.json": "json"
+  },
+
+  "contentExcludedExtensions": [
+    ".dll", ".exe", ".msi",
+
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp", ".svg", ".ico",
+
+    ".mp4", ".mkv", ".mov", ".avi", ".webm", ".wmv", ".m4v", ".flv",
+
+    ".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a", ".wma", ".opus", ".aiff",
+
+    ".pdf",
+    ".doc", ".docx", ".dot", ".dotx",
+    ".xls", ".xlsx", ".xlsm", ".xlt", ".xltx",
+    ".ppt", ".pptx", ".pps", ".ppsx",
+
+    ".mdb", ".accdb",
+
+    ".zip", ".7z", ".rar", ".tar", ".gz",
+
+    ".pdb"
+  ]
+}

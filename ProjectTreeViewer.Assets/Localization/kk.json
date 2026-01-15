@@ -1,0 +1,50 @@
+﻿{
+  "Menu.File": "Файл",
+  "Menu.File.Open": "Қалтаны ашу...",
+  "Menu.File.Refresh": "Жаңарту",
+  "Menu.File.Exit": "Шығу",
+
+  "Menu.Copy": "Көшіру",
+  "Menu.Copy.FullTree": "Толық ағашты көшіру",
+  "Menu.Copy.SelectedTree": "Таңдалған ағашты көшіру",
+  "Menu.Copy.SelectedContent": "Таңдалған файлдардың мәтінін көшіру",
+  "Menu.Copy.FullTreeAndContent": "Толық ағаш пен мазмұнын көшіру",
+
+  "Menu.View": "Көрініс",
+  "Menu.View.ExpandAll": "Барлығын ашу",
+  "Menu.View.CollapseAll": "Барлығын жабу",
+  "Menu.View.ZoomIn": "Үлкейту",
+  "Menu.View.ZoomOut": "Кішірейту",
+  "Menu.View.ZoomReset": "Масштабты қалпына келтіру",
+
+  "Menu.Options": "Параметрлер",
+  "Menu.Language": "Тіл",
+  "Menu.Help": "Анықтама",
+  "Menu.Help.About": "Бағдарлама туралы",
+
+  "Title.Default": "Project Tree Viewer by Avazbek",
+  "Title.WithPath": "Project Tree Viewer - {0}",
+
+  "Dialog.SelectRoot": "Жоба түбір қалтасын таңдаңыз",
+
+  "Settings.IgnoreTitle": "Елемеу:",
+  "Settings.IgnoreBin": "bin қалталарын елемеу",
+  "Settings.IgnoreObj": "obj қалталарын елемеу",
+  "Settings.IgnoreDot": "Нүктемен басталатын жасырын файл/қалталарды елемеу",
+  "Settings.All": "Барлығы",
+  "Settings.Extensions": "Файл түрлері:",
+  "Settings.RootFolders": "Жоғарғы деңгей қалталары:",
+  "Settings.Font": "Ағаш қарпі:",
+  "Settings.Apply": "Қолдану",
+
+  "Msg.ErrorTitle": "Қате",
+  "Msg.InfoTitle": "Ақпарат",
+  "Msg.PathNotFound": "Қалта табылмады:\n{0}",
+  "Msg.NoCheckedTree": "Таңдалған файл/қалта жоқ (ағаштағы белгілерді қолданыңыз).",
+  "Msg.NoCheckedFiles": "Таңдалған файл жоқ (белгілер файлда болуы керек).",
+  "Msg.NoCheckedFilesShort": "Ешбір файл таңдалмады.",
+  "Msg.NoTextContent": "Көшіруге мәтіндік мазмұн жоқ (файлдар бос немесе бинарлы).",
+  "Msg.ElevationCanceled": "Әкімші құқықтарын көтеру тоқтатылды. Қалта толық ашылмауы мүмкін.",
+  "Msg.AccessDeniedRoot": "Таңдалған қалтаға рұқсат жоқ. Әкімші ретінде іске қосыңыз.",
+  "Msg.AboutStub": "Мұнда бағдарлама туралы ақпарат болады (stub)."
+}
