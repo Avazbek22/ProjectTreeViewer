@@ -12,6 +12,6 @@ internal static class Program
 
 		var options = CommandLineOptions.Parse(args);
 		var services = WinFormsCompositionRoot.CreateDefault(options);
-		Application.Run(new Form1(options, services));
+		System.Windows.Forms.Application.Run(new Form1(options, services));
 	}
 }
