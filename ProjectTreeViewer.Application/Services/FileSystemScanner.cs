@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ProjectTreeViewer.Kernel.Abstractions;
 
 namespace ProjectTreeViewer;
 
-public sealed class FileSystemScanner
+public sealed class FileSystemScanner : IFileSystemScanner
 {
 	public bool CanReadRoot(string rootPath)
 	{

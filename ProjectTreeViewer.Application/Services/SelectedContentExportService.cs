@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ProjectTreeViewer.Kernel.Abstractions;
 
 namespace ProjectTreeViewer;
 
-public sealed class SelectedContentExportService
+public sealed class SelectedContentExportService : ISelectedContentExportService
 {
     public string Build(IEnumerable<string> filePaths)
     {

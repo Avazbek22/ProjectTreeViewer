@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ProjectTreeViewer.Kernel.Abstractions;
 
 namespace ProjectTreeViewer;
 
-public sealed class TreeBuilder
+public sealed class TreeBuilder : ITreeBuilder
 {
 	public TreeBuildResult Build(string rootPath, TreeFilterOptions options)
 	{
