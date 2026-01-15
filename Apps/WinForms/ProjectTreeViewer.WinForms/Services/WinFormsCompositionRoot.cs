@@ -21,7 +21,7 @@ public static class WinFormsCompositionRoot
 		var scanOptionsUseCase = new ScanOptionsUseCase(scanner);
 		var buildTreeUseCase = new BuildTreeUseCase(treeBuilder, treePresenter);
 		var treeExportService = new TreeExportService();
-		var contentExportService = new SelectedContentExportService(localization);
+		var contentExportService = new SelectedContentExportService();
 		var treeAndContentExportService = new TreeAndContentExportService(treeExportService, contentExportService);
 		var renderer = new TreeViewRenderer();
 		var selection = new TreeSelectionService();
