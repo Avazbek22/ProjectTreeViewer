@@ -1,0 +1,10 @@
+{
+  "profiles": [
+    {
+      "name": "Default",
+      "ignoreBin": true,
+      "ignoreObj": true,
+      "ignoreDot": true
+    }
+  ]
+}
