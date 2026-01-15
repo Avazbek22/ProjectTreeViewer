@@ -46,5 +46,14 @@
   "Msg.NoTextContent": "Нет текстового содержимого для копирования (выбранные файлы пустые или бинарные).",
   "Msg.ElevationCanceled": "Повышение прав отменено. Папка может открыться не полностью.",
   "Msg.AccessDeniedRoot": "Нет доступа к выбранной папке. Попробуйте запустить приложение от имени администратора.",
-  "Msg.AboutStub": "Здесь будет информация о программе (заглушка)."
+  "Msg.AboutStub": "Здесь будет информация о программе (заглушка).",
+
+  "Language.Ru": "Русский",
+  "Language.En": "English",
+  "Language.Uz": "O‘zbek",
+  "Language.Tg": "Тоҷикӣ",
+  "Language.Kk": "Қазақша",
+  "Language.Fr": "Français",
+  "Language.De": "Deutsch",
+  "Language.It": "Italiano"
 }

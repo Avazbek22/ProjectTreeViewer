@@ -337,7 +337,7 @@ namespace ProjectTreeViewer.WinForms
             miHelpAbout.Text = _localization["Menu.Help.About"];
 
             // Settings panel
-            labelIgnore.Text = _localization["Settings.Ignore"];
+            labelIgnore.Text = _localization["Settings.IgnoreTitle"];
             checkBoxAll.Text = _localization["Settings.All"];
             labelExtensions.Text = _localization["Settings.Extensions"];
             labelRootFolders.Text = _localization["Settings.RootFolders"];

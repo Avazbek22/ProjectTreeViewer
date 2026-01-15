@@ -46,5 +46,14 @@
   "Msg.NoTextContent": "Барои нусхабардорӣ мундариҷаи матнӣ нест (файлҳо холӣ ё бинарӣ мебошанд).",
   "Msg.ElevationCanceled": "Баланд бардоштани ҳуқуқҳо бекор шуд. Шояд ҷузвдон пурра дастрас набошад.",
   "Msg.AccessDeniedRoot": "Ба ҷузвдони интихобшуда дастрасӣ нест. Бо ҳуқуқи админ оғоз кунед.",
-  "Msg.AboutStub": "Дар ин ҷо маълумоти барнома хоҳад буд (stub)."
+  "Msg.AboutStub": "Дар ин ҷо маълумоти барнома хоҳад буд (stub).",
+
+  "Language.Ru": "Русский",
+  "Language.En": "English",
+  "Language.Uz": "O‘zbek",
+  "Language.Tg": "Тоҷикӣ",
+  "Language.Kk": "Қазақша",
+  "Language.Fr": "Français",
+  "Language.De": "Deutsch",
+  "Language.It": "Italiano"
 }

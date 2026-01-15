@@ -46,5 +46,14 @@
   "Msg.NoTextContent": "Көшіруге мәтіндік мазмұн жоқ (файлдар бос немесе бинарлы).",
   "Msg.ElevationCanceled": "Әкімші құқықтарын көтеру тоқтатылды. Қалта толық ашылмауы мүмкін.",
   "Msg.AccessDeniedRoot": "Таңдалған қалтаға рұқсат жоқ. Әкімші ретінде іске қосыңыз.",
-  "Msg.AboutStub": "Мұнда бағдарлама туралы ақпарат болады (stub)."
+  "Msg.AboutStub": "Мұнда бағдарлама туралы ақпарат болады (stub).",
+
+  "Language.Ru": "Русский",
+  "Language.En": "English",
+  "Language.Uz": "O‘zbek",
+  "Language.Tg": "Тоҷикӣ",
+  "Language.Kk": "Қазақша",
+  "Language.Fr": "Français",
+  "Language.De": "Deutsch",
+  "Language.It": "Italiano"
 }
