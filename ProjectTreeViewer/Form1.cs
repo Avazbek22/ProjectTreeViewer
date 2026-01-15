@@ -28,284 +28,13 @@ namespace ProjectTreeViewer
         private readonly TreeExportService _treeExport = new();
         private readonly SelectedContentExportService _contentExport = new();
 
+        private readonly TreeIconService _iconService = new();
+        private readonly ContentReadService _contentReader = new();
+
         private bool _elevationAttempted;
 
-        private const string
-            ClipboardBlankLine = "\u00A0"; // NBSP: looks like an empty line, but does NOT collapse on paste
-
+        private const string ClipboardBlankLine = "\u00A0"; // NBSP: визуально пустая строка, но не схлопывается при вставке
         private static void AppendClipboardBlankLine(StringBuilder sb) => sb.AppendLine(ClipboardBlankLine);
-
-        // ───────────────────────────────────────── Tree icons
-        // NOTE:
-        // - TreeView does NOT scale icons with font zoom automatically.
-        // - Icons are strictly controlled by ImageList.ImageSize (here 24x24).
-        // - If later you want icon scaling with zoom, we will rebuild ImageList on zoom.
-        private const int TreeIconSize = 24;
-
-        private ImageList? _treeImages;
-
-        // Keys are internal IDs inside ImageList.
-        // Keep them stable — other code relies on these string keys.
-        private const string IconKeyFolder = "folder";
-        private const string IconKeyGrayFolder = "grayFolder";
-        private const string IconKeyUnknownFile = "unknownFile";
-        private const string IconKeyFile = "file"; // generic file icon (we map it to text icon for readability)
-        private const string IconKeyText = "text";
-        private const string IconKeyCSharp = "csharp";
-        private const string IconKeyPython = "python";
-        private const string IconKeyPyc = "pyc";
-        private const string IconKeyC = "c";
-        private const string IconKeyCpp = "cpp";
-        private const string IconKeyGo = "go";
-        private const string IconKeyRust = "rust";
-        private const string IconKeyJava = "java";
-        private const string IconKeyKotlin = "kotlin";
-        private const string IconKeySwift = "swift";
-        private const string IconKeyPhp = "php";
-        private const string IconKeyJs = "js";
-        private const string IconKeyTypeScript = "typescript";
-        private const string IconKeyHtml = "html";
-        private const string IconKeyCss = "css";
-        private const string IconKeyJson = "json";
-        private const string IconKeyXml = "xml";
-        private const string IconKeyXaml = "xaml";
-        private const string IconKeySql = "sql";
-        private const string IconKeyMd = "md";
-        private const string IconKeySln = "sln";
-        private const string IconKeyDll = "dll";
-        private const string IconKeyExe = "exe";
-        private const string IconKeyPdf = "pdf";
-        private const string IconKeyPicture = "picture";
-        private const string IconKeyVideo = "video";
-        private const string IconKeyAudio = "audio";
-        private const string IconKeyGit = "git";
-        private const string IconKeyConf = "conf";
-
-        // New icons you added
-        private const string IconKeyBlazor = "blazor";
-        private const string IconKeyExcel = "excel";
-        private const string IconKeyWord = "word";
-        private const string IconKeyAccess = "access";
-        private const string IconKeyPowerPoint = "powerpoint";
-
-        // "Unwanted" folders we want to show as gray even if user decided to include them.
-        // This is purely visual, not filtering logic.
-        private static readonly HashSet<string> _grayFolderNames = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "bin", "obj",
-            ".git",
-            "node_modules",
-            ".idea",
-            ".vs",
-            ".vscode"
-        };
-
-        // Main association: extension -> icon key.
-        // The goal is MAX coverage with the icons you have.
-        private static readonly Dictionary<string, string> _extensionToIconKey = new(StringComparer.OrdinalIgnoreCase)
-        {
-            // Solutions / .NET
-            [".sln"] = IconKeySln,
-            [".cs"] = IconKeyCSharp,
-            [".csx"] = IconKeyCSharp,
-            [".csproj"] = IconKeyCSharp,
-            [".props"] = IconKeyConf,
-            [".targets"] = IconKeyConf,
-            [".editorconfig"] = IconKeyConf,
-            [".resx"] = IconKeyXml,
-            [".config"] = IconKeyConf,
-
-            // Blazor
-            [".razor"] = IconKeyBlazor,
-
-            // C / C++
-            [".c"] = IconKeyC,
-            [".h"] = IconKeyCpp, // header file: could be C or C++ — using cpp icon as "generic native"
-            [".hpp"] = IconKeyCpp,
-            [".hh"] = IconKeyCpp,
-            [".hxx"] = IconKeyCpp,
-            [".cpp"] = IconKeyCpp,
-            [".cc"] = IconKeyCpp,
-            [".cxx"] = IconKeyCpp,
-
-            // Python
-            [".py"] = IconKeyPython,
-            [".pyw"] = IconKeyPython,
-            [".pyi"] = IconKeyPython,
-            [".pyc"] = IconKeyPyc,
-            [".pyo"] = IconKeyPyc,
-
-            // JS / TS
-            [".js"] = IconKeyJs,
-            [".mjs"] = IconKeyJs,
-            [".cjs"] = IconKeyJs,
-            [".jsx"] = IconKeyJs,
-            [".ts"] = IconKeyTypeScript,
-            [".tsx"] = IconKeyTypeScript,
-
-            // Web
-            [".html"] = IconKeyHtml,
-            [".htm"] = IconKeyHtml,
-            [".css"] = IconKeyCss,
-            [".scss"] = IconKeyCss,
-            [".sass"] = IconKeyCss,
-            [".less"] = IconKeyCss,
-
-            // Data / Markup
-            [".json"] = IconKeyJson,
-            [".jsonc"] = IconKeyJson,
-            [".xml"] = IconKeyXml,
-            [".xsd"] = IconKeyXml,
-            [".xslt"] = IconKeyXml,
-            [".xsl"] = IconKeyXml,
-            [".xaml"] = IconKeyXaml,
-
-            // DB / SQL
-            [".sql"] = IconKeySql,
-
-            // Docs / text
-            [".md"] = IconKeyMd,
-            [".markdown"] = IconKeyMd,
-            [".txt"] = IconKeyText,
-            [".log"] = IconKeyText,
-            [".rtf"] = IconKeyWord,
-            [".csv"] = IconKeyText,
-            [".tsv"] = IconKeyText,
-            [".yml"] = IconKeyConf,
-            [".yaml"] = IconKeyConf,
-            [".toml"] = IconKeyConf,
-            [".ini"] = IconKeyConf,
-            [".cfg"] = IconKeyConf,
-            [".conf"] = IconKeyConf,
-
-            // Office
-            [".xls"] = IconKeyExcel,
-            [".xlsx"] = IconKeyExcel,
-            [".xlsm"] = IconKeyExcel,
-            [".xlt"] = IconKeyExcel,
-            [".xltx"] = IconKeyExcel,
-            [".doc"] = IconKeyWord,
-            [".docx"] = IconKeyWord,
-            [".ppt"] = IconKeyPowerPoint,
-            [".pptx"] = IconKeyPowerPoint,
-            [".pps"] = IconKeyPowerPoint,
-            [".ppsx"] = IconKeyPowerPoint,
-            [".mdb"] = IconKeyAccess,
-            [".accdb"] = IconKeyAccess,
-
-            // Languages
-            [".go"] = IconKeyGo,
-            [".rs"] = IconKeyRust,
-            [".java"] = IconKeyJava,
-            [".kt"] = IconKeyKotlin,
-            [".kts"] = IconKeyKotlin,
-            [".swift"] = IconKeySwift,
-            [".php"] = IconKeyPhp,
-
-            // Binaries
-            [".dll"] = IconKeyDll,
-            [".exe"] = IconKeyExe,
-            [".msi"] = IconKeyExe,
-            [".bat"] = IconKeyConf,
-            [".cmd"] = IconKeyConf,
-            [".ps1"] = IconKeyConf,
-            [".sh"] = IconKeyConf,
-
-            // PDF
-            [".pdf"] = IconKeyPdf,
-
-            // Pictures
-            [".png"] = IconKeyPicture,
-            [".jpg"] = IconKeyPicture,
-            [".jpeg"] = IconKeyPicture,
-            [".gif"] = IconKeyPicture,
-            [".bmp"] = IconKeyPicture,
-            [".tif"] = IconKeyPicture,
-            [".tiff"] = IconKeyPicture,
-            [".webp"] = IconKeyPicture,
-            [".svg"] = IconKeyPicture,
-            [".ico"] = IconKeyPicture,
-
-            // Video
-            [".mp4"] = IconKeyVideo,
-            [".mkv"] = IconKeyVideo,
-            [".mov"] = IconKeyVideo,
-            [".avi"] = IconKeyVideo,
-            [".webm"] = IconKeyVideo,
-            [".wmv"] = IconKeyVideo,
-            [".m4v"] = IconKeyVideo,
-            [".flv"] = IconKeyVideo,
-
-            // Audio
-            [".mp3"] = IconKeyAudio,
-            [".wav"] = IconKeyAudio,
-            [".flac"] = IconKeyAudio,
-            [".aac"] = IconKeyAudio,
-            [".ogg"] = IconKeyAudio,
-            [".m4a"] = IconKeyAudio,
-            [".wma"] = IconKeyAudio,
-            [".opus"] = IconKeyAudio,
-            [".aiff"] = IconKeyAudio,
-        };
-
-        // File name based associations (important for dotfiles and extension-less files).
-        // NOTE:
-        // - If IgnoreDot is enabled in your TreeBuilder, dotfiles might not appear at all.
-        // - Still keeping mappings here for maximum coverage when they do appear.
-        private static readonly Dictionary<string, string> _fileNameToIconKey = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["readme"] = IconKeyMd,
-            ["readme.md"] = IconKeyMd,
-            ["license"] = IconKeyText,
-            ["license.txt"] = IconKeyText,
-            ["dockerfile"] = IconKeyConf,
-            ["makefile"] = IconKeyConf,
-
-            // Git specific
-            [".gitignore"] = IconKeyGit,
-            [".gitattributes"] = IconKeyGit,
-            [".gitmodules"] = IconKeyGit,
-            [".gitkeep"] = IconKeyGit,
-
-            // Common configs
-            [".env"] = IconKeyConf,
-            [".env.example"] = IconKeyConf,
-            ["nuget.config"] = IconKeyConf,
-            ["global.json"] = IconKeyJson,
-            ["appsettings.json"] = IconKeyJson,
-            ["appsettings.development.json"] = IconKeyJson,
-        };
-
-        private static readonly HashSet<string> _contentExcludedExtensions = new(StringComparer.OrdinalIgnoreCase)
-        {
-            // Executables / binaries
-            ".dll", ".exe", ".msi",
-
-            // Images
-            ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp", ".svg", ".ico",
-
-            // Video
-            ".mp4", ".mkv", ".mov", ".avi", ".webm", ".wmv", ".m4v", ".flv",
-
-            // Audio
-            ".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a", ".wma", ".opus", ".aiff",
-
-            // Documents that are typically binary (skip entirely; no path, no placeholders)
-            ".pdf",
-            ".doc", ".docx", ".dot", ".dotx",
-            ".xls", ".xlsx", ".xlsm", ".xlt", ".xltx",
-            ".ppt", ".pptx", ".pps", ".ppsx",
-
-            // Databases (binary)
-            ".mdb", ".accdb",
-
-            // Archives
-            ".zip", ".7z", ".rar", ".tar", ".gz",
-
-            // Debug / symbols
-            ".pdb"
-        };
-
 
         // Ignore list indices (CheckedListBox near "Типы файлов")
         private const int IgnoreIndexBin = 0;
@@ -324,9 +53,9 @@ namespace ProjectTreeViewer
 
             InitializeComponent();
 
-            SetupStableLayout(); // Menu stays at the very top; settings panel never pushes it down
+            SetupStableLayout(); // меню всегда сверху, панель не "толкает" его вниз
 
-            InitTreeIcons();
+            _iconService.Initialize(treeProject);
 
             treeProject.BeforeExpand -= treeProject_BeforeExpand;
             treeProject.BeforeExpand += treeProject_BeforeExpand;
@@ -335,8 +64,7 @@ namespace ProjectTreeViewer
 
             _treeFontSize = treeProject.Font.Size;
 
-            _localization =
-                new LocalizationService(startupOptions.Language ?? LocalizationService.DetectSystemLanguage());
+            _localization = new LocalizationService(startupOptions.Language ?? LocalizationService.DetectSystemLanguage());
             _messages = new MessageService(_localization);
 
             _elevationAttempted = startupOptions.ElevationAttempted;
@@ -346,7 +74,7 @@ namespace ProjectTreeViewer
             LoadFonts();
             _pendingFontName = (string?)cboFont.SelectedItem ?? "Consolas";
 
-            InitIgnoreList(); // Fix #3: new "Игнорировать:" CheckedListBox
+            InitIgnoreList();
 
             SetMenuEnabled(false);
             ApplyLocalization();
@@ -354,11 +82,25 @@ namespace ProjectTreeViewer
             Shown += Form1_Shown;
         }
 
+        // ───────────────────────────────────────── Localization-safe helper (NO AppLanguage switch in UI)
+        private string T(string key, string fallback)
+        {
+            try
+            {
+                var value = _localization[key];
+                if (string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal))
+                    return fallback;
+                return value;
+            }
+            catch
+            {
+                return fallback;
+            }
+        }
+
         // ───────────────────────────────────────── Layout: MenuStrip must stay on top
         private void EnsureDockLayout()
         {
-            // Stable manual layout:
-            // Menu stays on top, settings panel is on the right, tree uses the remaining space.
             menuStripMain.Dock = DockStyle.Top;
 
             panelSettings.Dock = DockStyle.None;
@@ -376,38 +118,32 @@ namespace ProjectTreeViewer
 
             int panelWidth = panelSettings.Visible ? panelSettings.Width : 0;
 
-            // Tree always starts from the left and never goes under the panel.
             treeProject.Location = new Point(0, top);
             treeProject.Size = new Size(
                 Math.Max(0, ClientSize.Width - panelWidth),
                 Math.Max(0, ClientSize.Height - top));
 
-            // Panel is always on the right.
             panelSettings.Location = new Point(ClientSize.Width - panelSettings.Width, top);
             panelSettings.Height = Math.Max(0, ClientSize.Height - top);
 
-            // Keep menu always above everything.
             menuStripMain.BringToFront();
             if (panelSettings.Visible)
                 panelSettings.BringToFront();
         }
 
-
-
-        // ───────────────────────────────────────── Ignore list init (replaces 3 left checkboxes)
+        // ───────────────────────────────────────── Ignore list init
         private void InitIgnoreList()
         {
-            // These controls are added in the updated Form1.Designer.cs (you asked me to send it after).
-            // Defaults match your previous checkboxes: all three are checked.
             _suppressIgnoreItemCheck = true;
             try
             {
                 lstIgnore.CheckOnClick = true;
                 lstIgnore.Items.Clear();
 
-                lstIgnore.Items.Add(_localization["Settings.IgnoreBin"], true);
-                lstIgnore.Items.Add(_localization["Settings.IgnoreObj"], true);
-                lstIgnore.Items.Add(_localization["Settings.IgnoreDot"], true);
+                // ключи берём из локализации. fallback — чтобы не падало, если ключ не заведён.
+                lstIgnore.Items.Add(T("Settings.IgnoreBin", "Ignore bin"), true);
+                lstIgnore.Items.Add(T("Settings.IgnoreObj", "Ignore obj"), true);
+                lstIgnore.Items.Add(T("Settings.IgnoreDot", "Ignore dotfiles"), true);
 
                 lstIgnore.ItemCheck -= lstIgnore_ItemCheck;
                 lstIgnore.ItemCheck += lstIgnore_ItemCheck;
@@ -431,9 +167,9 @@ namespace ProjectTreeViewer
                 try
                 {
                     lstIgnore.Items.Clear();
-                    lstIgnore.Items.Add(_localization["Settings.IgnoreBin"], bin);
-                    lstIgnore.Items.Add(_localization["Settings.IgnoreObj"], obj);
-                    lstIgnore.Items.Add(_localization["Settings.IgnoreDot"], dot);
+                    lstIgnore.Items.Add(T("Settings.IgnoreBin", "Ignore bin"), bin);
+                    lstIgnore.Items.Add(T("Settings.IgnoreObj", "Ignore obj"), obj);
+                    lstIgnore.Items.Add(T("Settings.IgnoreDot", "Ignore dotfiles"), dot);
                 }
                 finally
                 {
@@ -450,7 +186,6 @@ namespace ProjectTreeViewer
         {
             if (_suppressIgnoreItemCheck) return;
 
-            // ItemCheck fires BEFORE the state changes. Update lists after WinForms applies the new check state.
             BeginInvoke(new Action(() =>
             {
                 PopulateRootFolders(_currentPath ?? "");
@@ -471,261 +206,12 @@ namespace ProjectTreeViewer
             IgnoreDot: IsIgnoreChecked(IgnoreIndexDot)
         );
 
-        private string GetIgnoreLabelText() => _localization.CurrentLanguage switch
-        {
-            AppLanguage.Ru => "Игнорировать:",
-            AppLanguage.En => "Ignore:",
-            AppLanguage.Uz => "E’tiborsiz:",
-            AppLanguage.Tg => "Нодида гирифтан:",
-            AppLanguage.Kk => "Елемеу:",
-            AppLanguage.Fr => "Ignorer :",
-            AppLanguage.De => "Ignorieren:",
-            AppLanguage.It => "Ignora:",
-            _ => "Ignore:"
-        };
-
-        private string GetCopyTreeAndContentMenuText() => _localization.CurrentLanguage switch
-        {
-            AppLanguage.Ru => "Скопировать полное дерево и содержимое",
-            AppLanguage.En => "Copy full tree and content",
-            AppLanguage.Uz => "To‘liq daraxt va matnni nusxalash",
-            AppLanguage.Tg => "Нусхаи дарахт ва мундариҷа",
-            AppLanguage.Kk => "Толық ағаш пен мазмұнды көшіру",
-            AppLanguage.Fr => "Copier l’arborescence et le contenu",
-            AppLanguage.De => "Baum und Inhalt kopieren",
-            AppLanguage.It => "Copia albero e contenuto",
-            _ => "Copy full tree and content"
-        };
-
-        private string GetNoTextContentMessage() => _localization.CurrentLanguage switch
-        {
-            AppLanguage.Ru => "Нет текстового содержимого для копирования (выбранные файлы пустые или бинарные).",
-            AppLanguage.En => "No text content to copy (selected files are empty or binary).",
-            AppLanguage.Uz => "Nusxalash uchun matn yo‘q (tanlangan fayllar bo‘sh yoki binar).",
-            AppLanguage.Tg => "Барои нусха матн нест (файлҳо холӣ ё бинарӣ).",
-            AppLanguage.Kk => "Көшіруге мәтін жоқ (файлдар бос немесе бинар).",
-            AppLanguage.Fr => "Aucun contenu texte à copier (fichiers vides ou binaires).",
-            AppLanguage.De => "Kein Textinhalt zum Kopieren (Dateien leer oder binär).",
-            AppLanguage.It => "Nessun contenuto testuale da copiare (file vuoti o binari).",
-            _ => "No text content to copy."
-        };
-
-        // ───────────────────────────────────────── Tree icons init
-        private void InitTreeIcons()
-        {
-            _treeImages = new ImageList
-            {
-                ColorDepth = ColorDepth.Depth32Bit,
-                ImageSize = new Size(TreeIconSize, TreeIconSize)
-            };
-
-            // We load icons by file name (24x24) with two strategies:
-            // 1) EmbeddedResource (best for single-file publish)
-            // 2) File from disk relative to executable folder (best for Debug / portable folder)
-            //
-            // IMPORTANT:
-            // If you publish and icons disappear, it means they were not embedded and not copied to output.
-            // We keep both approaches to be resilient.
-            AddIcon(IconKeyFolder, "folder24.png");
-            AddIcon(IconKeyGrayFolder, "grayFolder24.png");
-            AddIcon(IconKeyUnknownFile, "uknownFile24.png"); // file name has your exact spelling
-            AddIcon(IconKeyText, "text24.png");
-            AddIcon(IconKeyFile, "text24.png"); // generic file -> text icon
-
-            AddIcon(IconKeyCSharp, "csharp24.png");
-            AddIcon(IconKeyPython, "python24.png");
-            AddIcon(IconKeyPyc, "pyc24.png");
-            AddIcon(IconKeyC, "c24.png");
-            AddIcon(IconKeyCpp, "cpp24.png");
-            AddIcon(IconKeyGo, "go24.png");
-            AddIcon(IconKeyRust, "rust24.png");
-            AddIcon(IconKeyJava, "java24.png");
-            AddIcon(IconKeyKotlin, "kotlin24.png");
-            AddIcon(IconKeySwift, "swift24.png");
-            AddIcon(IconKeyPhp, "php24.png");
-            AddIcon(IconKeyJs, "js24.png");
-            AddIcon(IconKeyTypeScript, "typescript24.png");
-            AddIcon(IconKeyHtml, "html24.png");
-            AddIcon(IconKeyCss, "css24.png");
-            AddIcon(IconKeyJson, "json24.png");
-            AddIcon(IconKeyXml, "xml24.png");
-            AddIcon(IconKeyXaml, "xaml24.png");
-            AddIcon(IconKeySql, "sql24.png");
-            AddIcon(IconKeyMd, "md24.png");
-            AddIcon(IconKeySln, "sln24.png");
-            AddIcon(IconKeyDll, "dll24.png");
-            AddIcon(IconKeyExe, "exe24.png");
-            AddIcon(IconKeyPdf, "pdf24.png");
-            AddIcon(IconKeyPicture, "picture24.png");
-            AddIcon(IconKeyVideo, "video24.png");
-            AddIcon(IconKeyAudio, "audio24.png");
-            AddIcon(IconKeyGit, "git24.png");
-            AddIcon(IconKeyConf, "conf24.png");
-
-            // New Office/Blazor icons you added
-            AddIcon(IconKeyBlazor, "blazor48.png");
-            AddIcon(IconKeyExcel, "excel48.png");
-            AddIcon(IconKeyWord, "word48.png");
-            AddIcon(IconKeyAccess, "access48.png");
-            AddIcon(IconKeyPowerPoint, "powerpoint48.png");
-
-            treeProject.ImageList = _treeImages;
-
-            UpdateTreeItemHeight();
-
-            void AddIcon(string key, string fileName)
-            {
-                var img = LoadImageEmbeddedOrFile(
-                    embeddedResourceName: $"ProjectTreeViewer.Resources.Icons.{fileName}",
-                    relativeFilePath: Path.Combine("Resources", "Icons", fileName));
-
-                _treeImages!.Images.Add(key, img ?? CreateTransparentFallbackIcon());
-            }
-        }
-
-        private static Image? LoadImageEmbeddedOrFile(string embeddedResourceName, string relativeFilePath)
-        {
-            // Embedded
-            var embedded = TryLoadEmbedded(embeddedResourceName);
-            if (embedded is not null) return embedded;
-
-            // File near exe
-            var fromDisk = TryLoadFromDisk(relativeFilePath);
-            return fromDisk;
-
-            static Image? TryLoadEmbedded(string resourceName)
-            {
-                var asm = typeof(Form1).Assembly;
-                using var stream = asm.GetManifestResourceStream(resourceName);
-                if (stream is null) return null;
-
-                using var img = Image.FromStream(stream);
-                return (Image)img.Clone();
-            }
-
-            static Image? TryLoadFromDisk(string rel)
-            {
-                var fullPath = Path.Combine(AppContext.BaseDirectory, rel);
-                if (!File.Exists(fullPath)) return null;
-
-                using var fs = File.OpenRead(fullPath);
-                using var img = Image.FromStream(fs);
-                return (Image)img.Clone();
-            }
-        }
-
-        private static Image CreateTransparentFallbackIcon()
-        {
-            // Transparent placeholder prevents exceptions and keeps layout stable.
-            var bmp = new Bitmap(TreeIconSize, TreeIconSize);
-            using var g = Graphics.FromImage(bmp);
-            g.Clear(Color.Transparent);
-            return bmp;
-        }
-
-        private void ApplyIconsToTree()
-        {
-            if (_treeImages is null) return;
-            if (treeProject.ImageList != _treeImages)
-                treeProject.ImageList = _treeImages;
-
-            foreach (TreeNode node in treeProject.Nodes)
-                ApplyIconRecursive(node);
-        }
-
-        private void ApplyIconRecursive(TreeNode node)
-        {
-            ApplyIconToNode(node);
-
-            foreach (TreeNode child in node.Nodes)
-                ApplyIconRecursive(child);
-        }
-
-        private void ApplyIconToNode(TreeNode node)
-        {
-            if (node.Tag is not string path) return;
-
-            // Directory icon decision
-            if (Directory.Exists(path))
-            {
-                var dirName =
-                    Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-
-                // Gray folder for "unwanted" directories:
-                // - dot-prefixed directories (".something")
-                // - common build/system folders (bin/obj/node_modules/.git/etc)
-                //
-                // NOTE:
-                // Hidden folders may not appear at all due to TreeBuilder filtering hidden attributes.
-                // But we still keep dot-name rule for when IgnoreDot is disabled.
-                bool isGray =
-                    (!string.IsNullOrEmpty(dirName) && dirName.StartsWith(".", StringComparison.Ordinal)) ||
-                    _grayFolderNames.Contains(dirName);
-
-                var key = isGray ? IconKeyGrayFolder : IconKeyFolder;
-
-                node.ImageKey = key;
-                node.SelectedImageKey = key;
-                return;
-            }
-
-            // File icon decision
-            if (File.Exists(path))
-            {
-                var fileName = Path.GetFileName(path);
-
-                // Special-case: Blazor code-behind (.razor.cs / .razor.css / .razor.js etc)
-                if (fileName.EndsWith(".razor.cs", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".razor.css", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".razor.js", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".razor.ts", StringComparison.OrdinalIgnoreCase))
-                {
-                    node.ImageKey = IconKeyBlazor;
-                    node.SelectedImageKey = IconKeyBlazor;
-                    return;
-                }
-
-                // 1) File name rules first (dotfiles, extension-less, special names)
-                if (!string.IsNullOrWhiteSpace(fileName) && _fileNameToIconKey.TryGetValue(fileName, out var nameKey))
-                {
-                    node.ImageKey = nameKey;
-                    node.SelectedImageKey = nameKey;
-                    return;
-                }
-
-                // 2) Extension based rules
-                var ext = Path.GetExtension(fileName);
-
-                if (!string.IsNullOrWhiteSpace(ext) && _extensionToIconKey.TryGetValue(ext, out var extKey))
-                {
-                    node.ImageKey = extKey;
-                    node.SelectedImageKey = extKey;
-                    return;
-                }
-
-                // 3) If we don't know the format -> unknownFile
-                // This matches your requirement: unknown formats must not be treated as generic file.
-                node.ImageKey = IconKeyUnknownFile;
-                node.SelectedImageKey = IconKeyUnknownFile;
-            }
-        }
-
-        private void UpdateTreeItemHeight()
-        {
-            // Ensure icons are not clipped and work with font zoom.
-            // +6 gives some breathing space for checkbox + icon + text.
-            var height = Math.Max(treeProject.Font.Height + 6, TreeIconSize + 2);
-            treeProject.ItemHeight = height;
-        }
-
         // ───────────────────────────────────────── Expand “layer-by-layer”
         private void treeProject_BeforeExpand(object? sender, TreeViewCancelEventArgs e)
         {
             treeProject.BeginUpdate();
             try
             {
-                // Show only one level down:
-                // collapse all descendants so user doesn't lose the structure.
                 CollapseAllDescendants(e.Node);
             }
             finally
@@ -751,14 +237,13 @@ namespace ProjectTreeViewer
         // ───────────────────────────────────────── Menu margins
         private void RemoveUnneededMenuMargins()
         {
-            // Remove image margin everywhere to avoid the gray column.
             ConfigureDropDownMenu(miFile, showCheckMargin: false);
             ConfigureDropDownMenu(miCopy, showCheckMargin: false);
             ConfigureDropDownMenu(miView, showCheckMargin: false);
             ConfigureDropDownMenu(miOptions, showCheckMargin: false);
             ConfigureDropDownMenu(miHelp, showCheckMargin: false);
 
-            // Language menu uses checked items, so we keep check margin there.
+            // язык — чекбоксы, margin нужен
             ConfigureDropDownMenu(miLanguage, showCheckMargin: true);
         }
 
@@ -773,11 +258,7 @@ namespace ProjectTreeViewer
             foreach (ToolStripItem child in menuItem.DropDownItems)
             {
                 if (child is ToolStripMenuItem childMi)
-                {
-                    // Default for submenus: no check margin.
-                    // If you add checkable items later, enable explicitly for that submenu.
                     ConfigureDropDownMenu(childMi, showCheckMargin: false);
-                }
             }
         }
 
@@ -787,62 +268,46 @@ namespace ProjectTreeViewer
                 TryOpenFolder(_startupOptions.Path!, fromDialog: false);
         }
 
-        // ───────────────────────────────────────── Localization
+        // ───────────────────────────────────────── Localization (NO hardcoded language switches)
         private void ApplyLocalization()
         {
-            miFile.Text = _localization["Menu.File"];
-            miFileOpen.Text = _localization["Menu.File.Open"];
-            miFileRefresh.Text = _localization["Menu.File.Refresh"];
-            miFileExit.Text = _localization["Menu.File.Exit"];
+            miFile.Text = T("Menu.File", "File");
+            miFileOpen.Text = T("Menu.File.Open", "Open folder...");
+            miFileRefresh.Text = T("Menu.File.Refresh", "Refresh");
+            miFileExit.Text = T("Menu.File.Exit", "Exit");
 
-            miCopy.Text = GetCopyMenuText();
-            miCopyFullTree.Text = _localization["Menu.Copy.FullTree"];
-            miCopySelectedTree.Text = _localization["Menu.Copy.SelectedTree"];
-            miCopySelectedContent.Text = _localization["Menu.Copy.SelectedContent"];
+            miCopy.Text = T("Menu.Copy", "Copy");
+            miCopyFullTree.Text = T("Menu.Copy.FullTree", "Copy full tree");
+            miCopySelectedTree.Text = T("Menu.Copy.SelectedTree", "Copy selected tree");
+            miCopySelectedContent.Text = T("Menu.Copy.SelectedContent", "Copy selected content");
+            miCopyFullTreeAndContent.Text = T("Menu.Copy.FullTreeAndContent", "Copy full tree and content");
 
-            // Fix #4: new copy option (localized here without touching LocalizationCatalog)
-            miCopyFullTreeAndContent.Text = GetCopyTreeAndContentMenuText();
+            miView.Text = T("Menu.View", "View");
+            miViewExpandAll.Text = T("Menu.View.ExpandAll", "Expand all");
+            miViewCollapseAll.Text = T("Menu.View.CollapseAll", "Collapse all");
+            miViewZoomIn.Text = T("Menu.View.ZoomIn", "Zoom in");
+            miViewZoomOut.Text = T("Menu.View.ZoomOut", "Zoom out");
+            miViewZoomReset.Text = T("Menu.View.ZoomReset", "Reset zoom");
 
-            miView.Text = _localization["Menu.View"];
-            miViewExpandAll.Text = _localization["Menu.View.ExpandAll"];
-            miViewCollapseAll.Text = _localization["Menu.View.CollapseAll"];
-            miViewZoomIn.Text = _localization["Menu.View.ZoomIn"];
-            miViewZoomOut.Text = _localization["Menu.View.ZoomOut"];
-            miViewZoomReset.Text = _localization["Menu.View.ZoomReset"];
+            miOptions.Text = T("Menu.Options", "Options");
 
-            miOptions.Text = _localization["Menu.Options"];
+            miLanguage.Text = T("Menu.Language", "Language");
 
-            miLanguage.Text = _localization["Menu.Language"];
-
-            miHelp.Text = _localization["Menu.Help"];
-            miHelpAbout.Text = _localization["Menu.Help.About"];
+            miHelp.Text = T("Menu.Help", "Help");
+            miHelpAbout.Text = T("Menu.Help.About", "About");
 
             // Settings panel
-            labelIgnore.Text = GetIgnoreLabelText(); // Fix #3: new label
-            checkBoxAll.Text = _localization["Settings.All"];
-            labelExtensions.Text = _localization["Settings.Extensions"];
-            labelRootFolders.Text = _localization["Settings.RootFolders"];
-            labelFont.Text = _localization["Settings.Font"];
-            btnApply.Text = _localization["Settings.Apply"];
+            labelIgnore.Text = T("Settings.IgnoreLabel", "Ignore:");
+            checkBoxAll.Text = T("Settings.All", "All");
+            labelExtensions.Text = T("Settings.Extensions", "Extensions:");
+            labelRootFolders.Text = T("Settings.RootFolders", "Root folders:");
+            labelFont.Text = T("Settings.Font", "Tree font:");
+            btnApply.Text = T("Settings.Apply", "Apply");
 
             UpdateIgnoreListLocalization();
             UpdateLanguageChecks();
             UpdateTitle();
         }
-
-        private string GetCopyMenuText() => _localization.CurrentLanguage switch
-        {
-            AppLanguage.Ru => "Копирование",
-            AppLanguage.En => "Copy",
-            AppLanguage.Uz => "Nusxalash",
-            AppLanguage.Tg => "Нусхабардорӣ",
-            AppLanguage.Kk => "Көшіру",
-            AppLanguage.Fr => "Copie",
-            AppLanguage.De => "Kopieren",
-            AppLanguage.It => "Copia",
-            _ => "Copy"
-        };
-
 
         private void UpdateLanguageChecks()
         {
@@ -864,7 +329,7 @@ namespace ProjectTreeViewer
             miCopyFullTree.Enabled = enabled;
             miCopySelectedTree.Enabled = enabled;
             miCopySelectedContent.Enabled = enabled;
-            miCopyFullTreeAndContent.Enabled = enabled; // Fix #4
+            miCopyFullTreeAndContent.Enabled = enabled;
 
             miViewExpandAll.Enabled = enabled;
             miViewCollapseAll.Enabled = enabled;
@@ -875,7 +340,7 @@ namespace ProjectTreeViewer
         private void UpdateTitle()
         {
             Text = _currentPath is null
-                ? _localization["Title.Default"]
+                ? T("Title.Default", "Project Tree Viewer")
                 : _localization.Format("Title.WithPath", _currentPath);
         }
 
@@ -884,7 +349,7 @@ namespace ProjectTreeViewer
         {
             try
             {
-                using var dlg = new FolderBrowserDialog { Description = _localization["Dialog.SelectRoot"] };
+                using var dlg = new FolderBrowserDialog { Description = T("Dialog.SelectRoot", "Select root folder") };
                 if (dlg.ShowDialog() != DialogResult.OK) return;
 
                 TryOpenFolder(dlg.SelectedPath, fromDialog: true);
@@ -953,7 +418,7 @@ namespace ProjectTreeViewer
 
                 if (string.IsNullOrWhiteSpace(text))
                 {
-                    _messages.ShowInfo(_localization["Msg.NoCheckedTree"]);
+                    _messages.ShowInfo(T("Msg.NoCheckedTree", "No items checked in tree."));
                     return;
                 }
 
@@ -978,17 +443,14 @@ namespace ProjectTreeViewer
 
                 if (files.Count == 0)
                 {
-                    // We do NOT depend on LocalizationCatalog keys here.
-                    // Some builds may not have Msg.NoCheckedFiles, and that could crash or show raw key.
-                    _messages.ShowInfo(GetNoCheckedFilesMessage());
+                    _messages.ShowInfo(T("Msg.NoCheckedFiles", "No files selected."));
                     return;
                 }
-
 
                 var content = BuildContentForClipboard(files);
                 if (string.IsNullOrWhiteSpace(content))
                 {
-                    _messages.ShowInfo(GetNoTextContentMessage());
+                    _messages.ShowInfo(T("Msg.NoTextContent", "No text content to copy."));
                     return;
                 }
 
@@ -1000,21 +462,7 @@ namespace ProjectTreeViewer
             }
         }
 
-        private string GetNoCheckedFilesMessage() => _localization.CurrentLanguage switch
-        {
-            AppLanguage.Ru => "Не выбрано ни одного файла.",
-            AppLanguage.En => "No files selected.",
-            AppLanguage.Uz => "Hech qanday fayl tanlanmagan.",
-            AppLanguage.Tg => "Ягон файл интихоб нашудааст.",
-            AppLanguage.Kk => "Ешбір файл таңдалмаған.",
-            AppLanguage.Fr => "Aucun fichier sélectionné.",
-            AppLanguage.De => "Keine Dateien ausgewählt.",
-            AppLanguage.It => "Nessun file selezionato.",
-            _ => "No files selected."
-        };
-
-
-        // Fix #4: Copy full tree + content (auto: selected if any checked, else full)
+        // Copy full tree + content (auto: selected if any checked, else full)
         private void miCopyFullTreeAndContent_Click(object? sender, EventArgs e)
         {
             try
@@ -1029,7 +477,6 @@ namespace ProjectTreeViewer
                     ? _treeExport.BuildSelectedTree(_currentPath!, root)
                     : _treeExport.BuildFullTree(_currentPath!, root);
 
-                // Fallback safety (should not happen when hasSelection = true, but keep stable behavior)
                 if (hasSelection && string.IsNullOrWhiteSpace(tree))
                     tree = _treeExport.BuildFullTree(_currentPath!, root);
 
@@ -1039,7 +486,6 @@ namespace ProjectTreeViewer
 
                 var content = BuildContentForClipboard(files);
 
-                // If no textual content exists -> copy only tree (no extra blank lines).
                 if (string.IsNullOrWhiteSpace(content))
                 {
                     Clipboard.SetText(tree, TextDataFormat.UnicodeText);
@@ -1049,7 +495,6 @@ namespace ProjectTreeViewer
                 var sb = new StringBuilder();
                 sb.Append(tree.TrimEnd('\r', '\n'));
 
-                // exactly 2 "visual blank lines" between tree and content (won't collapse on paste)
                 AppendClipboardBlankLine(sb);
                 AppendClipboardBlankLine(sb);
 
@@ -1063,10 +508,9 @@ namespace ProjectTreeViewer
             }
         }
 
-        // ───────────────────────────────────────── Stable layout (prevents MenuStrip from moving)
+        // ───────────────────────────────────────── Stable layout
         private void SetupStableLayout()
         {
-            // Manual layout ensures the tree never disappears under the settings panel.
             panelSettings.AutoScroll = true;
 
             EnsureDockLayout();
@@ -1079,7 +523,6 @@ namespace ProjectTreeViewer
         }
 
         private void Form1_ResizeRelayout(object? sender, EventArgs e) => ApplyStableLayout();
-
         private void PanelSettings_VisibleChanged(object? sender, EventArgs e) => ApplyStableLayout();
 
         private void miOptions_Click(object? sender, EventArgs e)
@@ -1099,7 +542,6 @@ namespace ProjectTreeViewer
 
             var first = treeProject.Nodes[0];
 
-            // If renderer already created the root but text is empty -> fix text.
             if (first.Tag is string firstPath && PathEquals(firstPath, rootPath))
             {
                 if (string.IsNullOrWhiteSpace(first.Text))
@@ -1108,7 +550,6 @@ namespace ProjectTreeViewer
                 return;
             }
 
-            // Renderer likely added children as top-level nodes; wrap them into the real root node.
             string rootText = GetRootCaption(rootPath);
 
             treeProject.BeginUpdate();
@@ -1127,7 +568,6 @@ namespace ProjectTreeViewer
                     Tag = rootPath
                 };
 
-                // Keep "checked" logic consistent: root checked only if ALL children are checked.
                 bool allChecked = true;
                 foreach (var n in oldTop)
                 {
@@ -1165,7 +605,6 @@ namespace ProjectTreeViewer
             string tb = b.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             return string.Equals(ta, tb, StringComparison.OrdinalIgnoreCase);
         }
-
 
         private static IEnumerable<string> GetCheckedFilePaths(TreeNodeCollection nodes)
         {
@@ -1209,8 +648,8 @@ namespace ProjectTreeViewer
             {
                 var file = files[i];
 
-                if (!TryReadFileTextForClipboard(file, out var text))
-                    continue; // Fix #5: skip entirely (no path, no placeholders)
+                if (!_contentReader.TryReadTextForClipboard(file, out var text))
+                    continue;
 
                 if (anyWritten)
                 {
@@ -1227,58 +666,6 @@ namespace ProjectTreeViewer
             }
 
             return anyWritten ? sb.ToString().TrimEnd('\r', '\n') : string.Empty;
-        }
-
-        private static bool TryReadFileTextForClipboard(string path, out string text)
-        {
-            text = string.Empty;
-
-            try
-            {
-                if (!File.Exists(path))
-                    return false;
-
-                var ext = Path.GetExtension(path);
-                if (!string.IsNullOrWhiteSpace(ext) && _contentExcludedExtensions.Contains(ext))
-                    return false;
-
-                var fi = new FileInfo(path);
-                if (fi.Length == 0)
-                    return false;
-
-                // Fast binary sniff: read first 8 KB and check for NUL bytes.
-                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    int toRead = (int)Math.Min(8192, fs.Length);
-                    var buffer = new byte[toRead];
-                    int read = fs.Read(buffer, 0, toRead);
-
-                    for (int i = 0; i < read; i++)
-                    {
-                        if (buffer[i] == 0)
-                            return false;
-                    }
-                }
-
-                // Read text with BOM detection
-                string raw;
-                using (var reader = new StreamReader(path, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
-                    raw = reader.ReadToEnd();
-
-                if (string.IsNullOrWhiteSpace(raw))
-                    return false;
-
-                // Extra guard: if decoded string contains NUL chars, treat as binary
-                if (raw.IndexOf('\0') >= 0)
-                    return false;
-
-                text = raw.TrimEnd('\r', '\n');
-                return !string.IsNullOrWhiteSpace(text);
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         private bool EnsureTreeReady()
@@ -1301,7 +688,7 @@ namespace ProjectTreeViewer
         // ───────────────────────────────────────── Help
         private void miHelpAbout_Click(object? sender, EventArgs e)
         {
-            _messages.ShowInfo(_localization["Msg.AboutStub"]);
+            _messages.ShowInfo(T("Msg.AboutStub", "About"));
         }
 
         // ───────────────────────────────────────── Open folder / elevation
@@ -1317,7 +704,7 @@ namespace ProjectTreeViewer
             {
                 if (TryElevateAndRestart(path)) return;
 
-                _messages.ShowError(_localization["Msg.AccessDeniedRoot"]);
+                _messages.ShowError(T("Msg.AccessDeniedRoot", "Access denied to root folder."));
                 return;
             }
 
@@ -1348,7 +735,7 @@ namespace ProjectTreeViewer
                 return true;
             }
 
-            _messages.ShowInfo(_localization["Msg.ElevationCanceled"]);
+            _messages.ShowInfo(T("Msg.ElevationCanceled", "Elevation canceled."));
             return false;
         }
 
@@ -1360,7 +747,7 @@ namespace ProjectTreeViewer
                 if (treeProject.Font.FontFamily.Name != _pendingFontName)
                     treeProject.Font = new Font(_pendingFontName, _treeFontSize);
 
-                UpdateTreeItemHeight();
+                _iconService.UpdateTreeItemHeight(treeProject);
                 RefreshTree();
             }
             catch (Exception ex)
@@ -1381,8 +768,7 @@ namespace ProjectTreeViewer
 
         private void LoadFonts()
         {
-            cboFont.Items.AddRange(new[]
-                { "Consolas", "Courier New", "Lucida Console", "Fira Code", "Times New Roman", "Tahoma" });
+            cboFont.Items.AddRange(new[] { "Consolas", "Courier New", "Lucida Console", "Fira Code", "Times New Roman", "Tahoma" });
             cboFont.SelectedItem = "Consolas";
         }
 
@@ -1401,10 +787,8 @@ namespace ProjectTreeViewer
         {
             if (string.IsNullOrEmpty(_currentPath)) return;
 
-            var allowedExt = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(),
-                StringComparer.OrdinalIgnoreCase);
-            var allowedRoot = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(),
-                StringComparer.OrdinalIgnoreCase);
+            var allowedExt = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
+            var allowedRoot = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 
             var ignore = GetIgnoreOptions();
 
@@ -1423,19 +807,15 @@ namespace ProjectTreeViewer
                 if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
                     return;
 
-                // Render without ExpandAll: expansion is "layer-by-layer"
                 _renderer.Render(treeProject, result.Root, expandAll: false);
 
-                // Fix: always show the real root folder as the first line in the TreeView
                 EnsureRootNodeVisible(_currentPath!);
 
                 if (treeProject.Nodes.Count > 0)
                     treeProject.Nodes[0].Expand();
 
-                // Apply icons after render: TreeViewRenderer creates nodes with Text+Tag,
-                // then we assign ImageKey/SelectedImageKey based on file/folder rules.
-                ApplyIconsToTree();
-                UpdateTreeItemHeight();
+                _iconService.ApplyIconsToTree(treeProject);
+                _iconService.UpdateTreeItemHeight(treeProject);
             }
             finally
             {
@@ -1478,8 +858,7 @@ namespace ProjectTreeViewer
         {
             if (string.IsNullOrEmpty(path)) return;
 
-            var prev = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(),
-                StringComparer.OrdinalIgnoreCase);
+            var prev = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 
             var ignore = GetIgnoreOptions();
             var scan = _scanner.GetRootFolderNames(path, ignore.IgnoreBin, ignore.IgnoreObj, ignore.IgnoreDot);
@@ -1573,7 +952,7 @@ namespace ProjectTreeViewer
             var family = treeProject.Font.FontFamily.Name;
             treeProject.Font = new Font(family, _treeFontSize);
 
-            UpdateTreeItemHeight();
+            _iconService.UpdateTreeItemHeight(treeProject);
         }
     }
 }
