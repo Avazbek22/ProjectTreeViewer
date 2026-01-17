@@ -27,9 +27,7 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 
 		var catalog = _catalog.Value;
 		var foundFolderCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-		var foundFileCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 		var remainingFolders = new HashSet<string>(catalog.FolderCandidates.Keys, StringComparer.OrdinalIgnoreCase);
-		var remainingFiles = new HashSet<string>(catalog.FileCandidates.Keys, StringComparer.OrdinalIgnoreCase);
 
 		bool hasHiddenFolder = false;
 		bool hasHiddenFile = false;
@@ -47,9 +45,6 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 
 				if (!hasHiddenFile && HasHiddenAttribute(file))
 					hasHiddenFile = true;
-
-				if (remainingFiles.Remove(file.Name))
-					foundFileCandidates.Add(file.Name);
 			}
 		}
 		catch (UnauthorizedAccessException)
@@ -77,7 +72,13 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 				hasHiddenFolder = true;
 
 			if (remainingFolders.Remove(current.Name))
-				foundFolderCandidates.Add(current.Name);
+			{
+				if (!current.Name.StartsWith(".", StringComparison.Ordinal) &&
+					!HasHiddenAttribute(current))
+				{
+					foundFolderCandidates.Add(current.Name);
+				}
+			}
 
 			IEnumerable<FileInfo> files;
 			try
@@ -100,9 +101,6 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 
 				if (!hasHiddenFile && HasHiddenAttribute(file))
 					hasHiddenFile = true;
-
-				if (remainingFiles.Remove(file.Name))
-					foundFileCandidates.Add(file.Name);
 			}
 
 			IEnumerable<DirectoryInfo> subDirs;
@@ -130,14 +128,6 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 				Id: name,
 				Kind: IgnoreOptionKind.NamedFolder,
 				DefaultChecked: catalog.FolderCandidates[name]));
-		}
-
-		foreach (var name in foundFileCandidates.OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
-		{
-			options.Add(new IgnoreOptionDefinition(
-				Id: name,
-				Kind: IgnoreOptionKind.NamedFile,
-				DefaultChecked: catalog.FileCandidates[name]));
 		}
 
 		if (hasHiddenFolder)
@@ -203,20 +193,15 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 			catalog.FolderCandidates
 				?.ToDictionary(c => c.Name, c => c.DefaultChecked, StringComparer.OrdinalIgnoreCase)
 				?? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase),
-			catalog.FileCandidates
-				?.ToDictionary(c => c.Name, c => c.DefaultChecked, StringComparer.OrdinalIgnoreCase)
-				?? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase),
 			catalog.Defaults ?? new SmartIgnoreDefaults(true, false, true, false));
 	}
 
 	private sealed record SmartIgnoreCatalog(
 		Dictionary<string, bool> FolderCandidates,
-		Dictionary<string, bool> FileCandidates,
 		SmartIgnoreDefaults Defaults);
 
 	private sealed record SmartIgnoreCatalogDefinition(
 		List<SmartIgnoreCandidate>? FolderCandidates,
-		List<SmartIgnoreCandidate>? FileCandidates,
 		SmartIgnoreDefaults? Defaults);
 
 	private sealed record SmartIgnoreCandidate(string Name, bool DefaultChecked);

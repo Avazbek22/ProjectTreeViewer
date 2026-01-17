@@ -14,10 +14,6 @@
     { "name": "vendor", "defaultChecked": true },
     { "name": "logs", "defaultChecked": false }
   ],
-  "fileCandidates": [
-    { "name": "thumbs.db", "defaultChecked": true },
-    { "name": "desktop.ini", "defaultChecked": true }
-  ],
   "defaults": {
     "hiddenFolders": true,
     "hiddenFiles": false,

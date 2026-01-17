@@ -41,6 +41,8 @@
   "Settings.Ignore.DotFiles": "нүктемен басталатын файлдар",
   "Settings.Ignore.NamedFolder": "Қалталар {0}",
   "Settings.Ignore.NamedFile": "Файлдар {0}",
+  "Settings.Ignore.Criteria": "Критерийлер",
+  "Settings.Ignore.Candidates": "Қалталар",
   "Settings.All": "Барлығы",
   "Settings.Extensions": "Файл түрлері:",
   "Settings.RootFolders": "Жоғарғы деңгей қалталары:",

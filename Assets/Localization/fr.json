@@ -41,6 +41,8 @@
   "Settings.Ignore.DotFiles": "fichiers commençant par un point",
   "Settings.Ignore.NamedFolder": "Dossiers {0}",
   "Settings.Ignore.NamedFile": "Fichiers {0}",
+  "Settings.Ignore.Criteria": "Critères",
+  "Settings.Ignore.Candidates": "Dossiers",
   "Settings.All": "Tous",
   "Settings.Extensions": "Types de fichiers :",
   "Settings.RootFolders": "Dossiers de premier niveau :",

@@ -41,6 +41,8 @@
   "Settings.Ignore.DotFiles": "nuqta bilan boshlanuvchi fayllar",
   "Settings.Ignore.NamedFolder": "Jildlar {0}",
   "Settings.Ignore.NamedFile": "Fayllar {0}",
+  "Settings.Ignore.Criteria": "Mezonlar",
+  "Settings.Ignore.Candidates": "Jildlar",
   "Settings.All": "Barchasi",
   "Settings.Extensions": "Fayl turlari:",
   "Settings.RootFolders": "Yuqori darajadagi jildlar:",

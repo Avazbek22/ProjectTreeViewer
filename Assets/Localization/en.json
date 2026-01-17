@@ -34,6 +34,8 @@
   "Settings.Ignore.DotFiles": "dot files",
   "Settings.Ignore.NamedFolder": "Folders {0}",
   "Settings.Ignore.NamedFile": "Files {0}",
+  "Settings.Ignore.Criteria": "Criteria",
+  "Settings.Ignore.Candidates": "Folders",
   "Menu.Search": "Search",
   "Settings.All": "All",
   "Settings.Extensions": "File types:",

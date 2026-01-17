@@ -51,6 +51,7 @@ namespace ProjectTreeViewer.WinForms
         private bool _elevationAttempted;
 
 		private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+		private readonly Dictionary<int, int> _ignoreOptionIndexByListIndex = new();
 		private IReadOnlyList<TreeNode> _searchMatches = Array.Empty<TreeNode>();
 		private int _searchMatchIndex = -1;
 		private string _searchQuery = string.Empty;
@@ -211,25 +212,32 @@ namespace ProjectTreeViewer.WinForms
 
 			var previousOptionIds = new HashSet<string>(_ignoreOptions.Select(option => option.Id), StringComparer.OrdinalIgnoreCase);
 			var selectedIds = new HashSet<string>(GetSelectedIgnoreOptionIds(), StringComparer.OrdinalIgnoreCase);
+			var orderedOptions = OrderIgnoreOptions(_ignoreOptionsService.GetOptions(path, allowedRoots));
 
 			_suppressIgnoreItemCheck = true;
 			try
 			{
-				_ignoreOptions = _ignoreOptionsService.GetOptions(path, allowedRoots);
+				_ignoreOptions = orderedOptions;
 
 				lstIgnore.BeginUpdate();
 				try
 				{
 					lstIgnore.Items.Clear();
-					foreach (var option in _ignoreOptions)
-					{
-						bool isChecked = resetSelections
-							? option.DefaultChecked
-							: previousOptionIds.Contains(option.Id)
-								? selectedIds.Contains(option.Id)
-								: option.DefaultChecked;
+					_ignoreOptionIndexByListIndex.Clear();
 
-						lstIgnore.Items.Add(option.Label, isChecked);
+					int listIndex = 0;
+					int optionIndex = 0;
+
+					if (HasCriteriaOptions(_ignoreOptions))
+					{
+						listIndex = AddIgnoreHeader(listIndex, _localization["Settings.Ignore.Criteria"]);
+						listIndex = AddIgnoreOptions(listIndex, selectedIds, previousOptionIds, resetSelections, optionIndex, IgnoreOptionKind.HiddenFolders, IgnoreOptionKind.HiddenFiles, IgnoreOptionKind.DotFolders, IgnoreOptionKind.DotFiles, out optionIndex);
+					}
+
+					if (HasCandidateOptions(_ignoreOptions))
+					{
+						listIndex = AddIgnoreHeader(listIndex, _localization["Settings.Ignore.Candidates"]);
+						listIndex = AddIgnoreOptions(listIndex, selectedIds, previousOptionIds, resetSelections, optionIndex, IgnoreOptionKind.NamedFolder, out optionIndex);
 					}
 				}
 				finally
@@ -243,6 +251,112 @@ namespace ProjectTreeViewer.WinForms
 			}
 
 			SyncIgnoreAllCheckbox();
+		}
+
+		private static IReadOnlyList<IgnoreOptionDescriptor> OrderIgnoreOptions(IEnumerable<IgnoreOptionDescriptor> options)
+		{
+			return options
+				.OrderBy(option => option.Kind == IgnoreOptionKind.NamedFolder ? 1 : 0)
+				.ThenBy(option => option.Kind switch
+				{
+					IgnoreOptionKind.HiddenFolders => 0,
+					IgnoreOptionKind.HiddenFiles => 1,
+					IgnoreOptionKind.DotFolders => 2,
+					IgnoreOptionKind.DotFiles => 3,
+					_ => 4
+				})
+				.ThenBy(option => option.Id, StringComparer.OrdinalIgnoreCase)
+				.ToList();
+		}
+
+		private static bool HasCriteriaOptions(IEnumerable<IgnoreOptionDescriptor> options)
+		{
+			return options.Any(option =>
+				option.Kind == IgnoreOptionKind.HiddenFolders ||
+				option.Kind == IgnoreOptionKind.HiddenFiles ||
+				option.Kind == IgnoreOptionKind.DotFolders ||
+				option.Kind == IgnoreOptionKind.DotFiles);
+		}
+
+		private static bool HasCandidateOptions(IEnumerable<IgnoreOptionDescriptor> options)
+		{
+			return options.Any(option => option.Kind == IgnoreOptionKind.NamedFolder);
+		}
+
+		private int AddIgnoreHeader(int listIndex, string label)
+		{
+			lstIgnore.Items.Add(label, false);
+			return listIndex + 1;
+		}
+
+		private int AddIgnoreOptions(
+			int listIndex,
+			HashSet<string> selectedIds,
+			HashSet<string> previousOptionIds,
+			bool resetSelections,
+			int startOptionIndex,
+			IgnoreOptionKind kindA,
+			out int endOptionIndex)
+		{
+			endOptionIndex = startOptionIndex;
+			for (int i = startOptionIndex; i < _ignoreOptions.Count; i++)
+			{
+				var option = _ignoreOptions[i];
+				if (option.Kind != kindA)
+					continue;
+
+				bool isChecked = resetSelections
+					? option.DefaultChecked
+					: previousOptionIds.Contains(option.Id)
+						? selectedIds.Contains(option.Id)
+						: option.DefaultChecked;
+
+				lstIgnore.Items.Add(option.Label, isChecked);
+				_ignoreOptionIndexByListIndex[listIndex] = i;
+				listIndex++;
+				endOptionIndex = i + 1;
+			}
+
+			return listIndex;
+		}
+
+		private int AddIgnoreOptions(
+			int listIndex,
+			HashSet<string> selectedIds,
+			HashSet<string> previousOptionIds,
+			bool resetSelections,
+			int startOptionIndex,
+			IgnoreOptionKind kindA,
+			IgnoreOptionKind kindB,
+			IgnoreOptionKind kindC,
+			IgnoreOptionKind kindD,
+			out int endOptionIndex)
+		{
+			endOptionIndex = startOptionIndex;
+			for (int i = startOptionIndex; i < _ignoreOptions.Count; i++)
+			{
+				var option = _ignoreOptions[i];
+				if (option.Kind != kindA &&
+					option.Kind != kindB &&
+					option.Kind != kindC &&
+					option.Kind != kindD)
+				{
+					continue;
+				}
+
+				bool isChecked = resetSelections
+					? option.DefaultChecked
+					: previousOptionIds.Contains(option.Id)
+						? selectedIds.Contains(option.Id)
+						: option.DefaultChecked;
+
+				lstIgnore.Items.Add(option.Label, isChecked);
+				_ignoreOptionIndexByListIndex[listIndex] = i;
+				listIndex++;
+				endOptionIndex = i + 1;
+			}
+
+			return listIndex;
 		}
 
 		private void UpdateDependentFilters()
@@ -275,6 +389,7 @@ namespace ProjectTreeViewer.WinForms
 			try
 			{
 				_ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+				_ignoreOptionIndexByListIndex.Clear();
 				lstIgnore.Items.Clear();
 			}
 			finally
@@ -300,9 +415,15 @@ namespace ProjectTreeViewer.WinForms
 			SyncAllCheckbox(checkBoxAll, lstExtensions, ref _suppressExtensionsAllCheck);
 		}
 
-        private void lstIgnore_ItemCheck(object? sender, ItemCheckEventArgs e)
+		private void lstIgnore_ItemCheck(object? sender, ItemCheckEventArgs e)
         {
             if (_suppressIgnoreItemCheck) return;
+
+			if (!_ignoreOptionIndexByListIndex.ContainsKey(e.Index))
+			{
+				e.NewValue = e.CurrentValue;
+				return;
+			}
 
             // ItemCheck fires BEFORE the state changes. Update lists after WinForms applies the new check state.
             BeginInvoke(new Action(() =>
@@ -315,10 +436,10 @@ namespace ProjectTreeViewer.WinForms
 		private IReadOnlyCollection<string> GetSelectedIgnoreOptionIds()
 		{
 			var selected = new List<string>();
-			for (int i = 0; i < _ignoreOptions.Count; i++)
+			foreach (var entry in _ignoreOptionIndexByListIndex)
 			{
-				if (lstIgnore.GetItemChecked(i))
-					selected.Add(_ignoreOptions[i].Id);
+				if (lstIgnore.GetItemChecked(entry.Key))
+					selected.Add(_ignoreOptions[entry.Value].Id);
 			}
 
 			return selected;
@@ -334,7 +455,9 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (_suppressIgnoreAllCheck) return;
 
-			bool allChecked = lstIgnore.Items.Count > 0 && lstIgnore.CheckedItems.Count == lstIgnore.Items.Count;
+			int totalCheckable = _ignoreOptionIndexByListIndex.Count;
+			int checkedCount = _ignoreOptionIndexByListIndex.Keys.Count(index => lstIgnore.GetItemChecked(index));
+			bool allChecked = totalCheckable > 0 && checkedCount == totalCheckable;
 			_suppressIgnoreAllCheck = true;
 			checkBoxIgnoreAll.Checked = allChecked;
 			_suppressIgnoreAllCheck = false;
@@ -346,6 +469,14 @@ namespace ProjectTreeViewer.WinForms
 			for (int i = 0; i < list.Items.Count; i++)
 				list.SetItemChecked(i, selectAll);
 			suppressFlag = false;
+		}
+
+		private void SetAllIgnoreChecked(bool selectAll)
+		{
+			_suppressIgnoreItemCheck = true;
+			foreach (var index in _ignoreOptionIndexByListIndex.Keys)
+				lstIgnore.SetItemChecked(index, selectAll);
+			_suppressIgnoreItemCheck = false;
 		}
 
 		private static void SyncAllCheckbox(CheckBox checkBox, CheckedListBox list, ref bool suppressFlag)
@@ -439,9 +570,12 @@ namespace ProjectTreeViewer.WinForms
             miViewZoomReset.Text = _localization["Menu.View.ZoomReset"];
 
 			lblSearch.Text = _localization["Menu.Search.Label"];
-			btnSearchNext.Text = _localization["Menu.Search.Next"];
-			btnSearchPrev.Text = _localization["Menu.Search.Previous"];
-			btnSearchClose.Text = _localization["Menu.Search.Close"];
+			btnSearchNext.Text = "▼";
+			btnSearchPrev.Text = "▲";
+			btnSearchClose.Text = "×";
+			btnSearchNext.ToolTipText = _localization["Menu.Search.Next"];
+			btnSearchPrev.ToolTipText = _localization["Menu.Search.Previous"];
+			btnSearchClose.ToolTipText = _localization["Menu.Search.Close"];
 
 			miSearch.Text = _localization["Menu.Search"];
             miOptions.Text = _localization["Menu.Options"];
@@ -565,7 +699,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void SetSearchVisible(bool visible)
 		{
-			lblSearch.Visible = visible;
+			lblSearch.Visible = false;
 			txtSearch.Visible = visible;
 			btnSearchNext.Visible = visible;
 			btnSearchPrev.Visible = visible;
@@ -917,7 +1051,7 @@ namespace ProjectTreeViewer.WinForms
 			if (_suppressIgnoreAllCheck) return;
 
 			bool selectAll = checkBoxIgnoreAll.Checked;
-			SetAllChecked(lstIgnore, selectAll, ref _suppressIgnoreItemCheck);
+			SetAllIgnoreChecked(selectAll);
 			UpdateDependentFilters();
 		}
 

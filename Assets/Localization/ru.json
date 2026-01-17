@@ -41,6 +41,8 @@
   "Settings.Ignore.DotFiles": "Файлы с точкой в начале",
   "Settings.Ignore.NamedFolder": "Папки {0}",
   "Settings.Ignore.NamedFile": "Файлы {0}",
+  "Settings.Ignore.Criteria": "Критерии",
+  "Settings.Ignore.Candidates": "Папки",
   "Settings.All": "Все",
   "Settings.Extensions": "Типы файлов:",
   "Settings.RootFolders": "Папки верхнего уровня:",

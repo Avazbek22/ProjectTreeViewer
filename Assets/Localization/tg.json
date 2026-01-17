@@ -41,6 +41,8 @@
   "Settings.Ignore.DotFiles": "файлҳои бо нуқта оғозшаванда",
   "Settings.Ignore.NamedFolder": "Ҷузвдонҳо {0}",
   "Settings.Ignore.NamedFile": "Файлҳо {0}",
+  "Settings.Ignore.Criteria": "Меъёрҳо",
+  "Settings.Ignore.Candidates": "Ҷузвдонҳо",
   "Settings.All": "Ҳама",
   "Settings.Extensions": "Навъҳои файл:",
   "Settings.RootFolders": "Ҷузвдонҳои сатҳи боло:",
