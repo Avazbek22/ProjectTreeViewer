@@ -1,131 +1,287 @@
-# Project Tree Viewer
+# ProjectTreeViewer 📁🌳
 
-Удобное WinForms-приложение на .NET 9 для создания наглядного ASCII‑дерева структуры любого проекта. Позволяет быстро отфильтровать ненужные папки и типы файлов, выбрать шрифт и скопировать результат в буфер для документации или передачи ИИ.
+A lightweight **Windows desktop tool** for quickly visualizing a folder/project structure as a **TreeView**, selecting files with checkboxes, and copying:
 
----
+* the **full tree**,
+* a **tree of selected items**,
+* the **content of selected text files**,
+* or **tree + content** in one shot.
 
-## 🚀 Возможности
+Designed for developers who frequently need to share project structure (e.g., for code reviews, documentation, support, mentoring, or AI-assisted debugging) without manually assembling lists.
 
-* **Открытие папки в один клик**
-  Быстрый выбор корневого каталога проекта через стандартный диалог.
-
-* **Живой просмотр ASCII‑дерева**
-  Автоматическая генерация дерева со стилем Git: `├──`, `└──` и отступами.
-
-* **Фильтрация папок верхнего уровня**
-  Динамический список подпапок корня (включая `bin`, `obj` и скрытые), где можно включать или исключать каждую.
-
-* **Фильтрация по расширениям**
-  Сбор всех расширений файлов проекта и отображение в виде списка с чекбоксами — по умолчанию отмечены `.cs`, `.sln`, `.csproj`, `.designer`.
-
-* **Скрытые файлы и папки**
-  Возможность игнорировать все элементы, начинающиеся с точки (например, `.git`, `.vs`).
-
-* **Выбор шрифта**
-  Шесть вариантов для максимальной читабельности:
-
-  * Consolas
-  * Courier New
-  * Lucida Console
-  * Fira Code
-  * Times New Roman
-  * Tahoma
-
-* **Копирование в буфер**
-  Одним кликом копируется всё дерево в буфер для вставки в тикеты, документацию или чат.
+> ✅ **Read‑only by design**: ProjectTreeViewer does **not** modify your projects. It scans and reads files/folders and copies text to clipboard.
 
 ---
 
-## 📦 Установка
+## Download 🚀
 
-1. **Клонировать репозиторий**
+Get the newest build here:
 
-   ```bash
-   git clone https://github.com/Avazbek22/ProjectTreeViewer.git
-   cd project-tree-viewer
-   ```
-2. **Открыть в Visual Studio 2022+ или JetBrains Rider**
-   Убедитесь, что установлен .NET 9 SDK.
-3. **Сборка и запуск**
-   Нажмите **F5** или **Start Debugging**.
+* **Latest Release:** [https://github.com/Avazbek22/ProjectTreeViewer/releases/latest](https://github.com/Avazbek22/ProjectTreeViewer/releases/latest)
+
+> If you need a specific version, open the Releases page and select the tag you want.
 
 ---
 
-## 📝 Использование
+## Highlights ✨
 
-1. **Настройки**
-   Нажмите **Настройки**, чтобы открыть панель фильтров и выбор шрифта.
-2. **Выбор папки**
-   Нажмите **Открыть папку** и укажите корень проекта.
-3. **Настройка фильтров**
-
-   * В **Папки верхнего уровня** отмечайте или убирайте подпапки для включения/исключения.
-   * В **Типы файлов** отмечайте нужные расширения.
-   * Переключите **Игнорировать скрытые** для скрытия файлов/папок с точкой в начале.
-4. **Применить и обновить**
-   Нажмите **Применить настройки** для обновления дерева.
-5. **Копирование**
-   Нажмите **Скопировать всё** для копирования ASCII‑дерева.
+* **Fast TreeView rendering** with checkboxes
+* **Layer‑by‑layer expand behavior** (no forced “Expand All” on load)
+* **Live settings panel**: lists (extensions / root folders / ignore options) react instantly to changes
+* **Copy to clipboard** with clean formatting
+* **Search in tree** (Ctrl+F + menu)
+* **File‑type icons** for common dev stacks and formats
+* **Localization** (multi-language UI)
+* Architecture prepared for future **UI swaps** (WinForms now; WPF/Web/Cli planned)
 
 ---
 
-## 💡 Сценарии использования
+## Who is this for? 🎯
 
-* **Код‑ревью и описания PR**
-  Вставьте дерево в описание PR, чтобы ревьюерам было проще ориентироваться.
+ProjectTreeViewer is useful when you want to:
 
-* **Регистрация багов и тикеты**
-  Добавьте снимок структуры, чтобы показать расположение файлов.
+* quickly send someone your project structure
+* prepare bug reports with a clean tree snapshot
+* extract selected file contents (only text formats)
+* share minimal reproducible context for an AI / mentor / teammate
+* teach Clean Architecture / DDD style structures by visualizing layers
 
-* **AI‑ассистенты**
-  Передайте ИИ (ChatGPT, Copilot) компактное представление большой кодовой базы, когда весь код отправить невозможно.
+Typical users:
 
-  ```text
-  ├── src  
-  │   ├── Controllers  
-  │   ├── Services  
-  │   └── Models  
-  └── tests  
-      ├── Unit  
-      └── Integration  
-  ```
-
-* **Документация и Wiki**
-  Автоматически обновляемый раздел с деревом проекта.
-
-* **Онбординг новых сотрудников**
-  Быстрая ориентация в структуре без изучения всего кода.
+* .NET developers
+* students/mentors
+* open-source maintainers
+* teams doing code review / refactoring
 
 ---
 
-## 🔧 Идеи развития
+## What it does (and does NOT do) ✅
 
-* **Экспорт в Markdown**
-  Сохранение вывода в формат `.md` автоматически.
+### It **does**
 
-* **Сохранение настроек**
-  Переключатели фильтров и шрифта как пресеты для разных проектов.
+* scan a folder, build a hierarchical tree
+* show file/folder nodes with icons
+* let you check/uncheck nodes (propagates to children/parents)
+* copy tree and/or selected text content to clipboard
+* allow filtering via settings (extensions, root folders, ignore rules)
 
-* **Тёмная тема**
-  Смена оформления под OS/IDE.
+### It **does NOT**
 
-* **Поиск и подсветка**
-  Быстрый поиск нужной папки или файла в дереве.
+* edit your files
+* rename/move/delete anything
+* run project code
+* change git state
+* install dependencies
 
 ---
 
-## 🤝 Участие в проекте
+## Screenshots 🖼️
 
-1. Форкните репозиторий
-2. Создайте ветку:
+> <img width="1131" height="1024" alt="image" src="https://github.com/user-attachments/assets/f3a0792b-bed4-4fff-9b14-d2675725ddaf" />
 
-   ```bash
-   git checkout -b feature/имя-функции
-   ```
-3. Внесите изменения и зафиксируйте коммит:
+---
 
-   ```bash
-   git commit -am "Добавить новую функцию"
-   ```
-4. Запушьте ветку и откройте pull request
+## Features ✅
 
+### 1) Tree view
+
+* Visualize the folder structure in a classic **TreeView**.
+* **Checkbox selection** for files/folders.
+* Expand/collapse behavior optimized to keep navigation comfortable.
+
+### 2) Copy actions 📋
+
+From the **Copy** menu you can:
+
+* **Copy full tree**
+* **Copy selected tree**
+* **Copy selected content** (text files only)
+* **Copy tree + content** (single clipboard payload)
+
+> Binary formats (images, videos, executables, archives, many Office formats) are skipped for content export.
+
+### 3) Live settings panel ⚙️
+
+Settings panel controls:
+
+* **Ignore options** (filtering logic)
+* **File types** (extensions)
+* **Top-level folders**
+* **Tree font**
+
+Important behavior:
+
+* Settings lists update **immediately** to reflect what is available.
+* The tree itself updates **only when you apply settings** (to keep UI predictable).
+
+### 4) Search 🔎
+
+* Open search using **Ctrl+F** or the menu item.
+* Designed to feel like a browser-style find widget:
+
+  * type → matches highlight/select
+  * navigation via up/down actions
+  * close with a close button
+
+---
+
+## Tech Stack 🧩
+
+* **.NET 10**
+* **WinForms** UI
+* Cleanly separated codebase (Core/Services/Infrastructure approach)
+* JSON-based resources (localization, icon mappings, etc.)
+
+---
+
+## Localization 🌍
+
+ProjectTreeViewer supports multiple UI languages.
+
+### How language is chosen
+
+* By default the app **detects the system UI culture** and selects the most appropriate language.
+* If a language is selected manually (menu), it should be used consistently afterwards (depending on your settings persistence implementation).
+
+> Implementation detail may differ by build. See the code in `LocalizationService` (e.g., `DetectSystemLanguage()`), plus `Program.cs` startup flow.
+
+---
+
+## Quick Start ⚡
+
+### Option A — Use the prebuilt .exe
+
+1. Download from:
+
+   * [https://github.com/Avazbek22/ProjectTreeViewer/releases/latest](https://github.com/Avazbek22/ProjectTreeViewer/releases/latest)
+2. Run the application
+3. **File → Open folder…**
+4. Use the **Copy** menu to export tree/content
+
+### Option B — Build from source
+
+**Requirements**
+
+* Windows
+* .NET SDK **10**
+
+**Build & run**
+
+```bash
+# From the solution folder
+
+dotnet restore
+
+dotnet build -c Release
+
+dotnet run --project Apps/WinForms/ProjectTreeViewer.WinForms.csproj
+```
+
+> Project/paths may vary slightly depending on how the solution is structured.
+
+---
+
+## How to use (workflow examples) 🧠
+
+### Example 1: Share project structure with a teammate
+
+1. Open folder
+2. (Optionally) uncheck irrelevant folders/files
+3. Copy → **Copy selected tree**
+4. Paste into chat or issue
+
+### Example 2: Share structure + specific file contents
+
+1. Check only the files you want
+2. Copy → **Copy selected content**
+3. Paste into chat or documentation
+
+### Example 3: Prepare context for AI assistance
+
+1. Select key folders + relevant files
+2. Copy → **Copy tree + content**
+3. Paste into your AI prompt
+
+---
+
+## FAQ ❓
+
+### Does it modify my project files?
+
+No. ProjectTreeViewer is **read-only**. It scans folders and reads files only to display structure or copy text.
+
+### Can it break my repository or git state?
+
+No. It does not run git commands or change tracked files.
+
+### Why are some file contents not copied?
+
+Binary formats are intentionally skipped (e.g., `.dll`, `.png`, `.zip`, `.pdf`, many Office files). The app focuses on *text content*.
+
+### Why are icons missing sometimes?
+
+Ensure the icon pack/resources are included correctly in the build/publish pipeline. The intended approach is to package icons with the app so they are available after publish.
+
+### Can I use it on very large folders?
+
+Yes, but very large trees may still take time depending on disk speed and folder complexity.
+
+### Will there be a WPF/Web/CLI version?
+
+That’s part of the roadmap. The architecture is prepared for future UI layers.
+
+---
+
+## Roadmap 🗺️
+
+Planned directions (high level):
+
+* smarter ignore detection (stack-aware candidates)
+* improved search UX (fast, stable, browser-like)
+* more export formats (Markdown, file, etc.)
+* alternative UIs (WPF / WebHost / CLI)
+
+---
+
+## Contributing 🤝
+
+PRs and issues are welcome.
+
+Suggested contributions:
+
+* new icon mappings
+* new localization packs
+* performance improvements in scanning/tree building
+* UI/UX improvements (search, settings)
+
+---
+
+## License 📄
+
+MIT License
+
+Copyright (c) 2025 Avazbek Olimov
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Keywords (for GitHub search) 🔎
+
+project tree viewer, folder structure, tree export, clipboard export, winforms, .net 10, codebase visualization, clean architecture, DDD, developer tool, repository structure, file selection, treeview search
