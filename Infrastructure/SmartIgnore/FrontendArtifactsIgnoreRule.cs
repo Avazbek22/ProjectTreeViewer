@@ -30,11 +30,15 @@ public sealed class FrontendArtifactsIgnoreRule : ISmartIgnoreRule
 	public SmartIgnoreResult Evaluate(string rootPath)
 	{
 		if (!Directory.Exists(rootPath))
-			return new SmartIgnoreResult(Array.Empty<string>(), Array.Empty<string>());
+			return new SmartIgnoreResult(
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase));
 
 		bool hasMarker = MarkerFiles.Any(marker => File.Exists(Path.Combine(rootPath, marker)));
 		if (!hasMarker)
-			return new SmartIgnoreResult(Array.Empty<string>(), Array.Empty<string>());
+			return new SmartIgnoreResult(
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase));
 
 		return new SmartIgnoreResult(
 			new HashSet<string>(FolderNames, StringComparer.OrdinalIgnoreCase),

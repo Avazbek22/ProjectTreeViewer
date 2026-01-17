@@ -83,7 +83,6 @@ namespace ProjectTreeViewer.WinForms
 
             treeProject.BeforeExpand -= treeProject_BeforeExpand;
             treeProject.BeforeExpand += treeProject_BeforeExpand;
-
             RemoveUnneededMenuMargins();
 
             _treeFontSize = treeProject.Font.Size;
