@@ -9,7 +9,9 @@
     "csharp": "csharp24.png",
     "css": "css24.png",
     "dll": "dll24.png",
+    "docker": "docker48.png",
     "excel": "excel48.png",
+    "env": "env48.png",
     "exe": "exe24.png",
     "folder": "folder24.png",
     "git": "git24.png",
@@ -27,6 +29,7 @@
     "powerpoint": "powerpoint48.png",
     "python": "python24.png",
     "pyc": "pyc24.png",
+    "react": "react48.png",
     "rust": "rust24.png",
     "sln": "sln24.png",
     "sql": "sql24.png",
@@ -37,6 +40,8 @@
     "video": "video24.png",
     "word": "word48.png",
     "xaml": "xaml24.png",
-    "xml": "xml24.png"
+    "xml": "xml24.png",
+    "yaml": "yaml24.png",
+    "yml": "yml24.png"
   }
 }

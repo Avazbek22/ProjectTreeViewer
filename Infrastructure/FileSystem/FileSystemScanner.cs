@@ -23,7 +23,7 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		}
 	}
 
-	public ScanResult<HashSet<string>> GetExtensions(string rootPath, IgnoreRules rules)
+	public ScanResult<HashSet<string>> GetExtensions(string rootPath, IgnoreRules rules, IReadOnlySet<string> allowedRootFolders)
 	{
 		var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -33,70 +33,56 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
 			return new ScanResult<HashSet<string>>(exts, false, false);
 
-		var pending = new Stack<string>();
-		pending.Push(rootPath);
-
-		bool isFirst = true;
-
-		while (pending.Count > 0)
+		string[] rootFiles;
+		try
 		{
-			var dir = pending.Pop();
+			rootFiles = Directory.GetFiles(rootPath);
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return new ScanResult<HashSet<string>>(exts, true, true);
+		}
+		catch
+		{
+			return new ScanResult<HashSet<string>>(exts, false, false);
+		}
 
-			string[] subDirs;
-			try
-			{
-				subDirs = Directory.GetDirectories(dir);
-			}
-			catch (UnauthorizedAccessException)
-			{
-				hadAccessDenied = true;
-				if (isFirst) rootAccessDenied = true;
+		foreach (var file in rootFiles)
+		{
+			var fileInfo = new FileInfo(file);
+			if (ShouldSkipFile(fileInfo, rules))
 				continue;
-			}
-			catch
-			{
+
+			var ext = Path.GetExtension(fileInfo.Name);
+			if (!string.IsNullOrWhiteSpace(ext))
+				exts.Add(ext);
+		}
+
+		string[] rootDirs;
+		try
+		{
+			rootDirs = Directory.GetDirectories(rootPath);
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return new ScanResult<HashSet<string>>(exts, true, true);
+		}
+		catch
+		{
+			return new ScanResult<HashSet<string>>(exts, false, false);
+		}
+
+		foreach (var dir in rootDirs)
+		{
+			var dirInfo = new DirectoryInfo(dir);
+			if (ShouldSkipDirectory(dirInfo, rules))
 				continue;
-			}
 
-			foreach (var sd in subDirs)
-			{
-				var dirInfo = new DirectoryInfo(sd);
-				if (ShouldSkipDirectory(dirInfo, rules))
-					continue;
-
-				pending.Push(sd);
-			}
-
-			string[] files;
-			try
-			{
-				files = Directory.GetFiles(dir);
-			}
-			catch (UnauthorizedAccessException)
-			{
-				hadAccessDenied = true;
-				if (isFirst) rootAccessDenied = true;
+			if (allowedRootFolders.Count > 0 &&
+				!allowedRootFolders.Contains(dirInfo.Name))
 				continue;
-			}
-			catch
-			{
-				continue;
-			}
 
-			foreach (var file in files)
-			{
-				var fileInfo = new FileInfo(file);
-				var name = fileInfo.Name;
-
-				if (ShouldSkipFile(fileInfo, rules))
-					continue;
-
-				var ext = Path.GetExtension(name);
-				if (!string.IsNullOrWhiteSpace(ext))
-					exts.Add(ext);
-			}
-
-			isFirst = false;
+			CollectExtensions(dir, rules, exts, ref hadAccessDenied);
 		}
 
 		return new ScanResult<HashSet<string>>(exts, rootAccessDenied, hadAccessDenied);
@@ -143,12 +129,6 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		if (rules.SmartIgnoredFolders.Contains(name))
 			return true;
 
-		if (rules.IgnoreBinFolders && name.Equals("bin", StringComparison.OrdinalIgnoreCase))
-			return true;
-
-		if (rules.IgnoreObjFolders && name.Equals("obj", StringComparison.OrdinalIgnoreCase))
-			return true;
-
 		if (rules.IgnoreDotFolders && name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
@@ -172,5 +152,70 @@ public sealed class FileSystemScanner : IFileSystemScanner
 			return true;
 
 		return false;
+	}
+
+	private static void CollectExtensions(
+		string rootPath,
+		IgnoreRules rules,
+		HashSet<string> exts,
+		ref bool hadAccessDenied)
+	{
+		var pending = new Stack<string>();
+		pending.Push(rootPath);
+
+		while (pending.Count > 0)
+		{
+			var dir = pending.Pop();
+
+			string[] subDirs;
+			try
+			{
+				subDirs = Directory.GetDirectories(dir);
+			}
+			catch (UnauthorizedAccessException)
+			{
+				hadAccessDenied = true;
+				continue;
+			}
+			catch
+			{
+				continue;
+			}
+
+			foreach (var sd in subDirs)
+			{
+				var dirInfo = new DirectoryInfo(sd);
+				if (ShouldSkipDirectory(dirInfo, rules))
+					continue;
+
+				pending.Push(sd);
+			}
+
+			string[] files;
+			try
+			{
+				files = Directory.GetFiles(dir);
+			}
+			catch (UnauthorizedAccessException)
+			{
+				hadAccessDenied = true;
+				continue;
+			}
+			catch
+			{
+				continue;
+			}
+
+			foreach (var file in files)
+			{
+				var fileInfo = new FileInfo(file);
+				if (ShouldSkipFile(fileInfo, rules))
+					continue;
+
+				var ext = Path.GetExtension(fileInfo.Name);
+				if (!string.IsNullOrWhiteSpace(ext))
+					exts.Add(ext);
+			}
+		}
 	}
 }

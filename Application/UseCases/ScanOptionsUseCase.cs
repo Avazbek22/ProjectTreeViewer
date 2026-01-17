@@ -14,7 +14,7 @@ public sealed class ScanOptionsUseCase
 
 	public ScanOptionsResult Execute(ScanOptionsRequest request)
 	{
-		var extensions = _scanner.GetExtensions(request.RootPath, request.IgnoreRules);
+		var extensions = _scanner.GetExtensions(request.RootPath, request.IgnoreRules, request.AllowedRootFolders);
 		var rootFolders = _scanner.GetRootFolderNames(request.RootPath, request.IgnoreRules);
 
 		return new ScanOptionsResult(

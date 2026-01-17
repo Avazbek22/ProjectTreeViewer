@@ -1,30 +1,57 @@
 using System.Collections.Generic;
-using System.Linq;
 using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.Application.Services;
 
 public sealed class IgnoreRulesService
 {
-	private readonly SmartIgnoreService _smartIgnore;
-
-	public IgnoreRulesService(SmartIgnoreService smartIgnore)
+	public IgnoreRules Build(
+		IReadOnlyCollection<IgnoreOptionDescriptor> options,
+		IReadOnlyCollection<string> selectedOptions)
 	{
-		_smartIgnore = smartIgnore;
-	}
+		var selected = new HashSet<string>(selectedOptions, StringComparer.OrdinalIgnoreCase);
+		var folders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var files = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-	public IgnoreRules Build(string rootPath, IReadOnlyCollection<IgnoreOptionId> selectedOptions)
-	{
-		var smart = _smartIgnore.Build(rootPath);
+		bool ignoreHiddenFolders = false;
+		bool ignoreHiddenFiles = false;
+		bool ignoreDotFolders = false;
+		bool ignoreDotFiles = false;
+
+		foreach (var option in options)
+		{
+			if (!selected.Contains(option.Id))
+				continue;
+
+			switch (option.Kind)
+			{
+				case IgnoreOptionKind.NamedFolder:
+					folders.Add(option.Id);
+					break;
+				case IgnoreOptionKind.NamedFile:
+					files.Add(option.Id);
+					break;
+				case IgnoreOptionKind.HiddenFolders:
+					ignoreHiddenFolders = true;
+					break;
+				case IgnoreOptionKind.HiddenFiles:
+					ignoreHiddenFiles = true;
+					break;
+				case IgnoreOptionKind.DotFolders:
+					ignoreDotFolders = true;
+					break;
+				case IgnoreOptionKind.DotFiles:
+					ignoreDotFiles = true;
+					break;
+			}
+		}
 
 		return new IgnoreRules(
-			IgnoreBinFolders: selectedOptions.Contains(IgnoreOptionId.BinFolders),
-			IgnoreObjFolders: selectedOptions.Contains(IgnoreOptionId.ObjFolders),
-			IgnoreHiddenFolders: selectedOptions.Contains(IgnoreOptionId.HiddenFolders),
-			IgnoreHiddenFiles: selectedOptions.Contains(IgnoreOptionId.HiddenFiles),
-			IgnoreDotFolders: selectedOptions.Contains(IgnoreOptionId.DotFolders),
-			IgnoreDotFiles: selectedOptions.Contains(IgnoreOptionId.DotFiles),
-			SmartIgnoredFolders: smart.FolderNames,
-			SmartIgnoredFiles: smart.FileNames);
+			IgnoreHiddenFolders: ignoreHiddenFolders,
+			IgnoreHiddenFiles: ignoreHiddenFiles,
+			IgnoreDotFolders: ignoreDotFolders,
+			IgnoreDotFiles: ignoreDotFiles,
+			SmartIgnoredFolders: folders,
+			SmartIgnoredFiles: files);
 	}
 }

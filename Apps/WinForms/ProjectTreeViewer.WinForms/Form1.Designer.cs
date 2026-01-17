@@ -51,6 +51,11 @@ namespace ProjectTreeViewer.WinForms
 			miLangIt = new ToolStripMenuItem();
 			miHelp = new ToolStripMenuItem();
 			miHelpAbout = new ToolStripMenuItem();
+			lblSearch = new ToolStripLabel();
+			txtSearch = new ToolStripTextBox();
+			btnSearchPrev = new ToolStripButton();
+			btnSearchNext = new ToolStripButton();
+			btnSearchClose = new ToolStripButton();
 			panelSettings = new Panel();
 			labelFont = new Label();
 			cboFont = new ComboBox();
@@ -72,7 +77,7 @@ namespace ProjectTreeViewer.WinForms
 			// menuStripMain
 			// 
 			menuStripMain.ImageScalingSize = new Size(20, 20);
-			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miOptions, miLanguage, miHelp });
+			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miOptions, miLanguage, miHelp, lblSearch, txtSearch, btnSearchPrev, btnSearchNext, btnSearchClose });
 			menuStripMain.Location = new Point(0, 0);
 			menuStripMain.Name = "menuStripMain";
 			menuStripMain.Size = new Size(1128, 24);
@@ -270,6 +275,51 @@ namespace ProjectTreeViewer.WinForms
 			miHelpAbout.Name = "miHelpAbout";
 			miHelpAbout.Size = new Size(83, 26);
 			miHelpAbout.Click += miHelpAbout_Click;
+			// 
+			// lblSearch
+			// 
+			lblSearch.Alignment = ToolStripItemAlignment.Right;
+			lblSearch.Name = "lblSearch";
+			lblSearch.Size = new Size(0, 20);
+			lblSearch.Visible = false;
+			// 
+			// txtSearch
+			// 
+			txtSearch.Alignment = ToolStripItemAlignment.Right;
+			txtSearch.AutoSize = false;
+			txtSearch.BorderStyle = BorderStyle.FixedSingle;
+			txtSearch.Name = "txtSearch";
+			txtSearch.Size = new Size(200, 23);
+			txtSearch.Visible = false;
+			txtSearch.TextChanged += txtSearch_TextChanged;
+			txtSearch.KeyDown += txtSearch_KeyDown;
+			// 
+			// btnSearchPrev
+			// 
+			btnSearchPrev.Alignment = ToolStripItemAlignment.Right;
+			btnSearchPrev.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			btnSearchPrev.Name = "btnSearchPrev";
+			btnSearchPrev.Size = new Size(23, 20);
+			btnSearchPrev.Visible = false;
+			btnSearchPrev.Click += btnSearchPrev_Click;
+			// 
+			// btnSearchNext
+			// 
+			btnSearchNext.Alignment = ToolStripItemAlignment.Right;
+			btnSearchNext.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			btnSearchNext.Name = "btnSearchNext";
+			btnSearchNext.Size = new Size(23, 20);
+			btnSearchNext.Visible = false;
+			btnSearchNext.Click += btnSearchNext_Click;
+			// 
+			// btnSearchClose
+			// 
+			btnSearchClose.Alignment = ToolStripItemAlignment.Right;
+			btnSearchClose.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			btnSearchClose.Name = "btnSearchClose";
+			btnSearchClose.Size = new Size(23, 20);
+			btnSearchClose.Visible = false;
+			btnSearchClose.Click += btnSearchClose_Click;
 			// 
 			// panelSettings
 			// 
@@ -485,6 +535,11 @@ namespace ProjectTreeViewer.WinForms
 
         private ToolStripMenuItem miHelp;
         private ToolStripMenuItem miHelpAbout;
+		private ToolStripLabel lblSearch;
+		private ToolStripTextBox txtSearch;
+		private ToolStripButton btnSearchPrev;
+		private ToolStripButton btnSearchNext;
+		private ToolStripButton btnSearchClose;
 
         private Panel panelSettings;
 

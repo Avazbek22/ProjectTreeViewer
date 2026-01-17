@@ -1,7 +1,6 @@
 namespace ProjectTreeViewer.Kernel.Models;
 
-public sealed record IgnoreOptionDescriptor(
+public sealed record IgnoreOptionDefinition(
 	string Id,
 	IgnoreOptionKind Kind,
-	string Label,
 	bool DefaultChecked);

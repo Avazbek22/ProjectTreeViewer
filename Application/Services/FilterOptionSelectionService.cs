@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectTreeViewer.Application.Models;
+using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.Application.Services;
 
 public sealed class FilterOptionSelectionService
 {
-	private static readonly HashSet<string> DefaultExtensions = new(StringComparer.OrdinalIgnoreCase)
+	private readonly HashSet<string> _defaultExtensions;
+
+	public FilterOptionSelectionService(IDefaultExtensionCatalog catalog)
 	{
-		".cs",
-		".sln",
-		".csproj",
-		".designer"
-	};
+		_defaultExtensions = new HashSet<string>(catalog.GetDefaultExtensions(), StringComparer.OrdinalIgnoreCase);
+	}
 
 	public IReadOnlyList<SelectionOption> BuildExtensionOptions(
 		IEnumerable<string> extensions,
@@ -26,7 +26,7 @@ public sealed class FilterOptionSelectionService
 		foreach (var ext in extensions.OrderBy(e => e, StringComparer.OrdinalIgnoreCase))
 		{
 			bool isChecked = previousSelections.Contains(ext) ||
-				(!hasPrevious && DefaultExtensions.Contains(ext));
+				(!hasPrevious && _defaultExtensions.Contains(ext));
 
 			list.Add(new SelectionOption(ext, isChecked));
 		}
@@ -56,12 +56,6 @@ public sealed class FilterOptionSelectionService
 	private static bool IsIgnoredByRules(string name, IgnoreRules rules)
 	{
 		if (rules.SmartIgnoredFolders.Contains(name))
-			return true;
-
-		if (rules.IgnoreBinFolders && name.Equals("bin", StringComparison.OrdinalIgnoreCase))
-			return true;
-
-		if (rules.IgnoreObjFolders && name.Equals("obj", StringComparison.OrdinalIgnoreCase))
 			return true;
 
 		if (rules.IgnoreDotFolders && name.StartsWith(".", StringComparison.Ordinal))

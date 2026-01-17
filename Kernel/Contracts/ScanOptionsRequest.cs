@@ -4,4 +4,5 @@ namespace ProjectTreeViewer.Kernel.Contracts;
 
 public sealed record ScanOptionsRequest(
 	string RootPath,
-	IgnoreRules IgnoreRules);
+	IgnoreRules IgnoreRules,
+	IReadOnlySet<string> AllowedRootFolders);
