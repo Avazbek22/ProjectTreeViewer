@@ -16,6 +16,11 @@
   "Menu.View.ZoomIn": "Zoom avanti",
   "Menu.View.ZoomOut": "Zoom indietro",
   "Menu.View.ZoomReset": "Reimposta zoom",
+  "Menu.Search": "Ricerca",
+  "Menu.Search.Label": "Cerca:",
+  "Menu.Search.Next": "Successivo",
+  "Menu.Search.Previous": "Precedente",
+  "Menu.Search.Close": "Chiudi",
 
   "Menu.Options": "Opzioni",
   "Menu.Language": "Lingua",

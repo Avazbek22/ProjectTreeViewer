@@ -24,6 +24,7 @@ namespace ProjectTreeViewer.WinForms
 		private bool _suppressExtensionsAllCheck;
 		private bool _suppressRootItemCheck;
 		private bool _suppressRootAllCheck;
+		private bool _suppressSearchTextChanged;
 
         private float _treeFontSize;
 
@@ -43,12 +44,16 @@ namespace ProjectTreeViewer.WinForms
         private readonly TreeAndContentExportService _treeAndContentExport;
         private readonly TreeSelectionService _selection;
         private readonly IIconStore _iconStore;
+		private readonly TreeSearchService _treeSearch;
 
         private BuildTreeResult? _currentTree;
 
         private bool _elevationAttempted;
 
 		private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+		private IReadOnlyList<TreeNode> _searchMatches = Array.Empty<TreeNode>();
+		private int _searchMatchIndex = -1;
+		private string _searchQuery = string.Empty;
 
         private const int TreeIconSize = 24;
 
@@ -74,6 +79,7 @@ namespace ProjectTreeViewer.WinForms
             _renderer = services.TreeViewRenderer;
             _selection = services.TreeSelectionService;
             _iconStore = services.IconStore;
+			_treeSearch = new TreeSearchService();
 
             InitializeComponent();
 
@@ -361,7 +367,16 @@ namespace ProjectTreeViewer.WinForms
             miViewZoomOut.Text = _localization["Menu.View.ZoomOut"];
             miViewZoomReset.Text = _localization["Menu.View.ZoomReset"];
 
+			lblSearch.Text = _localization["Menu.Search.Label"];
+			btnSearchNext.Text = "▼";
+			btnSearchPrev.Text = "▲";
+			btnSearchClose.Text = "×";
+			btnSearchNext.ToolTipText = _localization["Menu.Search.Next"];
+			btnSearchPrev.ToolTipText = _localization["Menu.Search.Previous"];
+			btnSearchClose.ToolTipText = _localization["Menu.Search.Close"];
+
             miOptions.Text = _localization["Menu.Options"];
+			miSearch.Text = _localization["Menu.Search"];
 
             miLanguage.Text = _localization["Menu.Language"];
 
@@ -417,7 +432,11 @@ namespace ProjectTreeViewer.WinForms
             miViewExpandAll.Enabled = enabled;
             miViewCollapseAll.Enabled = enabled;
 
+			miSearch.Enabled = enabled;
             miOptions.Enabled = enabled;
+
+			if (!enabled && txtSearch.Visible)
+				CloseSearch();
         }
 
         private void UpdateTitle()
@@ -426,6 +445,176 @@ namespace ProjectTreeViewer.WinForms
                 ? _localization["Title.Default"]
                 : _localization.Format("Title.WithPath", _currentPath);
         }
+
+		// ───────────────────────────────────────── Search (Ctrl + F)
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+		{
+			if (keyData == (Keys.Control | Keys.F))
+			{
+				ToggleSearch();
+				return true;
+			}
+
+			if (keyData == Keys.Escape && txtSearch.Visible)
+			{
+				CloseSearch();
+				return true;
+			}
+
+			return base.ProcessCmdKey(ref msg, keyData);
+		}
+
+		private void ShowSearch()
+		{
+			if (!miSearch.Enabled)
+				return;
+
+			SetSearchVisible(true);
+			txtSearch.Focus();
+			txtSearch.SelectAll();
+		}
+
+		private void ToggleSearch()
+		{
+			if (!miSearch.Enabled)
+				return;
+
+			if (txtSearch.Visible)
+			{
+				CloseSearch();
+				return;
+			}
+
+			ShowSearch();
+		}
+
+		private void CloseSearch()
+		{
+			_suppressSearchTextChanged = true;
+			try
+			{
+				txtSearch.Text = string.Empty;
+			}
+			finally
+			{
+				_suppressSearchTextChanged = false;
+			}
+
+			SetSearchVisible(false);
+			ClearSearchState();
+			treeProject.Focus();
+		}
+
+		private void SetSearchVisible(bool visible)
+		{
+			lblSearch.Visible = false;
+			txtSearch.Visible = visible;
+			btnSearchNext.Visible = visible;
+			btnSearchPrev.Visible = visible;
+			btnSearchClose.Visible = visible;
+		}
+
+		private void txtSearch_TextChanged(object? sender, EventArgs e)
+		{
+			if (_suppressSearchTextChanged) return;
+			UpdateSearchResults(selectFirst: true);
+		}
+
+		private void txtSearch_KeyDown(object? sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Escape)
+			{
+				CloseSearch();
+				e.SuppressKeyPress = true;
+				return;
+			}
+
+			if (e.KeyCode == Keys.Enter)
+			{
+				if (e.Shift)
+					FindPrevious();
+				else
+					FindNext();
+
+				e.SuppressKeyPress = true;
+			}
+		}
+
+		private void btnSearchNext_Click(object? sender, EventArgs e) => FindNext();
+		private void btnSearchPrev_Click(object? sender, EventArgs e) => FindPrevious();
+		private void btnSearchClose_Click(object? sender, EventArgs e) => CloseSearch();
+
+		private void UpdateSearchResults(bool selectFirst)
+		{
+			var query = txtSearch.Text.Trim();
+			if (string.IsNullOrWhiteSpace(query))
+			{
+				ClearSearchState();
+				return;
+			}
+
+			if (!string.Equals(query, _searchQuery, StringComparison.OrdinalIgnoreCase))
+			{
+				_searchQuery = query;
+				_searchMatches = _treeSearch.FindMatches(query);
+				_searchMatchIndex = -1;
+			}
+
+			if (selectFirst && _searchMatches.Count > 0)
+			{
+				_searchMatchIndex = 0;
+				SelectSearchMatch(_searchMatches[_searchMatchIndex]);
+			}
+		}
+
+		private void FindNext()
+		{
+			if (string.IsNullOrWhiteSpace(txtSearch.Text)) return;
+			if (_searchMatches.Count == 0)
+			{
+				UpdateSearchResults(selectFirst: true);
+				return;
+			}
+
+			_searchMatchIndex = (_searchMatchIndex + 1) % _searchMatches.Count;
+			SelectSearchMatch(_searchMatches[_searchMatchIndex]);
+		}
+
+		private void FindPrevious()
+		{
+			if (string.IsNullOrWhiteSpace(txtSearch.Text)) return;
+			if (_searchMatches.Count == 0)
+			{
+				UpdateSearchResults(selectFirst: true);
+				return;
+			}
+
+			_searchMatchIndex = (_searchMatchIndex - 1 + _searchMatches.Count) % _searchMatches.Count;
+			SelectSearchMatch(_searchMatches[_searchMatchIndex]);
+		}
+
+		private void SelectSearchMatch(TreeNode node)
+		{
+			treeProject.SelectedNode = node;
+			node.EnsureVisible();
+		}
+
+		private void ClearSearchState()
+		{
+			_searchMatches = Array.Empty<TreeNode>();
+			_searchMatchIndex = -1;
+			_searchQuery = string.Empty;
+		}
+
+		private void RefreshSearchIndex()
+		{
+			_treeSearch.Rebuild(treeProject);
+			_searchMatches = Array.Empty<TreeNode>();
+			_searchMatchIndex = -1;
+
+			if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+				UpdateSearchResults(selectFirst: true);
+		}
 
         // ───────────────────────────────────────── Menu actions
         private void miFileOpen_Click(object? sender, EventArgs e)
@@ -473,6 +662,8 @@ namespace ProjectTreeViewer.WinForms
 		private void miViewZoomIn_Click(object? sender, EventArgs e) => ChangeTreeFontSize(+1f);
 		private void miViewZoomOut_Click(object? sender, EventArgs e) => ChangeTreeFontSize(-1f);
 		private void miViewZoomReset_Click(object? sender, EventArgs e) => SetTreeFontSize(9f);
+
+		private void miSearch_Click(object? sender, EventArgs e) => ToggleSearch();
 
 		private void miOptions_Click(object? sender, EventArgs e)
 		{
@@ -611,6 +802,7 @@ namespace ProjectTreeViewer.WinForms
 
             SetMenuEnabled(true);
 
+			panelSettings.Visible = true;
             ReloadProject();
         }
 
@@ -755,6 +947,7 @@ namespace ProjectTreeViewer.WinForms
                 if (treeProject.Nodes.Count > 0)
                     treeProject.Nodes[0].Expand();
 
+				RefreshSearchIndex();
 				UpdateTreeItemHeight();
 			}
             finally

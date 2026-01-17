@@ -16,6 +16,11 @@
   "Menu.View.ZoomIn": "Увеличить",
   "Menu.View.ZoomOut": "Уменьшить",
   "Menu.View.ZoomReset": "Сбросить масштаб",
+  "Menu.Search": "Поиск",
+  "Menu.Search.Label": "Поиск:",
+  "Menu.Search.Next": "Следующий",
+  "Menu.Search.Previous": "Предыдущий",
+  "Menu.Search.Close": "Закрыть",
 
   "Menu.Options": "Параметры",
   "Menu.Language": "Язык",
