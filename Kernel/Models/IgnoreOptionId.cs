@@ -1,9 +1,9 @@
 namespace ProjectTreeViewer.Kernel.Models;
 
-public enum IgnoreOptionKind
+public enum IgnoreOptionId
 {
-	NamedFolder,
-	NamedFile,
+	BinFolders,
+	ObjFolders,
 	HiddenFolders,
 	HiddenFiles,
 	DotFolders,

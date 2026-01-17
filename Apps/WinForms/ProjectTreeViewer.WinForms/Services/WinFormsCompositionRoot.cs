@@ -3,9 +3,9 @@ using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Infrastructure.Elevation;
 using ProjectTreeViewer.Infrastructure.FileSystem;
 using ProjectTreeViewer.Infrastructure.ResourceStore;
+using ProjectTreeViewer.Infrastructure.SmartIgnore;
 using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Models;
-using ProjectTreeViewer.Infrastructure.SmartIgnore;
 
 namespace ProjectTreeViewer.WinForms.Services;
 
@@ -22,11 +22,15 @@ public static class WinFormsCompositionRoot
 		var treeBuilder = new TreeBuilder();
 		var scanOptionsUseCase = new ScanOptionsUseCase(scanner);
 		var buildTreeUseCase = new BuildTreeUseCase(treeBuilder, treePresenter);
-		var smartIgnoreAnalyzer = new SmartIgnoreAnalyzer();
-		var ignoreOptionsService = new IgnoreOptionsService(localization, smartIgnoreAnalyzer);
-		var ignoreRulesService = new IgnoreRulesService();
-		var defaultExtensions = new EmbeddedDefaultExtensionCatalog();
-		var filterSelectionService = new FilterOptionSelectionService(defaultExtensions);
+		var smartIgnoreRules = new ISmartIgnoreRule[]
+		{
+			new CommonSmartIgnoreRule(),
+			new FrontendArtifactsIgnoreRule()
+		};
+		var smartIgnoreService = new SmartIgnoreService(smartIgnoreRules);
+		var ignoreOptionsService = new IgnoreOptionsService(localization);
+		var ignoreRulesService = new IgnoreRulesService(smartIgnoreService);
+		var filterSelectionService = new FilterOptionSelectionService();
 		var treeExportService = new TreeExportService();
 		var contentExportService = new SelectedContentExportService();
 		var treeAndContentExportService = new TreeAndContentExportService(treeExportService, contentExportService);

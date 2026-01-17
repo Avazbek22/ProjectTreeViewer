@@ -5,6 +5,6 @@ namespace ProjectTreeViewer.Kernel.Abstractions;
 public interface IFileSystemScanner
 {
 	bool CanReadRoot(string rootPath);
-	ScanResult<HashSet<string>> GetExtensions(string rootPath, IgnoreRules rules, IReadOnlySet<string> allowedRootFolders);
+	ScanResult<HashSet<string>> GetExtensions(string rootPath, IgnoreRules rules);
 	ScanResult<List<string>> GetRootFolderNames(string rootPath, IgnoreRules rules);
 }
