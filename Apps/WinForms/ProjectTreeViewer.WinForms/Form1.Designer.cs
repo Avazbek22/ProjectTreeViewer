@@ -52,7 +52,6 @@ namespace ProjectTreeViewer.WinForms
 			miLangIt = new ToolStripMenuItem();
 			miHelp = new ToolStripMenuItem();
 			miHelpAbout = new ToolStripMenuItem();
-			lblSearch = new ToolStripLabel();
 			txtSearch = new ToolStripTextBox();
 			btnSearchPrev = new ToolStripButton();
 			btnSearchNext = new ToolStripButton();
@@ -78,7 +77,7 @@ namespace ProjectTreeViewer.WinForms
 			// menuStripMain
 			// 
 			menuStripMain.ImageScalingSize = new Size(20, 20);
-			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miSearch, miOptions, miLanguage, miHelp, lblSearch, txtSearch, btnSearchPrev, btnSearchNext, btnSearchClose });
+			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miSearch, miOptions, miLanguage, miHelp, btnSearchClose, txtSearch, btnSearchNext, btnSearchPrev });
 			menuStripMain.Location = new Point(0, 0);
 			menuStripMain.Name = "menuStripMain";
 			menuStripMain.Size = new Size(1128, 24);
@@ -284,13 +283,6 @@ namespace ProjectTreeViewer.WinForms
 			miHelpAbout.Name = "miHelpAbout";
 			miHelpAbout.Size = new Size(83, 26);
 			miHelpAbout.Click += miHelpAbout_Click;
-			// 
-			// lblSearch
-			// 
-			lblSearch.Alignment = ToolStripItemAlignment.Right;
-			lblSearch.Name = "lblSearch";
-			lblSearch.Size = new Size(0, 20);
-			lblSearch.Visible = false;
 			// 
 			// txtSearch
 			// 
@@ -545,8 +537,7 @@ namespace ProjectTreeViewer.WinForms
 
         private ToolStripMenuItem miHelp;
         private ToolStripMenuItem miHelpAbout;
-		private ToolStripLabel lblSearch;
-		private ToolStripTextBox txtSearch;
+        private ToolStripTextBox txtSearch;
 		private ToolStripButton btnSearchPrev;
 		private ToolStripButton btnSearchNext;
 		private ToolStripButton btnSearchClose;
