@@ -53,6 +53,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
 		private HashSet<IgnoreOptionId> _ignoreSelectionCache = new();
+		private bool _ignoreSelectionInitialized;
 		private HashSet<string> _extensionsSelectionCache = new(StringComparer.OrdinalIgnoreCase);
 		private IReadOnlyList<TreeNode> _searchMatches = Array.Empty<TreeNode>();
 		private int _searchMatchIndex = -1;
@@ -252,6 +253,7 @@ namespace ProjectTreeViewer.WinForms
             // ItemCheck fires BEFORE the state changes. Update lists after WinForms applies the new check state.
             BeginInvoke(new Action(() =>
             {
+				_ignoreSelectionInitialized = true;
 				SyncIgnoreAllCheckbox();
 				UpdateIgnoreSelectionCache();
 				PopulateRootFolders(_currentPath ?? "");
@@ -910,6 +912,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (_suppressIgnoreAllCheck) return;
 
+			_ignoreSelectionInitialized = true;
 			bool selectAll = checkBoxIgnoreAll.Checked;
 			SetAllChecked(lstIgnore, selectAll, ref _suppressIgnoreItemCheck);
 			UpdateIgnoreSelectionCache();
@@ -1098,7 +1101,7 @@ namespace ProjectTreeViewer.WinForms
 					}
 
 					_ignoreOptions = _ignoreOptionsService.GetOptions();
-					bool hasPrevious = previousSelections.Count > 0;
+					bool hasPrevious = _ignoreSelectionInitialized;
 
 					foreach (var option in _ignoreOptions)
 					{
