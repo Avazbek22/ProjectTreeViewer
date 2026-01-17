@@ -53,7 +53,7 @@ public sealed class IconMapper : IIconMapper
 		}) ?? throw new InvalidOperationException("Icon mapping is empty.");
 
 		return new IconMapping(
-			new HashSet<string>(mapping.GrayFolderNames ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase),
+			new HashSet<string>(mapping.GrayFolderNames ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase),
 			new Dictionary<string, string>(mapping.ExtensionIcons ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase),
 			new Dictionary<string, string>(mapping.FileNameIcons ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase));
 	}
