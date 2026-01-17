@@ -368,9 +368,9 @@ namespace ProjectTreeViewer.WinForms
             miViewZoomReset.Text = _localization["Menu.View.ZoomReset"];
 
 			lblSearch.Text = _localization["Menu.Search.Label"];
-			btnSearchNext.Text = "▼";
-			btnSearchPrev.Text = "▲";
-			btnSearchClose.Text = "×";
+			btnSearchNext.Text = "⮟";
+			btnSearchPrev.Text = "⮝";
+			btnSearchClose.Text = "✕";
 			btnSearchNext.ToolTipText = _localization["Menu.Search.Next"];
 			btnSearchPrev.ToolTipText = _localization["Menu.Search.Previous"];
 			btnSearchClose.ToolTipText = _localization["Menu.Search.Close"];
