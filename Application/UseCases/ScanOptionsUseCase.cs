@@ -37,8 +37,12 @@ public sealed class ScanOptionsUseCase
 		if (rootFolders.Count == 0)
 			return new ScanResult<HashSet<string>>(extensions, false, false);
 
-		bool rootAccessDenied = false;
-		bool hadAccessDenied = false;
+		var rootFiles = _scanner.GetRootFileExtensions(rootPath, ignoreRules);
+		foreach (var ext in rootFiles.Value)
+			extensions.Add(ext);
+
+		bool rootAccessDenied = rootFiles.RootAccessDenied;
+		bool hadAccessDenied = rootFiles.HadAccessDenied;
 
 		foreach (var folder in rootFolders)
 		{

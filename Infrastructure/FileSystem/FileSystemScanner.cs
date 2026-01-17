@@ -102,6 +102,44 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		return new ScanResult<HashSet<string>>(exts, rootAccessDenied, hadAccessDenied);
 	}
 
+	public ScanResult<HashSet<string>> GetRootFileExtensions(string rootPath, IgnoreRules rules)
+	{
+		var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+		if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
+			return new ScanResult<HashSet<string>>(exts, false, false);
+
+		bool rootAccessDenied = false;
+		bool hadAccessDenied = false;
+
+		string[] files;
+		try
+		{
+			files = Directory.GetFiles(rootPath);
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return new ScanResult<HashSet<string>>(exts, true, true);
+		}
+		catch
+		{
+			return new ScanResult<HashSet<string>>(exts, false, false);
+		}
+
+		foreach (var file in files)
+		{
+			var fileInfo = new FileInfo(file);
+			if (ShouldSkipFile(fileInfo, rules))
+				continue;
+
+			var ext = Path.GetExtension(fileInfo.Name);
+			if (!string.IsNullOrWhiteSpace(ext))
+				exts.Add(ext);
+		}
+
+		return new ScanResult<HashSet<string>>(exts, rootAccessDenied, hadAccessDenied);
+	}
+
 	public ScanResult<List<string>> GetRootFolderNames(string rootPath, IgnoreRules rules)
 	{
 		var names = new List<string>();
