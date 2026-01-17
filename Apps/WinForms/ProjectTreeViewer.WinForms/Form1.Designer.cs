@@ -39,6 +39,7 @@ namespace ProjectTreeViewer.WinForms
 			miViewZoomIn = new ToolStripMenuItem();
 			miViewZoomOut = new ToolStripMenuItem();
 			miViewZoomReset = new ToolStripMenuItem();
+			miSearch = new ToolStripMenuItem();
 			miOptions = new ToolStripMenuItem();
 			miLanguage = new ToolStripMenuItem();
 			miLangRu = new ToolStripMenuItem();
@@ -77,7 +78,7 @@ namespace ProjectTreeViewer.WinForms
 			// menuStripMain
 			// 
 			menuStripMain.ImageScalingSize = new Size(20, 20);
-			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miOptions, miLanguage, miHelp, lblSearch, txtSearch, btnSearchPrev, btnSearchNext, btnSearchClose });
+			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miSearch, miOptions, miLanguage, miHelp, lblSearch, txtSearch, btnSearchPrev, btnSearchNext, btnSearchClose });
 			menuStripMain.Location = new Point(0, 0);
 			menuStripMain.Name = "menuStripMain";
 			menuStripMain.Size = new Size(1128, 24);
@@ -200,6 +201,14 @@ namespace ProjectTreeViewer.WinForms
 			miViewZoomReset.ShortcutKeys = Keys.Control | Keys.D0;
 			miViewZoomReset.Size = new Size(196, 26);
 			miViewZoomReset.Click += miViewZoomReset_Click;
+			// 
+			// miSearch
+			// 
+			miSearch.Name = "miSearch";
+			miSearch.ShortcutKeys = Keys.Control | Keys.F;
+			miSearch.ShowShortcutKeys = false;
+			miSearch.Size = new Size(14, 20);
+			miSearch.Click += miSearch_Click;
 			// 
 			// miOptions
 			// 
@@ -520,6 +529,7 @@ namespace ProjectTreeViewer.WinForms
         private ToolStripMenuItem miViewZoomIn;
         private ToolStripMenuItem miViewZoomOut;
         private ToolStripMenuItem miViewZoomReset;
+		private ToolStripMenuItem miSearch;
 
         private ToolStripMenuItem miOptions;
 

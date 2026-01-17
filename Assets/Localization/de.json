@@ -22,6 +22,7 @@
   "Menu.Search.Close": "Schließen",
 
   "Menu.Options": "Optionen",
+  "Menu.Search": "Suche",
   "Menu.Language": "Sprache",
   "Menu.Help": "Hilfe",
   "Menu.Help.About": "Über",
@@ -39,7 +40,7 @@
   "Settings.Ignore.DotFolders": "Ordner mit Punkt",
   "Settings.Ignore.DotFiles": "Dateien mit Punkt",
   "Settings.Ignore.NamedFolder": "Ordner {0}",
-  "Settings.Ignore.NamedFile": "Datei {0}",
+  "Settings.Ignore.NamedFile": "Dateien {0}",
   "Settings.All": "Alle",
   "Settings.Extensions": "Dateitypen:",
   "Settings.RootFolders": "Ordner der obersten Ebene:",

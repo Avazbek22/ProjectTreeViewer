@@ -22,6 +22,7 @@
   "Menu.Search.Close": "Fermer",
 
   "Menu.Options": "Options",
+  "Menu.Search": "Recherche",
   "Menu.Language": "Langue",
   "Menu.Help": "Aide",
   "Menu.Help.About": "À propos",
@@ -38,8 +39,8 @@
   "Settings.Ignore.HiddenFiles": "fichiers cachés",
   "Settings.Ignore.DotFolders": "dossiers commençant par un point",
   "Settings.Ignore.DotFiles": "fichiers commençant par un point",
-  "Settings.Ignore.NamedFolder": "Dossier {0}",
-  "Settings.Ignore.NamedFile": "Fichier {0}",
+  "Settings.Ignore.NamedFolder": "Dossiers {0}",
+  "Settings.Ignore.NamedFile": "Fichiers {0}",
   "Settings.All": "Tous",
   "Settings.Extensions": "Types de fichiers :",
   "Settings.RootFolders": "Dossiers de premier niveau :",

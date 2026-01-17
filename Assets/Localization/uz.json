@@ -22,6 +22,7 @@
   "Menu.Search.Close": "Yopish",
 
   "Menu.Options": "Sozlamalar",
+  "Menu.Search": "Qidirish",
   "Menu.Language": "Til",
   "Menu.Help": "Yordam",
   "Menu.Help.About": "Dastur haqida",
@@ -38,8 +39,8 @@
   "Settings.Ignore.HiddenFiles": "yashirin fayllar",
   "Settings.Ignore.DotFolders": "nuqta bilan boshlanuvchi jildlar",
   "Settings.Ignore.DotFiles": "nuqta bilan boshlanuvchi fayllar",
-  "Settings.Ignore.NamedFolder": "Jild {0}",
-  "Settings.Ignore.NamedFile": "Fayl {0}",
+  "Settings.Ignore.NamedFolder": "Jildlar {0}",
+  "Settings.Ignore.NamedFile": "Fayllar {0}",
   "Settings.All": "Barchasi",
   "Settings.Extensions": "Fayl turlari:",
   "Settings.RootFolders": "Yuqori darajadagi jildlar:",

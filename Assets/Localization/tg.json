@@ -22,6 +22,7 @@
   "Menu.Search.Close": "Пӯшидан",
 
   "Menu.Options": "Танзимот",
+  "Menu.Search": "Ҷустуҷӯ",
   "Menu.Language": "Забон",
   "Menu.Help": "Ёрӣ",
   "Menu.Help.About": "Дар бораи барнома",
@@ -38,8 +39,8 @@
   "Settings.Ignore.HiddenFiles": "файлҳои пинҳонӣ",
   "Settings.Ignore.DotFolders": "ҷузвдонҳои бо нуқта оғозшаванда",
   "Settings.Ignore.DotFiles": "файлҳои бо нуқта оғозшаванда",
-  "Settings.Ignore.NamedFolder": "Ҷузвдон {0}",
-  "Settings.Ignore.NamedFile": "Файл {0}",
+  "Settings.Ignore.NamedFolder": "Ҷузвдонҳо {0}",
+  "Settings.Ignore.NamedFile": "Файлҳо {0}",
   "Settings.All": "Ҳама",
   "Settings.Extensions": "Навъҳои файл:",
   "Settings.RootFolders": "Ҷузвдонҳои сатҳи боло:",

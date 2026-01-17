@@ -2,22 +2,19 @@
   "folderCandidates": [
     { "name": "bin", "defaultChecked": true },
     { "name": "obj", "defaultChecked": true },
+    { "name": "packages", "defaultChecked": true },
+    { "name": "TestResults", "defaultChecked": true },
     { "name": "node_modules", "defaultChecked": true },
-    { "name": ".git", "defaultChecked": true },
-    { "name": ".svn", "defaultChecked": true },
-    { "name": ".hg", "defaultChecked": true },
-    { "name": ".idea", "defaultChecked": true },
-    { "name": ".vs", "defaultChecked": true },
-    { "name": ".vscode", "defaultChecked": false },
     { "name": "dist", "defaultChecked": true },
     { "name": "build", "defaultChecked": true },
-    { "name": ".next", "defaultChecked": true },
-    { "name": ".nuxt", "defaultChecked": true },
-    { "name": ".turbo", "defaultChecked": true },
-    { "name": ".svelte-kit", "defaultChecked": true }
+    { "name": "out", "defaultChecked": true },
+    { "name": "coverage", "defaultChecked": true },
+    { "name": "__pycache__", "defaultChecked": true },
+    { "name": "target", "defaultChecked": true },
+    { "name": "vendor", "defaultChecked": true },
+    { "name": "logs", "defaultChecked": false }
   ],
   "fileCandidates": [
-    { "name": ".ds_store", "defaultChecked": true },
     { "name": "thumbs.db", "defaultChecked": true },
     { "name": "desktop.ini", "defaultChecked": true }
   ],

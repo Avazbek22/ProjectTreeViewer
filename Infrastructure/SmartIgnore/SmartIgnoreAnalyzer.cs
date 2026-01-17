@@ -17,9 +17,12 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 		_catalog = new Lazy<SmartIgnoreCatalog>(LoadCatalog);
 	}
 
-	public IReadOnlyList<IgnoreOptionDefinition> Analyze(string rootPath)
+	public IReadOnlyList<IgnoreOptionDefinition> Analyze(string rootPath, IReadOnlySet<string> allowedRootFolders)
 	{
 		if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
+			return Array.Empty<IgnoreOptionDefinition>();
+
+		if (allowedRootFolders.Count == 0)
 			return Array.Empty<IgnoreOptionDefinition>();
 
 		var catalog = _catalog.Value;
@@ -33,8 +36,36 @@ public sealed class SmartIgnoreAnalyzer : ISmartIgnoreAnalyzer
 		bool hasDotFolder = false;
 		bool hasDotFile = false;
 
+		var rootInfo = new DirectoryInfo(rootPath);
+
+		try
+		{
+			foreach (var file in rootInfo.EnumerateFiles())
+			{
+				if (!hasDotFile && file.Name.StartsWith(".", StringComparison.Ordinal))
+					hasDotFile = true;
+
+				if (!hasHiddenFile && HasHiddenAttribute(file))
+					hasHiddenFile = true;
+
+				if (remainingFiles.Remove(file.Name))
+					foundFileCandidates.Add(file.Name);
+			}
+		}
+		catch (UnauthorizedAccessException)
+		{
+		}
+		catch
+		{
+		}
+
 		var pending = new Stack<DirectoryInfo>();
-		pending.Push(new DirectoryInfo(rootPath));
+		foreach (var name in allowedRootFolders)
+		{
+			var path = Path.Combine(rootPath, name);
+			if (Directory.Exists(path))
+				pending.Push(new DirectoryInfo(path));
+		}
 
 		while (pending.Count > 0)
 		{

@@ -15,9 +15,9 @@ public sealed class IgnoreOptionsService
 		_analyzer = analyzer;
 	}
 
-	public IReadOnlyList<IgnoreOptionDescriptor> GetOptions(string rootPath)
+	public IReadOnlyList<IgnoreOptionDescriptor> GetOptions(string rootPath, IReadOnlySet<string> allowedRootFolders)
 	{
-		var definitions = _analyzer.Analyze(rootPath);
+		var definitions = _analyzer.Analyze(rootPath, allowedRootFolders);
 		var list = new List<IgnoreOptionDescriptor>(definitions.Count);
 
 		foreach (var definition in definitions)

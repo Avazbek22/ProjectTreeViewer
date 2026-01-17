@@ -196,12 +196,18 @@ namespace ProjectTreeViewer.WinForms
 			if (string.IsNullOrWhiteSpace(_currentPath))
 				return;
 
-			PopulateIgnoreOptions(_currentPath, resetSelections: false);
+			PopulateIgnoreOptions(_currentPath, GetSelectedRootFolders(), resetSelections: false);
         }
 
-		private void PopulateIgnoreOptions(string path, bool resetSelections)
+		private void PopulateIgnoreOptions(string path, IReadOnlySet<string> allowedRoots, bool resetSelections)
 		{
 			if (string.IsNullOrWhiteSpace(path)) return;
+
+			if (allowedRoots.Count == 0)
+			{
+				ClearIgnoreOptions();
+				return;
+			}
 
 			var previousOptionIds = new HashSet<string>(_ignoreOptions.Select(option => option.Id), StringComparer.OrdinalIgnoreCase);
 			var selectedIds = new HashSet<string>(GetSelectedIgnoreOptionIds(), StringComparer.OrdinalIgnoreCase);
@@ -209,7 +215,7 @@ namespace ProjectTreeViewer.WinForms
 			_suppressIgnoreItemCheck = true;
 			try
 			{
-				_ignoreOptions = _ignoreOptionsService.GetOptions(path);
+				_ignoreOptions = _ignoreOptionsService.GetOptions(path, allowedRoots);
 
 				lstIgnore.BeginUpdate();
 				try
@@ -244,7 +250,54 @@ namespace ProjectTreeViewer.WinForms
 			if (string.IsNullOrWhiteSpace(_currentPath)) return;
 
 			PopulateRootFolders(_currentPath);
+			UpdateFiltersFromRootSelection(resetIgnoreSelections: false);
+		}
+
+		private void UpdateFiltersFromRootSelection(bool resetIgnoreSelections)
+		{
+			if (string.IsNullOrWhiteSpace(_currentPath)) return;
+
+			var allowedRoots = GetSelectedRootFolders();
+			if (allowedRoots.Count == 0)
+			{
+				ClearIgnoreOptions();
+				ClearExtensions();
+				return;
+			}
+
+			PopulateIgnoreOptions(_currentPath, allowedRoots, resetIgnoreSelections);
 			PopulateExtensions(_currentPath);
+		}
+
+		private void ClearIgnoreOptions()
+		{
+			_suppressIgnoreItemCheck = true;
+			try
+			{
+				_ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+				lstIgnore.Items.Clear();
+			}
+			finally
+			{
+				_suppressIgnoreItemCheck = false;
+			}
+
+			SyncIgnoreAllCheckbox();
+		}
+
+		private void ClearExtensions()
+		{
+			_suppressExtensionsItemCheck = true;
+			try
+			{
+				lstExtensions.Items.Clear();
+			}
+			finally
+			{
+				_suppressExtensionsItemCheck = false;
+			}
+
+			SyncAllCheckbox(checkBoxAll, lstExtensions, ref _suppressExtensionsAllCheck);
 		}
 
         private void lstIgnore_ItemCheck(object? sender, ItemCheckEventArgs e)
@@ -390,6 +443,7 @@ namespace ProjectTreeViewer.WinForms
 			btnSearchPrev.Text = _localization["Menu.Search.Previous"];
 			btnSearchClose.Text = _localization["Menu.Search.Close"];
 
+			miSearch.Text = _localization["Menu.Search"];
             miOptions.Text = _localization["Menu.Options"];
 
             miLanguage.Text = _localization["Menu.Language"];
@@ -461,7 +515,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (keyData == (Keys.Control | Keys.F))
 			{
-				ShowSearch();
+				ToggleSearch();
 				return true;
 			}
 
@@ -479,6 +533,17 @@ namespace ProjectTreeViewer.WinForms
 			SetSearchVisible(true);
 			txtSearch.Focus();
 			txtSearch.SelectAll();
+		}
+
+		private void ToggleSearch()
+		{
+			if (txtSearch.Visible)
+			{
+				CloseSearch();
+				return;
+			}
+
+			ShowSearch();
 		}
 
 		private void CloseSearch()
@@ -654,7 +719,9 @@ namespace ProjectTreeViewer.WinForms
 
 		private void miViewZoomIn_Click(object? sender, EventArgs e) => ChangeTreeFontSize(+1f);
 		private void miViewZoomOut_Click(object? sender, EventArgs e) => ChangeTreeFontSize(-1f);
-		private void miViewZoomReset_Click(object? sender, EventArgs e) => SetTreeFontSize(9f);
+        private void miViewZoomReset_Click(object? sender, EventArgs e) => SetTreeFontSize(9f);
+
+		private void miSearch_Click(object? sender, EventArgs e) => ToggleSearch();
 
 		private void miOptions_Click(object? sender, EventArgs e)
 		{
@@ -862,7 +929,7 @@ namespace ProjectTreeViewer.WinForms
 			SetAllChecked(lstRootFolders, selectAll, ref _suppressRootItemCheck);
 			BeginInvoke(new Action(() =>
 			{
-				PopulateExtensions(_currentPath ?? "");
+				UpdateFiltersFromRootSelection(resetIgnoreSelections: false);
 			}));
 		}
 
@@ -883,7 +950,7 @@ namespace ProjectTreeViewer.WinForms
 			BeginInvoke(new Action(() =>
 			{
 				SyncAllCheckbox(checkBoxRootAll, lstRootFolders, ref _suppressRootAllCheck);
-				PopulateExtensions(_currentPath ?? "");
+				UpdateFiltersFromRootSelection(resetIgnoreSelections: false);
 			}));
 		}
 
@@ -902,9 +969,8 @@ namespace ProjectTreeViewer.WinForms
         {
             if (string.IsNullOrEmpty(_currentPath)) return;
 
-			PopulateIgnoreOptions(_currentPath, resetIgnoreSelections);
             PopulateRootFolders(_currentPath);
-            PopulateExtensions(_currentPath);
+			UpdateFiltersFromRootSelection(resetIgnoreSelections);
 
             RefreshTree();
         }
@@ -958,6 +1024,11 @@ namespace ProjectTreeViewer.WinForms
 
             var prev = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 			var allowedRoots = GetSelectedRootFolders();
+			if (allowedRoots.Count == 0)
+			{
+				ClearExtensions();
+				return;
+			}
 
 			var ignoreRules = BuildIgnoreRules(path);
             var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules, allowedRoots));

@@ -5,5 +5,5 @@ namespace ProjectTreeViewer.Kernel.Abstractions;
 
 public interface ISmartIgnoreAnalyzer
 {
-	IReadOnlyList<IgnoreOptionDefinition> Analyze(string rootPath);
+	IReadOnlyList<IgnoreOptionDefinition> Analyze(string rootPath, IReadOnlySet<string> allowedRootFolders);
 }

@@ -22,6 +22,7 @@
   "Menu.Search.Close": "Chiudi",
 
   "Menu.Options": "Opzioni",
+  "Menu.Search": "Ricerca",
   "Menu.Language": "Lingua",
   "Menu.Help": "Aiuto",
   "Menu.Help.About": "Informazioni",
@@ -38,7 +39,7 @@
   "Settings.Ignore.HiddenFiles": "file nascosti",
   "Settings.Ignore.DotFolders": "cartelle con punto iniziale",
   "Settings.Ignore.DotFiles": "file con punto iniziale",
-  "Settings.Ignore.NamedFolder": "Cartella {0}",
+  "Settings.Ignore.NamedFolder": "Cartelle {0}",
   "Settings.Ignore.NamedFile": "File {0}",
   "Settings.All": "Tutti",
   "Settings.Extensions": "Tipi di file:",

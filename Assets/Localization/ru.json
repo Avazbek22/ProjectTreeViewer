@@ -22,6 +22,7 @@
   "Menu.Search.Close": "Закрыть",
 
   "Menu.Options": "Параметры",
+  "Menu.Search": "Поиск",
   "Menu.Language": "Язык",
   "Menu.Help": "Справка",
   "Menu.Help.About": "О программе",
@@ -38,8 +39,8 @@
   "Settings.Ignore.HiddenFiles": "Скрытые файлы",
   "Settings.Ignore.DotFolders": "Папки с точкой в начале",
   "Settings.Ignore.DotFiles": "Файлы с точкой в начале",
-  "Settings.Ignore.NamedFolder": "Папка {0}",
-  "Settings.Ignore.NamedFile": "Файл {0}",
+  "Settings.Ignore.NamedFolder": "Папки {0}",
+  "Settings.Ignore.NamedFile": "Файлы {0}",
   "Settings.All": "Все",
   "Settings.Extensions": "Типы файлов:",
   "Settings.RootFolders": "Папки верхнего уровня:",
