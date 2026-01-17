@@ -1,0 +1,42 @@
+using ProjectTreeViewer.Kernel.Abstractions;
+using ProjectTreeViewer.Kernel.Contracts;
+using ProjectTreeViewer.Kernel.Models;
+
+namespace ProjectTreeViewer.Application.Services;
+
+public sealed class TreeNodePresentationService
+{
+	private readonly LocalizationService _localization;
+	private readonly IIconMapper _iconMapper;
+
+	public TreeNodePresentationService(LocalizationService localization, IIconMapper iconMapper)
+	{
+		_localization = localization;
+		_iconMapper = iconMapper;
+	}
+
+	public TreeNodeDescriptor Build(FileSystemNode root)
+	{
+		return BuildNode(root, isRoot: true);
+	}
+
+	private TreeNodeDescriptor BuildNode(FileSystemNode node, bool isRoot)
+	{
+		var displayName = node.IsAccessDenied
+			? (isRoot ? _localization["Tree.AccessDeniedRoot"] : _localization["Tree.AccessDenied"]) 
+			: node.Name;
+
+		var iconKey = _iconMapper.GetIconKey(node);
+		var children = node.Children
+			.Select(child => BuildNode(child, isRoot: false))
+			.ToList();
+
+		return new TreeNodeDescriptor(
+			DisplayName: displayName,
+			FullPath: node.FullPath,
+			IsDirectory: node.IsDirectory,
+			IsAccessDenied: node.IsAccessDenied,
+			IconKey: iconKey,
+			Children: children);
+	}
+}

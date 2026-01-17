@@ -1,0 +1,62 @@
+{
+  "Menu.File": "File",
+  "Menu.File.Open": "Apri cartella...",
+  "Menu.File.Refresh": "Aggiorna",
+  "Menu.File.Exit": "Esci",
+
+  "Menu.Copy": "Copia",
+  "Menu.Copy.FullTree": "Copia albero completo",
+  "Menu.Copy.SelectedTree": "Copia albero selezionato",
+  "Menu.Copy.SelectedContent": "Copia contenuto dei file selezionati",
+  "Menu.Copy.FullTreeAndContent": "Copia albero completo e contenuto",
+
+  "Menu.View": "Visualizza",
+  "Menu.View.ExpandAll": "Espandi tutto",
+  "Menu.View.CollapseAll": "Comprimi tutto",
+  "Menu.View.ZoomIn": "Zoom avanti",
+  "Menu.View.ZoomOut": "Zoom indietro",
+  "Menu.View.ZoomReset": "Reimposta zoom",
+
+  "Menu.Options": "Opzioni",
+  "Menu.Language": "Lingua",
+  "Menu.Help": "Aiuto",
+  "Menu.Help.About": "Informazioni",
+
+  "Title.Default": "Project Tree Viewer by Avazbek",
+  "Title.WithPath": "Project Tree Viewer - {0}",
+
+  "Dialog.SelectRoot": "Seleziona la cartella radice del progetto",
+
+  "Settings.IgnoreTitle": "Ignora:",
+  "Settings.Ignore.BinFolders": "cartelle bin",
+  "Settings.Ignore.ObjFolders": "cartelle obj",
+  "Settings.Ignore.HiddenFolders": "cartelle nascoste",
+  "Settings.Ignore.HiddenFiles": "file nascosti",
+  "Settings.Ignore.DotFolders": "cartelle con punto iniziale",
+  "Settings.Ignore.DotFiles": "file con punto iniziale",
+  "Settings.All": "Tutti",
+  "Settings.Extensions": "Tipi di file:",
+  "Settings.RootFolders": "Cartelle di primo livello:",
+  "Settings.Font": "Font albero:",
+  "Settings.Apply": "Applica",
+
+  "Msg.ErrorTitle": "Errore",
+  "Msg.InfoTitle": "Info",
+  "Msg.PathNotFound": "Cartella non trovata:\n{0}",
+  "Msg.NoCheckedTree": "Nessun file/cartella selezionato (usa le checkbox nell’albero).",
+  "Msg.NoCheckedFiles": "Nessun file selezionato (le checkbox devono essere sui file).",
+  "Msg.NoCheckedFilesShort": "Nessun file selezionato.",
+  "Msg.NoTextContent": "Nessun contenuto di testo da copiare (i file selezionati sono vuoti o binari).",
+  "Msg.ElevationCanceled": "Elevazione annullata. La cartella potrebbe non essere completamente accessibile.",
+  "Msg.AccessDeniedRoot": "Accesso negato. Prova come amministratore.",
+  "Msg.AboutStub": "Le info del programma saranno qui (stub).",
+
+  "Language.Ru": "Русский",
+  "Language.En": "English",
+  "Language.Uz": "O‘zbek",
+  "Language.Tg": "Тоҷикӣ",
+  "Language.Kk": "Қазақша",
+  "Language.Fr": "Français",
+  "Language.De": "Deutsch",
+  "Language.It": "Italiano"
+}
