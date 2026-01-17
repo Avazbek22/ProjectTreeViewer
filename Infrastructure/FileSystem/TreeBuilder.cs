@@ -40,7 +40,6 @@ public sealed class TreeBuilder : ITreeBuilder
 		{
 			entries = new DirectoryInfo(path)
 				.GetFileSystemInfos()
-				.Where(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
 				.OrderBy(fi => !fi.Attributes.HasFlag(FileAttributes.Directory))
 				.ThenBy(fi => fi.Name, StringComparer.OrdinalIgnoreCase)
 				.ToArray();
@@ -67,11 +66,11 @@ public sealed class TreeBuilder : ITreeBuilder
 			if (isDir && isRoot && !options.AllowedRootFolders.Contains(name))
 				continue;
 
+			var ignore = options.IgnoreRules;
+
 			if (isDir)
 			{
-				if ((options.IgnoreBin && name.Equals("bin", StringComparison.OrdinalIgnoreCase)) ||
-					(options.IgnoreObj && name.Equals("obj", StringComparison.OrdinalIgnoreCase)) ||
-					(options.IgnoreDot && name.StartsWith(".", StringComparison.Ordinal)))
+				if (ShouldSkipDirectory(entry, ignore))
 					continue;
 
 				var dirNode = new FileSystemNode(
@@ -87,7 +86,7 @@ public sealed class TreeBuilder : ITreeBuilder
 			}
 			else
 			{
-				if (options.IgnoreDot && name.StartsWith(".", StringComparison.Ordinal))
+				if (ShouldSkipFile(entry, ignore))
 					continue;
 
 				if (options.AllowedExtensions.Count == 0)
@@ -105,6 +104,40 @@ public sealed class TreeBuilder : ITreeBuilder
 					children: new List<FileSystemNode>()));
 			}
 		}
+	}
+
+	private static bool ShouldSkipDirectory(FileSystemInfo entry, IgnoreRules rules)
+	{
+		if (rules.SmartIgnoredFolders.Contains(entry.Name))
+			return true;
+
+		if (rules.IgnoreBinFolders && entry.Name.Equals("bin", StringComparison.OrdinalIgnoreCase))
+			return true;
+
+		if (rules.IgnoreObjFolders && entry.Name.Equals("obj", StringComparison.OrdinalIgnoreCase))
+			return true;
+
+		if (rules.IgnoreDotFolders && entry.Name.StartsWith(".", StringComparison.Ordinal))
+			return true;
+
+		if (rules.IgnoreHiddenFolders && entry.Attributes.HasFlag(FileAttributes.Hidden))
+			return true;
+
+		return false;
+	}
+
+	private static bool ShouldSkipFile(FileSystemInfo entry, IgnoreRules rules)
+	{
+		if (rules.SmartIgnoredFiles.Contains(entry.Name))
+			return true;
+
+		if (rules.IgnoreDotFiles && entry.Name.StartsWith(".", StringComparison.Ordinal))
+			return true;
+
+		if (rules.IgnoreHiddenFiles && entry.Attributes.HasFlag(FileAttributes.Hidden))
+			return true;
+
+		return false;
 	}
 
 	private sealed class BuildState

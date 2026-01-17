@@ -57,10 +57,12 @@ namespace ProjectTreeViewer.WinForms
 			btnApply = new Button();
 			labelIgnore = new Label();
 			lstIgnore = new CheckedListBox();
+			checkBoxIgnoreAll = new CheckBox();
 			labelExtensions = new Label();
 			checkBoxAll = new CheckBox();
 			lstExtensions = new CheckedListBox();
 			labelRootFolders = new Label();
+			checkBoxRootAll = new CheckBox();
 			lstRootFolders = new CheckedListBox();
 			treeProject = new TreeView();
 			menuStripMain.SuspendLayout();
@@ -73,22 +75,20 @@ namespace ProjectTreeViewer.WinForms
 			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miOptions, miLanguage, miHelp });
 			menuStripMain.Location = new Point(0, 0);
 			menuStripMain.Name = "menuStripMain";
-			menuStripMain.Size = new Size(1128, 28);
+			menuStripMain.Size = new Size(1128, 24);
 			menuStripMain.TabIndex = 0;
 			// 
 			// miFile
 			// 
 			miFile.DropDownItems.AddRange(new ToolStripItem[] { miFileOpen, miFileRefresh, miFileSep1, miFileExit });
 			miFile.Name = "miFile";
-			miFile.Size = new Size(59, 24);
-			miFile.Text = string.Empty;
+			miFile.Size = new Size(14, 20);
 			// 
 			// miFileOpen
 			// 
 			miFileOpen.Name = "miFileOpen";
 			miFileOpen.ShortcutKeys = Keys.Control | Keys.O;
-			miFileOpen.Size = new Size(256, 26);
-			miFileOpen.Text = string.Empty;
+			miFileOpen.Size = new Size(136, 26);
 			miFileOpen.Click += miFileOpen_Click;
 			// 
 			// miFileRefresh
@@ -96,36 +96,32 @@ namespace ProjectTreeViewer.WinForms
 			miFileRefresh.Enabled = false;
 			miFileRefresh.Name = "miFileRefresh";
 			miFileRefresh.ShortcutKeys = Keys.F5;
-			miFileRefresh.Size = new Size(256, 26);
-			miFileRefresh.Text = string.Empty;
+			miFileRefresh.Size = new Size(136, 26);
 			miFileRefresh.Click += miFileRefresh_Click;
 			// 
 			// miFileSep1
 			// 
 			miFileSep1.Name = "miFileSep1";
-			miFileSep1.Size = new Size(253, 6);
+			miFileSep1.Size = new Size(133, 6);
 			// 
 			// miFileExit
 			// 
 			miFileExit.Name = "miFileExit";
-			miFileExit.Size = new Size(256, 26);
-			miFileExit.Text = string.Empty;
+			miFileExit.Size = new Size(136, 26);
 			miFileExit.Click += miFileExit_Click;
 			// 
 			// miCopy
 			// 
 			miCopy.DropDownItems.AddRange(new ToolStripItem[] { miCopyFullTree, miCopySelectedTree, miCopySelectedContent, miCopyFullTreeAndContent });
 			miCopy.Name = "miCopy";
-			miCopy.Size = new Size(119, 24);
-			miCopy.Text = string.Empty;
+			miCopy.Size = new Size(14, 20);
 			// 
 			// miCopyFullTree
 			// 
 			miCopyFullTree.Enabled = false;
 			miCopyFullTree.Name = "miCopyFullTree";
 			miCopyFullTree.ShortcutKeys = Keys.Control | Keys.Shift | Keys.C;
-			miCopyFullTree.Size = new Size(497, 26);
-			miCopyFullTree.Text = string.Empty;
+			miCopyFullTree.Size = new Size(174, 26);
 			miCopyFullTree.Click += miCopyFullTree_Click;
 			// 
 			// miCopySelectedTree
@@ -133,8 +129,7 @@ namespace ProjectTreeViewer.WinForms
 			miCopySelectedTree.Enabled = false;
 			miCopySelectedTree.Name = "miCopySelectedTree";
 			miCopySelectedTree.ShortcutKeys = Keys.Control | Keys.Alt | Keys.C;
-			miCopySelectedTree.Size = new Size(497, 26);
-			miCopySelectedTree.Text = string.Empty;
+			miCopySelectedTree.Size = new Size(174, 26);
 			miCopySelectedTree.Click += miCopySelectedTree_Click;
 			// 
 			// miCopySelectedContent
@@ -142,8 +137,7 @@ namespace ProjectTreeViewer.WinForms
 			miCopySelectedContent.Enabled = false;
 			miCopySelectedContent.Name = "miCopySelectedContent";
 			miCopySelectedContent.ShortcutKeys = Keys.Control | Keys.Alt | Keys.V;
-			miCopySelectedContent.Size = new Size(497, 26);
-			miCopySelectedContent.Text = string.Empty;
+			miCopySelectedContent.Size = new Size(174, 26);
 			miCopySelectedContent.Click += miCopySelectedContent_Click;
 			// 
 			// miCopyFullTreeAndContent
@@ -151,24 +145,21 @@ namespace ProjectTreeViewer.WinForms
 			miCopyFullTreeAndContent.Enabled = false;
 			miCopyFullTreeAndContent.Name = "miCopyFullTreeAndContent";
 			miCopyFullTreeAndContent.ShortcutKeys = Keys.Control | Keys.Shift | Keys.V;
-			miCopyFullTreeAndContent.Size = new Size(497, 26);
-			miCopyFullTreeAndContent.Text = string.Empty;
+			miCopyFullTreeAndContent.Size = new Size(174, 26);
 			miCopyFullTreeAndContent.Click += miCopyFullTreeAndContent_Click;
 			// 
 			// miView
 			// 
 			miView.DropDownItems.AddRange(new ToolStripItem[] { miViewExpandAll, miViewCollapseAll, miViewSep1, miViewZoomIn, miViewZoomOut, miViewZoomReset });
 			miView.Name = "miView";
-			miView.Size = new Size(49, 24);
-			miView.Text = string.Empty;
+			miView.Size = new Size(14, 20);
 			// 
 			// miViewExpandAll
 			// 
 			miViewExpandAll.Enabled = false;
 			miViewExpandAll.Name = "miViewExpandAll";
 			miViewExpandAll.ShortcutKeys = Keys.Control | Keys.E;
-			miViewExpandAll.Size = new Size(285, 26);
-			miViewExpandAll.Text = string.Empty;
+			miViewExpandAll.Size = new Size(196, 26);
 			miViewExpandAll.Click += miViewExpandAll_Click;
 			// 
 			// miViewCollapseAll
@@ -176,37 +167,33 @@ namespace ProjectTreeViewer.WinForms
 			miViewCollapseAll.Enabled = false;
 			miViewCollapseAll.Name = "miViewCollapseAll";
 			miViewCollapseAll.ShortcutKeys = Keys.Control | Keys.W;
-			miViewCollapseAll.Size = new Size(285, 26);
-			miViewCollapseAll.Text = string.Empty;
+			miViewCollapseAll.Size = new Size(196, 26);
 			miViewCollapseAll.Click += miViewCollapseAll_Click;
 			// 
 			// miViewSep1
 			// 
 			miViewSep1.Name = "miViewSep1";
-			miViewSep1.Size = new Size(282, 6);
+			miViewSep1.Size = new Size(193, 6);
 			// 
 			// miViewZoomIn
 			// 
 			miViewZoomIn.Name = "miViewZoomIn";
 			miViewZoomIn.ShortcutKeys = Keys.Control | Keys.Oemplus;
-			miViewZoomIn.Size = new Size(285, 26);
-			miViewZoomIn.Text = string.Empty;
+			miViewZoomIn.Size = new Size(196, 26);
 			miViewZoomIn.Click += miViewZoomIn_Click;
 			// 
 			// miViewZoomOut
 			// 
 			miViewZoomOut.Name = "miViewZoomOut";
 			miViewZoomOut.ShortcutKeys = Keys.Control | Keys.OemMinus;
-			miViewZoomOut.Size = new Size(285, 26);
-			miViewZoomOut.Text = string.Empty;
+			miViewZoomOut.Size = new Size(196, 26);
 			miViewZoomOut.Click += miViewZoomOut_Click;
 			// 
 			// miViewZoomReset
 			// 
 			miViewZoomReset.Name = "miViewZoomReset";
 			miViewZoomReset.ShortcutKeys = Keys.Control | Keys.D0;
-			miViewZoomReset.Size = new Size(285, 26);
-			miViewZoomReset.Text = string.Empty;
+			miViewZoomReset.Size = new Size(196, 26);
 			miViewZoomReset.Click += miViewZoomReset_Click;
 			// 
 			// miOptions
@@ -215,85 +202,73 @@ namespace ProjectTreeViewer.WinForms
 			miOptions.Name = "miOptions";
 			miOptions.ShortcutKeys = Keys.Control | Keys.P;
 			miOptions.ShowShortcutKeys = false;
-			miOptions.Size = new Size(104, 24);
-			miOptions.Text = string.Empty;
+			miOptions.Size = new Size(14, 20);
 			miOptions.Click += miOptions_Click;
 			// 
 			// miLanguage
 			// 
 			miLanguage.DropDownItems.AddRange(new ToolStripItem[] { miLangRu, miLangEn, miLangUz, miLangTg, miLangKk, miLangFr, miLangDe, miLangIt });
 			miLanguage.Name = "miLanguage";
-			miLanguage.Size = new Size(57, 24);
-			miLanguage.Text = string.Empty;
+			miLanguage.Size = new Size(14, 20);
 			// 
 			// miLangRu
 			// 
 			miLangRu.Name = "miLangRu";
-			miLangRu.Size = new Size(152, 26);
-			miLangRu.Text = string.Empty;
+			miLangRu.Size = new Size(83, 26);
 			miLangRu.Click += miLangRu_Click;
 			// 
 			// miLangEn
 			// 
 			miLangEn.Name = "miLangEn";
-			miLangEn.Size = new Size(152, 26);
-			miLangEn.Text = string.Empty;
+			miLangEn.Size = new Size(83, 26);
 			miLangEn.Click += miLangEn_Click;
 			// 
 			// miLangUz
 			// 
 			miLangUz.Name = "miLangUz";
-			miLangUz.Size = new Size(152, 26);
-			miLangUz.Text = string.Empty;
+			miLangUz.Size = new Size(83, 26);
 			miLangUz.Click += miLangUz_Click;
 			// 
 			// miLangTg
 			// 
 			miLangTg.Name = "miLangTg";
-			miLangTg.Size = new Size(152, 26);
-			miLangTg.Text = string.Empty;
+			miLangTg.Size = new Size(83, 26);
 			miLangTg.Click += miLangTg_Click;
 			// 
 			// miLangKk
 			// 
 			miLangKk.Name = "miLangKk";
-			miLangKk.Size = new Size(152, 26);
-			miLangKk.Text = string.Empty;
+			miLangKk.Size = new Size(83, 26);
 			miLangKk.Click += miLangKk_Click;
 			// 
 			// miLangFr
 			// 
 			miLangFr.Name = "miLangFr";
-			miLangFr.Size = new Size(152, 26);
-			miLangFr.Text = string.Empty;
+			miLangFr.Size = new Size(83, 26);
 			miLangFr.Click += miLangFr_Click;
 			// 
 			// miLangDe
 			// 
 			miLangDe.Name = "miLangDe";
-			miLangDe.Size = new Size(152, 26);
-			miLangDe.Text = string.Empty;
+			miLangDe.Size = new Size(83, 26);
 			miLangDe.Click += miLangDe_Click;
 			// 
 			// miLangIt
 			// 
 			miLangIt.Name = "miLangIt";
-			miLangIt.Size = new Size(152, 26);
-			miLangIt.Text = string.Empty;
+			miLangIt.Size = new Size(83, 26);
 			miLangIt.Click += miLangIt_Click;
 			// 
 			// miHelp
 			// 
 			miHelp.DropDownItems.AddRange(new ToolStripItem[] { miHelpAbout });
 			miHelp.Name = "miHelp";
-			miHelp.Size = new Size(81, 24);
-			miHelp.Text = string.Empty;
+			miHelp.Size = new Size(14, 20);
 			// 
 			// miHelpAbout
 			// 
 			miHelpAbout.Name = "miHelpAbout";
-			miHelpAbout.Size = new Size(187, 26);
-			miHelpAbout.Text = string.Empty;
+			miHelpAbout.Size = new Size(83, 26);
 			miHelpAbout.Click += miHelpAbout_Click;
 			// 
 			// panelSettings
@@ -306,10 +281,12 @@ namespace ProjectTreeViewer.WinForms
 			panelSettings.Controls.Add(btnApply);
 			panelSettings.Controls.Add(labelIgnore);
 			panelSettings.Controls.Add(lstIgnore);
+			panelSettings.Controls.Add(checkBoxIgnoreAll);
 			panelSettings.Controls.Add(labelExtensions);
 			panelSettings.Controls.Add(checkBoxAll);
 			panelSettings.Controls.Add(lstExtensions);
 			panelSettings.Controls.Add(labelRootFolders);
+			panelSettings.Controls.Add(checkBoxRootAll);
 			panelSettings.Controls.Add(lstRootFolders);
 			panelSettings.Location = new Point(808, 28);
 			panelSettings.Name = "panelSettings";
@@ -322,9 +299,8 @@ namespace ProjectTreeViewer.WinForms
 			labelFont.AutoSize = true;
 			labelFont.Location = new Point(12, 12);
 			labelFont.Name = "labelFont";
-			labelFont.Size = new Size(113, 20);
+			labelFont.Size = new Size(0, 20);
 			labelFont.TabIndex = 0;
-			labelFont.Text = string.Empty;
 			// 
 			// cboFont
 			// 
@@ -343,7 +319,6 @@ namespace ProjectTreeViewer.WinForms
 			btnApply.Name = "btnApply";
 			btnApply.Size = new Size(291, 37);
 			btnApply.TabIndex = 2;
-			btnApply.Text = string.Empty;
 			btnApply.Click += btnApply_Click;
 			// 
 			// labelIgnore
@@ -351,9 +326,8 @@ namespace ProjectTreeViewer.WinForms
 			labelIgnore.AutoSize = true;
 			labelIgnore.Location = new Point(13, 132);
 			labelIgnore.Name = "labelIgnore";
-			labelIgnore.Size = new Size(113, 20);
+			labelIgnore.Size = new Size(0, 20);
 			labelIgnore.TabIndex = 3;
-			labelIgnore.Text = string.Empty;
 			// 
 			// lstIgnore
 			// 
@@ -365,14 +339,25 @@ namespace ProjectTreeViewer.WinForms
 			lstIgnore.Size = new Size(290, 202);
 			lstIgnore.TabIndex = 4;
 			// 
+			// checkBoxIgnoreAll
+			// 
+			checkBoxIgnoreAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			checkBoxIgnoreAll.AutoSize = true;
+			checkBoxIgnoreAll.Checked = true;
+			checkBoxIgnoreAll.CheckState = CheckState.Checked;
+			checkBoxIgnoreAll.Location = new Point(285, 132);
+			checkBoxIgnoreAll.Name = "checkBoxIgnoreAll";
+			checkBoxIgnoreAll.Size = new Size(18, 17);
+			checkBoxIgnoreAll.TabIndex = 5;
+			checkBoxIgnoreAll.CheckedChanged += checkBoxIgnoreAll_CheckedChanged;
+			// 
 			// labelExtensions
 			// 
 			labelExtensions.AutoSize = true;
-			labelExtensions.Location = new Point(9, 384);
+			labelExtensions.Location = new Point(9, 388);
 			labelExtensions.Name = "labelExtensions";
-			labelExtensions.Size = new Size(105, 20);
-			labelExtensions.TabIndex = 5;
-			labelExtensions.Text = string.Empty;
+			labelExtensions.Size = new Size(0, 20);
+			labelExtensions.TabIndex = 6;
 			// 
 			// checkBoxAll
 			// 
@@ -380,11 +365,10 @@ namespace ProjectTreeViewer.WinForms
 			checkBoxAll.AutoSize = true;
 			checkBoxAll.Checked = true;
 			checkBoxAll.CheckState = CheckState.Checked;
-			checkBoxAll.Location = new Point(248, 383);
+			checkBoxAll.Location = new Point(285, 387);
 			checkBoxAll.Name = "checkBoxAll";
-			checkBoxAll.Size = new Size(55, 24);
-			checkBoxAll.TabIndex = 6;
-			checkBoxAll.Text = string.Empty;
+			checkBoxAll.Size = new Size(18, 17);
+			checkBoxAll.TabIndex = 7;
 			checkBoxAll.CheckedChanged += checkBoxAll_CheckedChanged;
 			// 
 			// lstExtensions
@@ -392,29 +376,42 @@ namespace ProjectTreeViewer.WinForms
 			lstExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstExtensions.CheckOnClick = true;
 			lstExtensions.FormattingEnabled = true;
-			lstExtensions.Location = new Point(12, 407);
+			lstExtensions.Location = new Point(12, 411);
 			lstExtensions.Name = "lstExtensions";
 			lstExtensions.Size = new Size(291, 202);
-			lstExtensions.TabIndex = 7;
+			lstExtensions.TabIndex = 8;
+			lstExtensions.ItemCheck += lstExtensions_ItemCheck;
 			// 
 			// labelRootFolders
 			// 
 			labelRootFolders.AutoSize = true;
-			labelRootFolders.Location = new Point(9, 634);
+			labelRootFolders.Location = new Point(9, 638);
 			labelRootFolders.Name = "labelRootFolders";
-			labelRootFolders.Size = new Size(178, 20);
-			labelRootFolders.TabIndex = 8;
-			labelRootFolders.Text = string.Empty;
+			labelRootFolders.Size = new Size(0, 20);
+			labelRootFolders.TabIndex = 9;
+			// 
+			// checkBoxRootAll
+			// 
+			checkBoxRootAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			checkBoxRootAll.AutoSize = true;
+			checkBoxRootAll.Checked = true;
+			checkBoxRootAll.CheckState = CheckState.Checked;
+			checkBoxRootAll.Location = new Point(285, 637);
+			checkBoxRootAll.Name = "checkBoxRootAll";
+			checkBoxRootAll.Size = new Size(18, 17);
+			checkBoxRootAll.TabIndex = 10;
+			checkBoxRootAll.CheckedChanged += checkBoxRootAll_CheckedChanged;
 			// 
 			// lstRootFolders
 			// 
 			lstRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstRootFolders.CheckOnClick = true;
 			lstRootFolders.FormattingEnabled = true;
-			lstRootFolders.Location = new Point(13, 657);
+			lstRootFolders.Location = new Point(13, 661);
 			lstRootFolders.Name = "lstRootFolders";
 			lstRootFolders.Size = new Size(290, 202);
-			lstRootFolders.TabIndex = 9;
+			lstRootFolders.TabIndex = 11;
+			lstRootFolders.ItemCheck += lstRootFolders_ItemCheck;
 			// 
 			// treeProject
 			// 
@@ -497,6 +494,7 @@ namespace ProjectTreeViewer.WinForms
 
         private Label labelIgnore;
         private CheckedListBox lstIgnore;
+		private CheckBox checkBoxIgnoreAll;
 
         private Label labelExtensions;
         private CheckedListBox lstExtensions;
@@ -504,6 +502,7 @@ namespace ProjectTreeViewer.WinForms
 
         private Label labelRootFolders;
         private CheckedListBox lstRootFolders;
+		private CheckBox checkBoxRootAll;
 
         private TreeView treeProject;
     }

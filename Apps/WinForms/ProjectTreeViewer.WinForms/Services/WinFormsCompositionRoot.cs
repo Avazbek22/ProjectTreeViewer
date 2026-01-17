@@ -3,6 +3,8 @@ using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Infrastructure.Elevation;
 using ProjectTreeViewer.Infrastructure.FileSystem;
 using ProjectTreeViewer.Infrastructure.ResourceStore;
+using ProjectTreeViewer.Infrastructure.SmartIgnore;
+using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.WinForms.Services;
@@ -20,6 +22,15 @@ public static class WinFormsCompositionRoot
 		var treeBuilder = new TreeBuilder();
 		var scanOptionsUseCase = new ScanOptionsUseCase(scanner);
 		var buildTreeUseCase = new BuildTreeUseCase(treeBuilder, treePresenter);
+		var smartIgnoreRules = new ISmartIgnoreRule[]
+		{
+			new CommonSmartIgnoreRule(),
+			new FrontendArtifactsIgnoreRule()
+		};
+		var smartIgnoreService = new SmartIgnoreService(smartIgnoreRules);
+		var ignoreOptionsService = new IgnoreOptionsService(localization);
+		var ignoreRulesService = new IgnoreRulesService(smartIgnoreService);
+		var filterSelectionService = new FilterOptionSelectionService();
 		var treeExportService = new TreeExportService();
 		var contentExportService = new SelectedContentExportService();
 		var treeAndContentExportService = new TreeAndContentExportService(treeExportService, contentExportService);
@@ -32,6 +43,9 @@ public static class WinFormsCompositionRoot
 			Elevation: elevation,
 			ScanOptionsUseCase: scanOptionsUseCase,
 			BuildTreeUseCase: buildTreeUseCase,
+			IgnoreOptionsService: ignoreOptionsService,
+			IgnoreRulesService: ignoreRulesService,
+			FilterOptionSelectionService: filterSelectionService,
 			TreeExportService: treeExportService,
 			ContentExportService: contentExportService,
 			TreeAndContentExportService: treeAndContentExportService,
