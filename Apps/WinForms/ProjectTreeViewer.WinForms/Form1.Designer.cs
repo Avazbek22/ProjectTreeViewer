@@ -57,10 +57,12 @@ namespace ProjectTreeViewer.WinForms
 			btnApply = new Button();
 			labelIgnore = new Label();
 			lstIgnore = new CheckedListBox();
+			checkBoxIgnoreAll = new CheckBox();
 			labelExtensions = new Label();
 			checkBoxAll = new CheckBox();
 			lstExtensions = new CheckedListBox();
 			labelRootFolders = new Label();
+			checkBoxRootAll = new CheckBox();
 			lstRootFolders = new CheckedListBox();
 			treeProject = new TreeView();
 			menuStripMain.SuspendLayout();
@@ -306,10 +308,12 @@ namespace ProjectTreeViewer.WinForms
 			panelSettings.Controls.Add(btnApply);
 			panelSettings.Controls.Add(labelIgnore);
 			panelSettings.Controls.Add(lstIgnore);
+			panelSettings.Controls.Add(checkBoxIgnoreAll);
 			panelSettings.Controls.Add(labelExtensions);
 			panelSettings.Controls.Add(checkBoxAll);
 			panelSettings.Controls.Add(lstExtensions);
 			panelSettings.Controls.Add(labelRootFolders);
+			panelSettings.Controls.Add(checkBoxRootAll);
 			panelSettings.Controls.Add(lstRootFolders);
 			panelSettings.Location = new Point(808, 28);
 			panelSettings.Name = "panelSettings";
@@ -365,13 +369,26 @@ namespace ProjectTreeViewer.WinForms
 			lstIgnore.Size = new Size(290, 202);
 			lstIgnore.TabIndex = 4;
 			// 
+			// checkBoxIgnoreAll
+			// 
+			checkBoxIgnoreAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			checkBoxIgnoreAll.AutoSize = true;
+			checkBoxIgnoreAll.Checked = true;
+			checkBoxIgnoreAll.CheckState = CheckState.Checked;
+			checkBoxIgnoreAll.Location = new Point(248, 360);
+			checkBoxIgnoreAll.Name = "checkBoxIgnoreAll";
+			checkBoxIgnoreAll.Size = new Size(55, 24);
+			checkBoxIgnoreAll.TabIndex = 5;
+			checkBoxIgnoreAll.Text = string.Empty;
+			checkBoxIgnoreAll.CheckedChanged += checkBoxIgnoreAll_CheckedChanged;
+			// 
 			// labelExtensions
 			// 
 			labelExtensions.AutoSize = true;
-			labelExtensions.Location = new Point(9, 384);
+			labelExtensions.Location = new Point(9, 388);
 			labelExtensions.Name = "labelExtensions";
 			labelExtensions.Size = new Size(105, 20);
-			labelExtensions.TabIndex = 5;
+			labelExtensions.TabIndex = 6;
 			labelExtensions.Text = string.Empty;
 			// 
 			// checkBoxAll
@@ -380,10 +397,10 @@ namespace ProjectTreeViewer.WinForms
 			checkBoxAll.AutoSize = true;
 			checkBoxAll.Checked = true;
 			checkBoxAll.CheckState = CheckState.Checked;
-			checkBoxAll.Location = new Point(248, 383);
+			checkBoxAll.Location = new Point(248, 387);
 			checkBoxAll.Name = "checkBoxAll";
 			checkBoxAll.Size = new Size(55, 24);
-			checkBoxAll.TabIndex = 6;
+			checkBoxAll.TabIndex = 7;
 			checkBoxAll.Text = string.Empty;
 			checkBoxAll.CheckedChanged += checkBoxAll_CheckedChanged;
 			// 
@@ -392,29 +409,44 @@ namespace ProjectTreeViewer.WinForms
 			lstExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstExtensions.CheckOnClick = true;
 			lstExtensions.FormattingEnabled = true;
-			lstExtensions.Location = new Point(12, 407);
+			lstExtensions.Location = new Point(12, 411);
 			lstExtensions.Name = "lstExtensions";
 			lstExtensions.Size = new Size(291, 202);
-			lstExtensions.TabIndex = 7;
+			lstExtensions.TabIndex = 8;
+			lstExtensions.ItemCheck += lstExtensions_ItemCheck;
 			// 
 			// labelRootFolders
 			// 
 			labelRootFolders.AutoSize = true;
-			labelRootFolders.Location = new Point(9, 634);
+			labelRootFolders.Location = new Point(9, 638);
 			labelRootFolders.Name = "labelRootFolders";
 			labelRootFolders.Size = new Size(178, 20);
-			labelRootFolders.TabIndex = 8;
+			labelRootFolders.TabIndex = 9;
 			labelRootFolders.Text = string.Empty;
+			// 
+			// checkBoxRootAll
+			// 
+			checkBoxRootAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			checkBoxRootAll.AutoSize = true;
+			checkBoxRootAll.Checked = true;
+			checkBoxRootAll.CheckState = CheckState.Checked;
+			checkBoxRootAll.Location = new Point(248, 637);
+			checkBoxRootAll.Name = "checkBoxRootAll";
+			checkBoxRootAll.Size = new Size(55, 24);
+			checkBoxRootAll.TabIndex = 10;
+			checkBoxRootAll.Text = string.Empty;
+			checkBoxRootAll.CheckedChanged += checkBoxRootAll_CheckedChanged;
 			// 
 			// lstRootFolders
 			// 
 			lstRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstRootFolders.CheckOnClick = true;
 			lstRootFolders.FormattingEnabled = true;
-			lstRootFolders.Location = new Point(13, 657);
+			lstRootFolders.Location = new Point(13, 661);
 			lstRootFolders.Name = "lstRootFolders";
 			lstRootFolders.Size = new Size(290, 202);
-			lstRootFolders.TabIndex = 9;
+			lstRootFolders.TabIndex = 11;
+			lstRootFolders.ItemCheck += lstRootFolders_ItemCheck;
 			// 
 			// treeProject
 			// 
@@ -497,6 +529,7 @@ namespace ProjectTreeViewer.WinForms
 
         private Label labelIgnore;
         private CheckedListBox lstIgnore;
+		private CheckBox checkBoxIgnoreAll;
 
         private Label labelExtensions;
         private CheckedListBox lstExtensions;
@@ -504,6 +537,7 @@ namespace ProjectTreeViewer.WinForms
 
         private Label labelRootFolders;
         private CheckedListBox lstRootFolders;
+		private CheckBox checkBoxRootAll;
 
         private TreeView treeProject;
     }

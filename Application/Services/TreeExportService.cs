@@ -32,6 +32,19 @@ public sealed class TreeExportService
 		return sb.ToString();
 	}
 
+	public static bool HasSelectedDescendantOrSelf(TreeNodeDescriptor node, IReadOnlySet<string> selectedPaths)
+	{
+		if (selectedPaths.Contains(node.FullPath)) return true;
+
+		foreach (var child in node.Children)
+		{
+			if (HasSelectedDescendantOrSelf(child, selectedPaths))
+				return true;
+		}
+
+		return false;
+	}
+
 	private static void AppendAscii(TreeNodeDescriptor node, string indent, StringBuilder sb)
 	{
 		for (int i = 0; i < node.Children.Count; i++)
@@ -68,18 +81,5 @@ public sealed class TreeExportService
 				AppendSelectedAscii(child, selectedPaths, nextIndent, sb);
 			}
 		}
-	}
-
-	private static bool HasSelectedDescendantOrSelf(TreeNodeDescriptor node, IReadOnlySet<string> selectedPaths)
-	{
-		if (selectedPaths.Contains(node.FullPath)) return true;
-
-		foreach (var child in node.Children)
-		{
-			if (HasSelectedDescendantOrSelf(child, selectedPaths))
-				return true;
-		}
-
-		return false;
 	}
 }

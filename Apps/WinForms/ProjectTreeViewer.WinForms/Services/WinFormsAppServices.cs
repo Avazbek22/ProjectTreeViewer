@@ -9,8 +9,12 @@ public sealed record WinFormsAppServices(
 	IElevationService Elevation,
 	ScanOptionsUseCase ScanOptionsUseCase,
 	BuildTreeUseCase BuildTreeUseCase,
+	IgnoreOptionsService IgnoreOptionsService,
+	IgnoreRulesService IgnoreRulesService,
+	FilterOptionSelectionService FilterOptionSelectionService,
 	TreeExportService TreeExportService,
 	SelectedContentExportService ContentExportService,
+	TreeAndContentExportService TreeAndContentExportService,
 	TreeViewRenderer TreeViewRenderer,
 	TreeSelectionService TreeSelectionService,
 	IIconStore IconStore);

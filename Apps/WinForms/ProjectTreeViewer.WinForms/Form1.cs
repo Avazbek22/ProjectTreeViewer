@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
@@ -20,6 +19,11 @@ namespace ProjectTreeViewer.WinForms
 		private string _pendingFontName = "Consolas";
 		private bool _suppressAfterCheck;
 		private bool _suppressIgnoreItemCheck;
+		private bool _suppressIgnoreAllCheck;
+		private bool _suppressExtensionsItemCheck;
+		private bool _suppressExtensionsAllCheck;
+		private bool _suppressRootItemCheck;
+		private bool _suppressRootAllCheck;
 
         private float _treeFontSize;
 
@@ -30,9 +34,13 @@ namespace ProjectTreeViewer.WinForms
         private readonly IElevationService _elevation;
         private readonly ScanOptionsUseCase _scanOptions;
         private readonly BuildTreeUseCase _buildTree;
+		private readonly IgnoreOptionsService _ignoreOptionsService;
+		private readonly IgnoreRulesService _ignoreRulesService;
+		private readonly FilterOptionSelectionService _filterSelectionService;
         private readonly TreeViewRenderer _renderer;
         private readonly TreeExportService _treeExport;
         private readonly SelectedContentExportService _contentExport;
+        private readonly TreeAndContentExportService _treeAndContentExport;
         private readonly TreeSelectionService _selection;
         private readonly IIconStore _iconStore;
 
@@ -40,14 +48,7 @@ namespace ProjectTreeViewer.WinForms
 
         private bool _elevationAttempted;
 
-		private const string
-			ClipboardBlankLine = "\u00A0"; // NBSP: looks like an empty line, but does NOT collapse on paste
-
-		private const int IgnoreIndexBin = 0;
-		private const int IgnoreIndexObj = 1;
-		private const int IgnoreIndexDot = 2;
-
-        private static void AppendClipboardBlankLine(StringBuilder sb) => sb.AppendLine(ClipboardBlankLine);
+		private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
 
         private const int TreeIconSize = 24;
 
@@ -64,8 +65,12 @@ namespace ProjectTreeViewer.WinForms
             _elevation = services.Elevation;
             _scanOptions = services.ScanOptionsUseCase;
             _buildTree = services.BuildTreeUseCase;
+			_ignoreOptionsService = services.IgnoreOptionsService;
+			_ignoreRulesService = services.IgnoreRulesService;
+			_filterSelectionService = services.FilterOptionSelectionService;
             _treeExport = services.TreeExportService;
             _contentExport = services.ContentExportService;
+            _treeAndContentExport = services.TreeAndContentExportService;
             _renderer = services.TreeViewRenderer;
             _selection = services.TreeSelectionService;
             _iconStore = services.IconStore;
@@ -164,17 +169,16 @@ namespace ProjectTreeViewer.WinForms
         // ───────────────────────────────────────── Ignore list init (replaces 3 left checkboxes)
         private void InitIgnoreList()
         {
-            // These controls are added in the updated Form1.Designer.cs (you asked me to send it after).
-            // Defaults match your previous checkboxes: all three are checked.
             _suppressIgnoreItemCheck = true;
             try
             {
                 lstIgnore.CheckOnClick = true;
                 lstIgnore.Items.Clear();
 
-                lstIgnore.Items.Add(_localization["Settings.IgnoreBin"], true);
-                lstIgnore.Items.Add(_localization["Settings.IgnoreObj"], true);
-                lstIgnore.Items.Add(_localization["Settings.IgnoreDot"], true);
+				_ignoreOptions = _ignoreOptionsService.GetOptions();
+
+				foreach (var option in _ignoreOptions)
+					lstIgnore.Items.Add(option.Label, option.DefaultChecked);
 
                 lstIgnore.ItemCheck -= lstIgnore_ItemCheck;
                 lstIgnore.ItemCheck += lstIgnore_ItemCheck;
@@ -183,34 +187,40 @@ namespace ProjectTreeViewer.WinForms
             {
                 _suppressIgnoreItemCheck = false;
             }
+
+			SyncIgnoreAllCheckbox();
         }
 
         private void UpdateIgnoreListLocalization()
         {
-            _suppressIgnoreItemCheck = true;
-            try
-            {
-                bool bin = IsIgnoreChecked(IgnoreIndexBin);
-                bool obj = IsIgnoreChecked(IgnoreIndexObj);
-                bool dot = IsIgnoreChecked(IgnoreIndexDot);
+			var selectedIds = GetSelectedIgnoreOptionIds();
 
-                lstIgnore.BeginUpdate();
-                try
-                {
-                    lstIgnore.Items.Clear();
-                    lstIgnore.Items.Add(_localization["Settings.IgnoreBin"], bin);
-                    lstIgnore.Items.Add(_localization["Settings.IgnoreObj"], obj);
-                    lstIgnore.Items.Add(_localization["Settings.IgnoreDot"], dot);
-                }
-                finally
-                {
-                    lstIgnore.EndUpdate();
-                }
-            }
-            finally
-            {
-                _suppressIgnoreItemCheck = false;
-            }
+			_suppressIgnoreItemCheck = true;
+			try
+			{
+				_ignoreOptions = _ignoreOptionsService.GetOptions();
+
+				lstIgnore.BeginUpdate();
+				try
+				{
+					lstIgnore.Items.Clear();
+					foreach (var option in _ignoreOptions)
+					{
+						bool isChecked = selectedIds.Contains(option.Id);
+						lstIgnore.Items.Add(option.Label, isChecked);
+					}
+				}
+				finally
+				{
+					lstIgnore.EndUpdate();
+				}
+			}
+			finally
+			{
+				_suppressIgnoreItemCheck = false;
+			}
+
+			SyncIgnoreAllCheckbox();
         }
 
         private void lstIgnore_ItemCheck(object? sender, ItemCheckEventArgs e)
@@ -220,23 +230,55 @@ namespace ProjectTreeViewer.WinForms
             // ItemCheck fires BEFORE the state changes. Update lists after WinForms applies the new check state.
             BeginInvoke(new Action(() =>
             {
-                PopulateRootFolders(_currentPath ?? "");
-                PopulateExtensions(_currentPath ?? "");
+				SyncIgnoreAllCheckbox();
+				PopulateRootFolders(_currentPath ?? "");
+				PopulateExtensions(_currentPath ?? "");
             }));
         }
 
-        private bool IsIgnoreChecked(int index)
-        {
-            if (index < 0 || index >= lstIgnore.Items.Count) return false;
-            return lstIgnore.GetItemChecked(index);
-        }
+		private IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()
+		{
+			var selected = new List<IgnoreOptionId>();
+			for (int i = 0; i < _ignoreOptions.Count; i++)
+			{
+				if (lstIgnore.GetItemChecked(i))
+					selected.Add(_ignoreOptions[i].Id);
+			}
 
-        private (bool IgnoreBin, bool IgnoreObj, bool IgnoreDot) GetIgnoreOptions() =>
-        (
-            IgnoreBin: IsIgnoreChecked(IgnoreIndexBin),
-            IgnoreObj: IsIgnoreChecked(IgnoreIndexObj),
-            IgnoreDot: IsIgnoreChecked(IgnoreIndexDot)
-        );
+			return selected;
+		}
+
+		private IgnoreRules BuildIgnoreRules(string path)
+		{
+			var selected = GetSelectedIgnoreOptionIds();
+			return _ignoreRulesService.Build(path, selected);
+		}
+
+		private void SyncIgnoreAllCheckbox()
+		{
+			if (_suppressIgnoreAllCheck) return;
+
+			bool allChecked = lstIgnore.Items.Count > 0 && lstIgnore.CheckedItems.Count == lstIgnore.Items.Count;
+			_suppressIgnoreAllCheck = true;
+			checkBoxIgnoreAll.Checked = allChecked;
+			_suppressIgnoreAllCheck = false;
+		}
+
+		private static void SetAllChecked(CheckedListBox list, bool selectAll, ref bool suppressFlag)
+		{
+			suppressFlag = true;
+			for (int i = 0; i < list.Items.Count; i++)
+				list.SetItemChecked(i, selectAll);
+			suppressFlag = false;
+		}
+
+		private static void SyncAllCheckbox(CheckBox checkBox, CheckedListBox list, ref bool suppressFlag)
+		{
+			bool allChecked = list.Items.Count > 0 && list.CheckedItems.Count == list.Items.Count;
+			suppressFlag = true;
+			checkBox.Checked = allChecked;
+			suppressFlag = false;
+		}
 
         // ───────────────────────────────────────── Tree icons init
         // ───────────────────────────────────────── Tree icons init
@@ -338,7 +380,9 @@ namespace ProjectTreeViewer.WinForms
 
             // Settings panel
             labelIgnore.Text = _localization["Settings.IgnoreTitle"];
+			checkBoxIgnoreAll.Text = _localization["Settings.All"];
             checkBoxAll.Text = _localization["Settings.All"];
+			checkBoxRootAll.Text = _localization["Settings.All"];
             labelExtensions.Text = _localization["Settings.Extensions"];
             labelRootFolders.Text = _localization["Settings.RootFolders"];
             labelFont.Text = _localization["Settings.Font"];
@@ -513,34 +557,9 @@ namespace ProjectTreeViewer.WinForms
 			try
 			{
 				if (!EnsureTreeReady()) return;
-
-				var files = _selection.GetCheckedPaths(treeProject.Nodes)
-					.Where(File.Exists)
-					.Distinct(StringComparer.OrdinalIgnoreCase)
-					.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
-					.ToList();
-
-				if (files.Count == 0)
-				{
-					_messages.ShowInfo(_localization["Msg.NoCheckedFiles"]);
-					return;
-				}
-
-				var content = BuildContentForClipboard(files);
-				if (string.IsNullOrWhiteSpace(content))
-				{
-					_messages.ShowInfo(_localization["Msg.NoTextContent"]);
-					return;
-				}
-
-				var treeText = _treeExport.BuildFullTree(_currentPath!, _currentTree!.Root);
-
-				var sb = new StringBuilder(treeText);
-				AppendClipboardBlankLine(sb);
-				AppendClipboardBlankLine(sb);
-				sb.Append(content);
-
-				Clipboard.SetText(sb.ToString(), TextDataFormat.UnicodeText);
+				var selectedPaths = new HashSet<string>(_selection.GetCheckedPaths(treeProject.Nodes), StringComparer.OrdinalIgnoreCase);
+				var text = _treeAndContentExport.Build(_currentPath!, _currentTree!.Root, selectedPaths);
+				Clipboard.SetText(text, TextDataFormat.UnicodeText);
 			}
 			catch (Exception ex)
 			{
@@ -638,10 +657,49 @@ namespace ProjectTreeViewer.WinForms
 
         private void checkBoxAll_CheckedChanged(object? sender, EventArgs e)
         {
-            bool selectAll = checkBoxAll.Checked;
-            for (int i = 0; i < lstExtensions.Items.Count; i++)
-                lstExtensions.SetItemChecked(i, selectAll);
+			if (_suppressExtensionsAllCheck) return;
+
+			bool selectAll = checkBoxAll.Checked;
+			SetAllChecked(lstExtensions, selectAll, ref _suppressExtensionsItemCheck);
         }
+
+		private void checkBoxIgnoreAll_CheckedChanged(object? sender, EventArgs e)
+		{
+			if (_suppressIgnoreAllCheck) return;
+
+			bool selectAll = checkBoxIgnoreAll.Checked;
+			SetAllChecked(lstIgnore, selectAll, ref _suppressIgnoreItemCheck);
+			PopulateRootFolders(_currentPath ?? "");
+			PopulateExtensions(_currentPath ?? "");
+		}
+
+		private void checkBoxRootAll_CheckedChanged(object? sender, EventArgs e)
+		{
+			if (_suppressRootAllCheck) return;
+
+			bool selectAll = checkBoxRootAll.Checked;
+			SetAllChecked(lstRootFolders, selectAll, ref _suppressRootItemCheck);
+		}
+
+		private void lstExtensions_ItemCheck(object? sender, ItemCheckEventArgs e)
+		{
+			if (_suppressExtensionsItemCheck) return;
+
+			BeginInvoke(new Action(() =>
+			{
+				SyncAllCheckbox(checkBoxAll, lstExtensions, ref _suppressExtensionsAllCheck);
+			}));
+		}
+
+		private void lstRootFolders_ItemCheck(object? sender, ItemCheckEventArgs e)
+		{
+			if (_suppressRootItemCheck) return;
+
+			BeginInvoke(new Action(() =>
+			{
+				SyncAllCheckbox(checkBoxRootAll, lstRootFolders, ref _suppressRootAllCheck);
+			}));
+		}
 
         private void cboFont_SelectedIndexChanged(object? sender, EventArgs e) =>
             _pendingFontName = (string?)cboFont.SelectedItem ?? _pendingFontName;
@@ -673,14 +731,12 @@ namespace ProjectTreeViewer.WinForms
             var allowedRoot = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(),
                 StringComparer.OrdinalIgnoreCase);
 
-            var ignore = GetIgnoreOptions();
+			var ignoreRules = BuildIgnoreRules(_currentPath);
 
             var options = new TreeFilterOptions(
                 AllowedExtensions: allowedExt,
                 AllowedRootFolders: allowedRoot,
-                IgnoreBin: ignore.IgnoreBin,
-                IgnoreObj: ignore.IgnoreObj,
-                IgnoreDot: ignore.IgnoreDot);
+				IgnoreRules: ignoreRules);
 
             UseWaitCursor = true;
 			try
@@ -708,35 +764,29 @@ namespace ProjectTreeViewer.WinForms
             }
         }
 
-        // ───────────────────────────────────────── Populate (extensions/root folders)
-        private static readonly string[] _defaultExts = { ".cs", ".sln", ".csproj", ".designer" };
-
         private void PopulateExtensions(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
 
             var prev = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 
-            var ignore = GetIgnoreOptions();
-            var scan = _scanOptions.Execute(new ScanOptionsRequest(path, new IgnoreRules(ignore.IgnoreBin, ignore.IgnoreObj, ignore.IgnoreDot)));
+			var ignoreRules = BuildIgnoreRules(path);
+            var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules));
             if (scan.RootAccessDenied && TryElevateAndRestart(path))
                 return;
 
             lstExtensions.Items.Clear();
 
-            foreach (var ext in scan.Extensions.OrderBy(e => e, StringComparer.OrdinalIgnoreCase))
-            {
-                bool chk = prev.Contains(ext) ||
-                           (prev.Count == 0 && _defaultExts.Contains(ext, StringComparer.OrdinalIgnoreCase));
+			_suppressExtensionsItemCheck = true;
+			var options = _filterSelectionService.BuildExtensionOptions(scan.Extensions, prev);
+			foreach (var option in options)
+				lstExtensions.Items.Add(option.Name, option.IsChecked);
+			_suppressExtensionsItemCheck = false;
 
-                lstExtensions.Items.Add(ext, chk);
-            }
+			if (checkBoxAll.Checked)
+				SetAllChecked(lstExtensions, true, ref _suppressExtensionsItemCheck);
 
-            if (checkBoxAll.Checked)
-            {
-                for (int i = 0; i < lstExtensions.Items.Count; i++)
-                    lstExtensions.SetItemChecked(i, true);
-            }
+			SyncAllCheckbox(checkBoxAll, lstExtensions, ref _suppressExtensionsAllCheck);
         }
 
         private void PopulateRootFolders(string path)
@@ -746,24 +796,23 @@ namespace ProjectTreeViewer.WinForms
             var prev = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(),
                 StringComparer.OrdinalIgnoreCase);
 
-            var ignore = GetIgnoreOptions();
-            var scan = _scanOptions.Execute(new ScanOptionsRequest(path, new IgnoreRules(ignore.IgnoreBin, ignore.IgnoreObj, ignore.IgnoreDot)));
+			var ignoreRules = BuildIgnoreRules(path);
+            var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules));
             if (scan.RootAccessDenied && TryElevateAndRestart(path))
                 return;
 
             lstRootFolders.Items.Clear();
 
-            foreach (var name in scan.RootFolders)
-            {
-                bool hiddenDot = name.StartsWith(".", StringComparison.Ordinal);
-                bool isBin = name.Equals("bin", StringComparison.OrdinalIgnoreCase);
-                bool isObj = name.Equals("obj", StringComparison.OrdinalIgnoreCase);
+			_suppressRootItemCheck = true;
+			var options = _filterSelectionService.BuildRootFolderOptions(scan.RootFolders, prev, ignoreRules);
+			foreach (var option in options)
+				lstRootFolders.Items.Add(option.Name, option.IsChecked);
+			_suppressRootItemCheck = false;
 
-                bool chk = prev.Contains(name) ||
-                           (prev.Count == 0 && !hiddenDot && !isBin && !isObj);
+			if (checkBoxRootAll.Checked)
+				SetAllChecked(lstRootFolders, true, ref _suppressRootItemCheck);
 
-                lstRootFolders.Items.Add(name, chk);
-            }
+			SyncAllCheckbox(checkBoxRootAll, lstRootFolders, ref _suppressRootAllCheck);
         }
 
 		// ───────────────────────────────────────── Tree check behavior

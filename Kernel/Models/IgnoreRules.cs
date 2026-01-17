@@ -1,6 +1,11 @@
 namespace ProjectTreeViewer.Kernel.Models;
 
 public sealed record IgnoreRules(
-	bool IgnoreBin,
-	bool IgnoreObj,
-	bool IgnoreDot);
+	bool IgnoreBinFolders,
+	bool IgnoreObjFolders,
+	bool IgnoreHiddenFolders,
+	bool IgnoreHiddenFiles,
+	bool IgnoreDotFolders,
+	bool IgnoreDotFiles,
+	IReadOnlySet<string> SmartIgnoredFolders,
+	IReadOnlySet<string> SmartIgnoredFiles);

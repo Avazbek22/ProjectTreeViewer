@@ -60,8 +60,8 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 			foreach (var sd in subDirs)
 			{
-				var name = Path.GetFileName(sd);
-				if (ShouldSkipDirectory(name, rules))
+				var dirInfo = new DirectoryInfo(sd);
+				if (ShouldSkipDirectory(dirInfo, rules))
 					continue;
 
 				pending.Push(sd);
@@ -85,8 +85,10 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 			foreach (var file in files)
 			{
-				var name = Path.GetFileName(file);
-				if (rules.IgnoreDot && name.StartsWith(".", StringComparison.Ordinal))
+				var fileInfo = new FileInfo(file);
+				var name = fileInfo.Name;
+
+				if (ShouldSkipFile(fileInfo, rules))
 					continue;
 
 				var ext = Path.GetExtension(name);
@@ -123,26 +125,50 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 		foreach (var dir in dirs)
 		{
-			var name = Path.GetFileName(dir);
-			if (ShouldSkipDirectory(name, rules))
+			var dirInfo = new DirectoryInfo(dir);
+			if (ShouldSkipDirectory(dirInfo, rules))
 				continue;
 
-			names.Add(name);
+			names.Add(dirInfo.Name);
 		}
 
 		names.Sort(StringComparer.OrdinalIgnoreCase);
 		return new ScanResult<List<string>>(names, false, false);
 	}
 
-	private static bool ShouldSkipDirectory(string name, IgnoreRules rules)
+	private static bool ShouldSkipDirectory(DirectoryInfo dirInfo, IgnoreRules rules)
 	{
-		if (rules.IgnoreBin && name.Equals("bin", StringComparison.OrdinalIgnoreCase))
+		var name = dirInfo.Name;
+
+		if (rules.SmartIgnoredFolders.Contains(name))
 			return true;
 
-		if (rules.IgnoreObj && name.Equals("obj", StringComparison.OrdinalIgnoreCase))
+		if (rules.IgnoreBinFolders && name.Equals("bin", StringComparison.OrdinalIgnoreCase))
 			return true;
 
-		if (rules.IgnoreDot && name.StartsWith(".", StringComparison.Ordinal))
+		if (rules.IgnoreObjFolders && name.Equals("obj", StringComparison.OrdinalIgnoreCase))
+			return true;
+
+		if (rules.IgnoreDotFolders && name.StartsWith(".", StringComparison.Ordinal))
+			return true;
+
+		if (rules.IgnoreHiddenFolders && dirInfo.Attributes.HasFlag(FileAttributes.Hidden))
+			return true;
+
+		return false;
+	}
+
+	private static bool ShouldSkipFile(FileInfo fileInfo, IgnoreRules rules)
+	{
+		var name = fileInfo.Name;
+
+		if (rules.SmartIgnoredFiles.Contains(name))
+			return true;
+
+		if (rules.IgnoreDotFiles && name.StartsWith(".", StringComparison.Ordinal))
+			return true;
+
+		if (rules.IgnoreHiddenFiles && fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
 			return true;
 
 		return false;
