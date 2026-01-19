@@ -32,7 +32,7 @@ Get the newest build here:
 * **Search in tree** (Ctrl+F + menu)
 * **File‑type icons** for common dev stacks and formats
 * **Localization** (multi-language UI)
-* Architecture prepared for future **UI swaps** (WinForms now; WPF/Web/Cli planned)
+* Architecture prepared for future **UI swaps** (now running on Avalonia UI)
 
 ---
 
@@ -128,7 +128,7 @@ Important behavior:
 ## Tech Stack 🧩
 
 * **.NET 10**
-* **WinForms** UI
+* **Avalonia UI** (dark theme by default)
 * Cleanly separated codebase (Core/Services/Infrastructure approach)
 * JSON-based resources (localization, icon mappings, etc.)
 
@@ -174,7 +174,7 @@ dotnet restore
 
 dotnet build -c Release
 
-dotnet run --project Apps/WinForms/ProjectTreeViewer.WinForms.csproj
+dotnet run --project Apps/Avalonia/ProjectTreeViewer.Avalonia.csproj
 ```
 
 > Project/paths may vary slightly depending on how the solution is structured.
@@ -284,4 +284,4 @@ SOFTWARE.
 
 ## Keywords (for GitHub search) 🔎
 
-project tree viewer, folder structure, tree export, clipboard export, winforms, .net 10, codebase visualization, clean architecture, DDD, developer tool, repository structure, file selection, treeview search
+project tree viewer, folder structure, tree export, clipboard export, avalonia, .net 10, codebase visualization, clean architecture, DDD, developer tool, repository structure, file selection, treeview search

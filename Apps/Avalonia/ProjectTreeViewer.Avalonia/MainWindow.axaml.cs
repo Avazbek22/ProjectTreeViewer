@@ -1,0 +1,761 @@
+using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Application.UseCases;
+using ProjectTreeViewer.Avalonia.Services;
+using ProjectTreeViewer.Avalonia.ViewModels;
+using ProjectTreeViewer.Kernel.Contracts;
+using ProjectTreeViewer.Kernel.Models;
+
+namespace ProjectTreeViewer.Avalonia;
+
+public partial class MainWindow : Window
+{
+    private readonly CommandLineOptions _startupOptions;
+    private readonly LocalizationService _localization;
+    private readonly ScanOptionsUseCase _scanOptions;
+    private readonly BuildTreeUseCase _buildTree;
+    private readonly IgnoreOptionsService _ignoreOptionsService;
+    private readonly IgnoreRulesService _ignoreRulesService;
+    private readonly FilterOptionSelectionService _filterSelectionService;
+    private readonly TreeExportService _treeExport;
+    private readonly SelectedContentExportService _contentExport;
+    private readonly TreeAndContentExportService _treeAndContentExport;
+    private readonly IconCache _iconCache;
+    private readonly IElevationService _elevation;
+
+    private readonly MainWindowViewModel _viewModel;
+
+    private BuildTreeResult? _currentTree;
+    private string? _currentPath;
+    private bool _elevationAttempted;
+
+    private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+    private HashSet<IgnoreOptionId> _ignoreSelectionCache = new();
+    private bool _ignoreSelectionInitialized;
+    private HashSet<string> _extensionsSelectionCache = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly List<TreeNodeViewModel> _searchMatches = new();
+    private int _searchMatchIndex = -1;
+    private TreeNodeViewModel? _currentSelection;
+    private TextBox? _searchBox;
+
+    public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
+    {
+        _startupOptions = startupOptions;
+        _localization = services.Localization;
+        _scanOptions = services.ScanOptionsUseCase;
+        _buildTree = services.BuildTreeUseCase;
+        _ignoreOptionsService = services.IgnoreOptionsService;
+        _ignoreRulesService = services.IgnoreRulesService;
+        _filterSelectionService = services.FilterOptionSelectionService;
+        _treeExport = services.TreeExportService;
+        _contentExport = services.ContentExportService;
+        _treeAndContentExport = services.TreeAndContentExportService;
+        _iconCache = new IconCache(services.IconStore);
+        _elevation = services.Elevation;
+
+        _viewModel = new MainWindowViewModel(_localization);
+        DataContext = _viewModel;
+        InitializeComponent();
+        _searchBox = this.FindControl<TextBox>("SearchBox");
+
+        _elevationAttempted = startupOptions.ElevationAttempted;
+
+        _localization.LanguageChanged += (_, _) => ApplyLocalization();
+
+        InitializeFonts();
+        HookOptionListeners(_viewModel.RootFolders);
+        HookOptionListeners(_viewModel.Extensions);
+        HookIgnoreListeners(_viewModel.IgnoreOptions);
+
+        _viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(MainWindowViewModel.SearchQuery))
+                UpdateSearchMatches();
+        };
+
+        AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
+
+        Opened += OnOpened;
+    }
+
+    private async void OnOpened(object? sender, EventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
+            TryOpenFolder(_startupOptions.Path!, fromDialog: false);
+    }
+
+    private void InitializeFonts()
+    {
+        var fonts = FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToList() ?? new List<string>();
+
+        foreach (var font in fonts)
+            _viewModel.FontFamilies.Add(font);
+
+        var preferred = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console" };
+        _viewModel.SelectedFontFamily = preferred.FirstOrDefault(name => fonts.Contains(name, StringComparer.OrdinalIgnoreCase))
+            ?? fonts.FirstOrDefault();
+    }
+
+    private void ApplyLocalization()
+    {
+        _viewModel.UpdateLocalization();
+        UpdateTitle();
+
+        if (_currentPath is not null)
+        {
+            PopulateIgnoreOptionsForRootSelection(GetSelectedRootFolders());
+        }
+    }
+
+    private async Task ShowErrorAsync(string message) => await MessageDialog.ShowAsync(this, _localization["Msg.ErrorTitle"], message);
+
+    private async Task ShowInfoAsync(string message) => await MessageDialog.ShowAsync(this, _localization["Msg.InfoTitle"], message);
+
+    private async void OnOpenFolder(object? sender, RoutedEventArgs e)
+    {
+        var options = new FolderPickerOpenOptions
+        {
+            AllowMultiple = false,
+            Title = _viewModel.MenuFileOpen
+        };
+
+        var folders = await StorageProvider.OpenFolderPickerAsync(options);
+        var folder = folders.FirstOrDefault();
+        var path = folder?.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        TryOpenFolder(path, fromDialog: true);
+    }
+
+    private async void OnRefresh(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            ReloadProject();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
+    }
+
+    private void OnExit(object? sender, RoutedEventArgs e) => Close();
+
+    private async void OnCopyFullTree(object? sender, RoutedEventArgs e)
+    {
+        if (!EnsureTreeReady()) return;
+
+        var content = _treeExport.BuildFullTree(_currentPath!, _currentTree!.Root);
+        await SetClipboardTextAsync(content);
+    }
+
+    private async void OnCopySelectedTree(object? sender, RoutedEventArgs e)
+    {
+        if (!EnsureTreeReady()) return;
+
+        var selected = GetCheckedPaths();
+        var content = _treeExport.BuildSelectedTree(_currentPath!, _currentTree!.Root, selected);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            await ShowInfoAsync(_localization["Msg.NoCheckedTree"]);
+            return;
+        }
+
+        await SetClipboardTextAsync(content);
+    }
+
+    private async void OnCopySelectedContent(object? sender, RoutedEventArgs e)
+    {
+        if (!EnsureTreeReady()) return;
+
+        var selected = GetCheckedPaths();
+        var files = selected.Where(File.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (files.Count == 0)
+        {
+            await ShowInfoAsync(_localization["Msg.NoCheckedFiles"]);
+            return;
+        }
+
+        var content = _contentExport.Build(files);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            await ShowInfoAsync(_localization["Msg.NoTextContent"]);
+            return;
+        }
+
+        await SetClipboardTextAsync(content);
+    }
+
+    private async void OnCopyTreeAndContent(object? sender, RoutedEventArgs e)
+    {
+        if (!EnsureTreeReady()) return;
+
+        var selected = GetCheckedPaths();
+        var content = _treeAndContentExport.Build(_currentPath!, _currentTree!.Root, selected);
+        await SetClipboardTextAsync(content);
+    }
+
+    private void OnExpandAll(object? sender, RoutedEventArgs e) => ExpandCollapseTree(expand: true);
+
+    private void OnCollapseAll(object? sender, RoutedEventArgs e) => ExpandCollapseTree(expand: false);
+
+    private void ExpandCollapseTree(bool expand)
+    {
+        foreach (var node in _viewModel.TreeNodes)
+        {
+            node.SetExpandedRecursive(expand);
+            if (!expand)
+                node.IsExpanded = true;
+        }
+    }
+
+    private void OnZoomIn(object? sender, RoutedEventArgs e) => AdjustTreeFontSize(1);
+
+    private void OnZoomOut(object? sender, RoutedEventArgs e) => AdjustTreeFontSize(-1);
+
+    private void OnZoomReset(object? sender, RoutedEventArgs e) => _viewModel.TreeFontSize = 13;
+
+    private void AdjustTreeFontSize(double delta)
+    {
+        const double min = 8;
+        const double max = 28;
+        var next = Math.Clamp(_viewModel.TreeFontSize + delta, min, max);
+        _viewModel.TreeFontSize = next;
+    }
+
+    private void OnToggleSettings(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.SettingsVisible = !_viewModel.SettingsVisible;
+    }
+
+    private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
+    private void OnLangEn(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.En);
+    private void OnLangUz(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Uz);
+    private void OnLangTg(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Tg);
+    private void OnLangKk(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Kk);
+    private void OnLangFr(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Fr);
+    private void OnLangDe(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.De);
+    private void OnLangIt(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.It);
+
+    private async void OnAbout(object? sender, RoutedEventArgs e)
+    {
+        await ShowInfoAsync(_localization["Msg.AboutStub"]);
+    }
+
+    private void OnSearchNext(object? sender, RoutedEventArgs e) => NavigateSearch(1);
+
+    private void OnSearchPrev(object? sender, RoutedEventArgs e) => NavigateSearch(-1);
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.F)
+        {
+            _searchBox?.Focus();
+            _searchBox?.SelectAll();
+            e.Handled = true;
+        }
+    }
+
+    private void NavigateSearch(int step)
+    {
+        if (_searchMatches.Count == 0)
+            return;
+
+        _searchMatchIndex = (_searchMatchIndex + step + _searchMatches.Count) % _searchMatches.Count;
+        SelectSearchMatch();
+    }
+
+    private void SelectSearchMatch()
+    {
+        if (_searchMatchIndex < 0 || _searchMatchIndex >= _searchMatches.Count)
+            return;
+
+        var node = _searchMatches[_searchMatchIndex];
+        node.EnsureParentsExpanded();
+
+        if (_currentSelection is not null)
+            _currentSelection.IsSelected = false;
+
+        node.IsSelected = true;
+        _currentSelection = node;
+    }
+
+    private void UpdateSearchMatches()
+    {
+        _searchMatches.Clear();
+        _searchMatchIndex = -1;
+
+        var query = _viewModel.SearchQuery;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            if (_currentSelection is not null)
+                _currentSelection.IsSelected = false;
+            _currentSelection = null;
+            return;
+        }
+
+        foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
+        {
+            if (node.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase))
+                _searchMatches.Add(node);
+        }
+
+        if (_searchMatches.Count > 0)
+        {
+            _searchMatchIndex = 0;
+            SelectSearchMatch();
+        }
+    }
+
+    private void OnRootAllChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_suppressRootAllCheck) return;
+
+        var check = _viewModel.AllRootFoldersChecked;
+        SetAllChecked(_viewModel.RootFolders, check, ref _suppressRootItemCheck);
+        UpdateRootSelectionCache();
+        UpdateLiveOptionsFromRootSelection();
+    }
+
+    private void OnExtensionsAllChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_suppressExtensionAllCheck) return;
+
+        var check = _viewModel.AllExtensionsChecked;
+        SetAllChecked(_viewModel.Extensions, check, ref _suppressExtensionItemCheck);
+        UpdateExtensionsSelectionCache();
+    }
+
+    private void OnIgnoreAllChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_suppressIgnoreAllCheck) return;
+
+        _ignoreSelectionInitialized = true;
+        var check = _viewModel.AllIgnoreChecked;
+        SetAllChecked(_viewModel.IgnoreOptions, check, ref _suppressIgnoreItemCheck);
+        UpdateIgnoreSelectionCache();
+        PopulateRootFolders(_currentPath ?? string.Empty);
+        UpdateLiveOptionsFromRootSelection();
+    }
+
+    private bool _suppressRootAllCheck;
+    private bool _suppressRootItemCheck;
+    private bool _suppressExtensionAllCheck;
+    private bool _suppressExtensionItemCheck;
+    private bool _suppressIgnoreAllCheck;
+    private bool _suppressIgnoreItemCheck;
+
+    private void HookOptionListeners(ObservableCollection<SelectionOptionViewModel> options)
+    {
+        options.CollectionChanged += (_, _) =>
+        {
+            foreach (var item in options)
+                item.CheckedChanged -= OnOptionCheckedChanged;
+            foreach (var item in options)
+                item.CheckedChanged += OnOptionCheckedChanged;
+        };
+    }
+
+    private void HookIgnoreListeners(ObservableCollection<IgnoreOptionViewModel> options)
+    {
+        options.CollectionChanged += (_, _) =>
+        {
+            foreach (var item in options)
+                item.CheckedChanged -= OnIgnoreCheckedChanged;
+            foreach (var item in options)
+                item.CheckedChanged += OnIgnoreCheckedChanged;
+        };
+    }
+
+    private void OnOptionCheckedChanged(object? sender, EventArgs e)
+    {
+        if (sender is SelectionOptionViewModel option)
+        {
+            if (_viewModel.RootFolders.Contains(option))
+            {
+                if (_suppressRootItemCheck) return;
+
+                UpdateRootSelectionCache();
+                SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck, value => _viewModel.AllRootFoldersChecked = value);
+                UpdateLiveOptionsFromRootSelection();
+            }
+            else if (_viewModel.Extensions.Contains(option))
+            {
+                if (_suppressExtensionItemCheck) return;
+
+                UpdateExtensionsSelectionCache();
+                SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
+            }
+        }
+    }
+
+    private void OnIgnoreCheckedChanged(object? sender, EventArgs e)
+    {
+        if (_suppressIgnoreItemCheck) return;
+        UpdateIgnoreSelectionCache();
+        SyncAllCheckbox(_viewModel.IgnoreOptions, ref _suppressIgnoreAllCheck, value => _viewModel.AllIgnoreChecked = value);
+        PopulateRootFolders(_currentPath ?? string.Empty);
+        UpdateLiveOptionsFromRootSelection();
+    }
+
+    private async void OnApplySettings(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            RefreshTree();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
+    }
+
+    private void TryOpenFolder(string path, bool fromDialog)
+    {
+        if (!Directory.Exists(path))
+        {
+            _ = ShowErrorAsync(_localization.Format("Msg.PathNotFound", path));
+            return;
+        }
+
+        if (!_scanOptions.CanReadRoot(path))
+        {
+            if (TryElevateAndRestart(path))
+                return;
+
+            _ = ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
+            return;
+        }
+
+        _currentPath = path;
+        _viewModel.IsProjectLoaded = true;
+        _viewModel.SettingsVisible = true;
+        UpdateTitle();
+
+        ReloadProject();
+    }
+
+    private bool TryElevateAndRestart(string path)
+    {
+        if (_elevation.IsAdministrator) return false;
+        if (_elevationAttempted) return false;
+
+        _elevationAttempted = true;
+
+        var opts = new CommandLineOptions(
+            Path: path,
+            Language: _localization.CurrentLanguage,
+            ElevationAttempted: true);
+
+        bool started = _elevation.TryRelaunchAsAdministrator(opts);
+        if (started)
+        {
+            Close();
+            return true;
+        }
+
+        _ = ShowInfoAsync(_localization["Msg.ElevationCanceled"]);
+        return false;
+    }
+
+    private void ReloadProject()
+    {
+        if (string.IsNullOrEmpty(_currentPath)) return;
+
+        PopulateRootFolders(_currentPath);
+        UpdateLiveOptionsFromRootSelection();
+        RefreshTree();
+    }
+
+    private void RefreshTree()
+    {
+        if (string.IsNullOrEmpty(_currentPath)) return;
+
+        var allowedExt = new HashSet<string>(_viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
+            StringComparer.OrdinalIgnoreCase);
+        var allowedRoot = new HashSet<string>(_viewModel.RootFolders.Where(o => o.IsChecked).Select(o => o.Name),
+            StringComparer.OrdinalIgnoreCase);
+
+        var ignoreRules = BuildIgnoreRules(_currentPath);
+
+        var options = new TreeFilterOptions(
+            AllowedExtensions: allowedExt,
+            AllowedRootFolders: allowedRoot,
+            IgnoreRules: ignoreRules);
+
+        Cursor = new Cursor(StandardCursorType.Wait);
+        try
+        {
+            var result = _buildTree.Execute(new BuildTreeRequest(_currentPath, options));
+            _currentTree = result;
+
+            if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
+                return;
+
+            _viewModel.TreeNodes.Clear();
+            var root = BuildTreeViewModel(result.Root, null);
+            _viewModel.TreeNodes.Add(root);
+            root.IsExpanded = true;
+
+            UpdateSearchMatches();
+        }
+        finally
+        {
+            Cursor = new Cursor(StandardCursorType.Arrow);
+        }
+    }
+
+    private TreeNodeViewModel BuildTreeViewModel(TreeNodeDescriptor descriptor, TreeNodeViewModel? parent)
+    {
+        var icon = _iconCache.GetIcon(descriptor.IconKey);
+        var node = new TreeNodeViewModel(descriptor, parent, icon);
+
+        foreach (var child in descriptor.Children)
+        {
+            var childViewModel = BuildTreeViewModel(child, node);
+            node.Children.Add(childViewModel);
+        }
+
+        return node;
+    }
+
+    private void PopulateExtensionsForRootSelection(string path, IReadOnlyCollection<string> rootFolders)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+
+        var prev = _extensionsSelectionCache.Count > 0
+            ? new HashSet<string>(_extensionsSelectionCache, StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(_viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name), StringComparer.OrdinalIgnoreCase);
+
+        if (rootFolders.Count == 0)
+        {
+            _viewModel.Extensions.Clear();
+            _suppressExtensionAllCheck = true;
+            _viewModel.AllExtensionsChecked = false;
+            _suppressExtensionAllCheck = false;
+            SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
+            return;
+        }
+
+        var ignoreRules = BuildIgnoreRules(path);
+        var scan = _scanOptions.GetExtensionsForRootFolders(path, rootFolders, ignoreRules);
+        if (scan.RootAccessDenied && TryElevateAndRestart(path))
+            return;
+
+        _viewModel.Extensions.Clear();
+
+        _suppressExtensionItemCheck = true;
+        var options = _filterSelectionService.BuildExtensionOptions(scan.Value, prev);
+        foreach (var option in options)
+            _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
+        _suppressExtensionItemCheck = false;
+
+        if (_viewModel.AllExtensionsChecked)
+            SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
+
+        SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
+        UpdateExtensionsSelectionCache();
+    }
+
+    private void PopulateRootFolders(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+
+        var prev = new HashSet<string>(_viewModel.RootFolders.Where(o => o.IsChecked).Select(o => o.Name),
+            StringComparer.OrdinalIgnoreCase);
+
+        var ignoreRules = BuildIgnoreRules(path);
+        var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules));
+        if (scan.RootAccessDenied && TryElevateAndRestart(path))
+            return;
+
+        _viewModel.RootFolders.Clear();
+
+        _suppressRootItemCheck = true;
+        var options = _filterSelectionService.BuildRootFolderOptions(scan.RootFolders, prev, ignoreRules);
+        foreach (var option in options)
+            _viewModel.RootFolders.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
+        _suppressRootItemCheck = false;
+
+        if (_viewModel.AllRootFoldersChecked)
+            SetAllChecked(_viewModel.RootFolders, true, ref _suppressRootItemCheck);
+
+        SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck, value => _viewModel.AllRootFoldersChecked = value);
+    }
+
+    private void PopulateIgnoreOptionsForRootSelection(IReadOnlyCollection<string> rootFolders)
+    {
+        var previousSelections = _ignoreSelectionCache;
+
+        _suppressIgnoreItemCheck = true;
+        try
+        {
+            _viewModel.IgnoreOptions.Clear();
+
+            if (rootFolders.Count == 0)
+            {
+                _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+                _suppressIgnoreAllCheck = true;
+                _viewModel.AllIgnoreChecked = false;
+                _suppressIgnoreAllCheck = false;
+                return;
+            }
+
+            _ignoreOptions = _ignoreOptionsService.GetOptions();
+            bool hasPrevious = _ignoreSelectionInitialized;
+
+            foreach (var option in _ignoreOptions)
+            {
+                bool isChecked = previousSelections.Contains(option.Id) ||
+                    (!hasPrevious && option.DefaultChecked);
+                _viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(option.Id, option.Label, isChecked));
+            }
+        }
+        finally
+        {
+            _suppressIgnoreItemCheck = false;
+        }
+
+        UpdateIgnoreSelectionCache();
+        SyncIgnoreAllCheckbox();
+    }
+
+    private IReadOnlyCollection<string> GetSelectedRootFolders()
+    {
+        return _viewModel.RootFolders.Where(o => o.IsChecked).Select(o => o.Name).ToList();
+    }
+
+    private void UpdateLiveOptionsFromRootSelection()
+    {
+        if (string.IsNullOrEmpty(_currentPath)) return;
+
+        var selectedRoots = GetSelectedRootFolders();
+        PopulateExtensionsForRootSelection(_currentPath, selectedRoots);
+        PopulateIgnoreOptionsForRootSelection(selectedRoots);
+    }
+
+    private void UpdateTitle()
+    {
+        _viewModel.Title = string.IsNullOrWhiteSpace(_currentPath)
+            ? _localization["Title.Default"]
+            : _localization.Format("Title.WithPath", _currentPath);
+    }
+
+    private IgnoreRules BuildIgnoreRules(string rootPath)
+    {
+        var selected = _viewModel.IgnoreOptions.Where(o => o.IsChecked).Select(o => o.Id).ToHashSet();
+        return _ignoreRulesService.Build(rootPath, selected);
+    }
+
+    private async Task SetClipboardTextAsync(string content)
+    {
+        if (Application.Current?.Clipboard is { } clipboard)
+            await clipboard.SetTextAsync(content);
+    }
+
+    private bool EnsureTreeReady() => _currentTree is not null && !string.IsNullOrWhiteSpace(_currentPath);
+
+    private HashSet<string> GetCheckedPaths()
+    {
+        var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var node in _viewModel.TreeNodes)
+            CollectChecked(node, selected);
+        return selected;
+    }
+
+    private static void CollectChecked(TreeNodeViewModel node, HashSet<string> selected)
+    {
+        if (node.IsChecked)
+            selected.Add(node.FullPath);
+
+        foreach (var child in node.Children)
+            CollectChecked(child, selected);
+    }
+
+    private void UpdateExtensionsSelectionCache()
+    {
+        _extensionsSelectionCache = new HashSet<string>(
+            _viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void UpdateRootSelectionCache()
+    {
+        // no persistent cache yet, but this keeps the selection consistent when rebuilt
+    }
+
+    private void UpdateIgnoreSelectionCache()
+    {
+        _ignoreSelectionCache = new HashSet<IgnoreOptionId>(
+            _viewModel.IgnoreOptions.Where(o => o.IsChecked).Select(o => o.Id));
+    }
+
+    private void SyncIgnoreAllCheckbox()
+    {
+        SyncAllCheckbox(_viewModel.IgnoreOptions, ref _suppressIgnoreAllCheck, value => _viewModel.AllIgnoreChecked = value);
+    }
+
+    private static void SyncAllCheckbox<T>(
+        IEnumerable<T> options,
+        ref bool suppressFlag,
+        Action<bool> setValue)
+        where T : class
+    {
+        suppressFlag = true;
+        try
+        {
+            var list = options.ToList();
+            bool allChecked = list.Count > 0 && list.All(option => option switch
+            {
+                SelectionOptionViewModel selection => selection.IsChecked,
+                IgnoreOptionViewModel ignore => ignore.IsChecked,
+                _ => false
+            });
+            setValue(allChecked);
+        }
+        finally
+        {
+            suppressFlag = false;
+        }
+    }
+
+    private static void SetAllChecked<T>(
+        IEnumerable<T> options,
+        bool isChecked,
+        ref bool suppressFlag)
+        where T : class
+    {
+        suppressFlag = true;
+        try
+        {
+            foreach (var option in options)
+            {
+                switch (option)
+                {
+                    case SelectionOptionViewModel selection:
+                        selection.IsChecked = isChecked;
+                        break;
+                    case IgnoreOptionViewModel ignore:
+                        ignore.IsChecked = isChecked;
+                        break;
+                }
+            }
+        }
+        finally
+        {
+            suppressFlag = false;
+        }
+    }
+}
