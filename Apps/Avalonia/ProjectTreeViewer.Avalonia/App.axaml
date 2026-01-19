@@ -6,6 +6,6 @@
         <StyleInclude Source="avares://ProjectTreeViewer.Avalonia/Styles/Theme.axaml" />
     </Application.Styles>
 
-    <Application.RequestedThemeVariant>Dark</Application.RequestedThemeVariant>
+    <Application.RequestedThemeVariant>Default</Application.RequestedThemeVariant>
 
 </Application>

@@ -2,62 +2,83 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Styles.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <!-- Colors -->
+                    <Color x:Key="AppBackgroundColor">#FFFFFF</Color>
+                    <Color x:Key="AppPanelColor">#F3F3F3</Color>
+                    <Color x:Key="AppBorderColor">#C7C7C7</Color>
+                    <Color x:Key="AppAccentColor">#0078D4</Color>
+                    <Color x:Key="AppTextColor">#1A1A1A</Color>
+                    <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
 
-            <!-- Colors -->
-            <Color x:Key="AppBackgroundColor">#121214</Color>
-            <Color x:Key="AppPanelColor">#17171A</Color>
-            <Color x:Key="AppBorderColor">#2B2F36</Color>
-            <Color x:Key="AppAccentColor">#4CC2FF</Color>
-            <Color x:Key="AppTextColor">#E7E9EF</Color>
-            <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
+                    <!-- Brushes -->
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+                    <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
+                    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+                    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+                    <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
+                    <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
+                </ResourceDictionary>
 
-            <!-- Brushes -->
-            <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
-            <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
-            <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
-            <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
-            <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
-            <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
+                <ResourceDictionary x:Key="Dark">
+                    <!-- Colors -->
+                    <Color x:Key="AppBackgroundColor">#121214</Color>
+                    <Color x:Key="AppPanelColor">#17171A</Color>
+                    <Color x:Key="AppBorderColor">#2B2F36</Color>
+                    <Color x:Key="AppAccentColor">#4CC2FF</Color>
+                    <Color x:Key="AppTextColor">#E7E9EF</Color>
+                    <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
+
+                    <!-- Brushes -->
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+                    <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
+                    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+                    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+                    <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
+                    <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
 
         </ResourceDictionary>
     </Styles.Resources>
 
     <Style Selector="Window">
-        <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="Menu">
-        <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
     </Style>
 
     <Style Selector="TextBox">
-        <Setter Property="Background" Value="#16181C" />
-        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="ComboBox">
-        <Setter Property="Background" Value="#16181C" />
-        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="TreeView">
-        <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
     </Style>
 
     <Style Selector="Button">
-        <Setter Property="Background" Value="#23262C" />
-        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="Button:pointerover">
-        <Setter Property="Background" Value="#2B3038" />
+        <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
     </Style>
 
     <Style Selector="ScrollViewer">
@@ -65,18 +86,43 @@
     </Style>
 
     <Style Selector="TextBlock.section-title">
-        <Setter Property="Foreground" Value="{StaticResource AppMutedTextBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Margin" Value="0,16,0,6" />
     </Style>
 
     <Style Selector="Border.panel">
-        <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="CornerRadius" Value="0" />
         <Setter Property="Padding" Value="12" />
+    </Style>
+
+    <Style Selector="Border.search-panel">
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+
+    <Style Selector="StackPanel.settings-section">
+        <Setter Property="Margin" Value="0,6,0,0" />
+    </Style>
+
+    <Style Selector="Border.checklist-border">
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="6" />
+    </Style>
+
+    <Style Selector="CheckBox.list-item">
+        <Setter Property="Margin" Value="0,2" />
+    </Style>
+
+    <Style Selector="CheckBox.section-all">
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
 </Styles>

@@ -10,12 +10,14 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _title;
     private bool _isProjectLoaded;
     private bool _settingsVisible = true;
+    private bool _searchVisible;
     private string _searchQuery = string.Empty;
     private string? _selectedFontFamily;
     private double _treeFontSize = 13;
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;
     private bool _allIgnoreChecked;
+    private bool _isDarkTheme;
 
     public MainWindowViewModel(LocalizationService localization)
     {
@@ -63,6 +65,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool SearchVisible
+    {
+        get => _searchVisible;
+        set
+        {
+            if (_searchVisible == value) return;
+            _searchVisible = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public string SearchQuery
     {
         get => _searchQuery;
@@ -70,6 +83,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             if (_searchQuery == value) return;
             _searchQuery = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool IsDarkTheme
+    {
+        get => _isDarkTheme;
+        set
+        {
+            if (_isDarkTheme == value) return;
+            _isDarkTheme = value;
             RaisePropertyChanged();
         }
     }
@@ -144,6 +168,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuViewZoomIn { get; private set; } = string.Empty;
     public string MenuViewZoomOut { get; private set; } = string.Empty;
     public string MenuViewZoomReset { get; private set; } = string.Empty;
+    public string MenuViewTheme { get; private set; } = string.Empty;
     public string MenuOptions { get; private set; } = string.Empty;
     public string MenuOptionsTreeSettings { get; private set; } = string.Empty;
     public string MenuLanguage { get; private set; } = string.Empty;
@@ -174,6 +199,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuViewZoomIn = _localization["Menu.View.ZoomIn"];
         MenuViewZoomOut = _localization["Menu.View.ZoomOut"];
         MenuViewZoomReset = _localization["Menu.View.ZoomReset"];
+        MenuViewTheme = _localization["Menu.View.DarkTheme"];
         MenuOptions = _localization["Menu.Options"];
         MenuOptionsTreeSettings = _localization["Menu.Options.TreeSettings"];
         MenuLanguage = _localization["Menu.Language"];
@@ -202,6 +228,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuViewZoomIn));
         RaisePropertyChanged(nameof(MenuViewZoomOut));
         RaisePropertyChanged(nameof(MenuViewZoomReset));
+        RaisePropertyChanged(nameof(MenuViewTheme));
         RaisePropertyChanged(nameof(MenuOptions));
         RaisePropertyChanged(nameof(MenuOptionsTreeSettings));
         RaisePropertyChanged(nameof(MenuLanguage));
