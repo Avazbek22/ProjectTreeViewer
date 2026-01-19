@@ -65,9 +65,17 @@ public partial class MainWindow : Window
 
         _viewModel = new MainWindowViewModel(_localization);
         DataContext = _viewModel;
+
         InitializeComponent();
+
         _searchBox = this.FindControl<TextBox>("SearchBox");
         _treeView = this.FindControl<TreeView>("ProjectTree");
+
+        if (_treeView is not null)
+        {
+            _treeView.PointerEntered += OnTreePointerEntered;
+            _treeView.PointerWheelChanged += OnTreePointerWheelChanged;
+        }
 
         _elevationAttempted = startupOptions.ElevationAttempted;
 
@@ -107,13 +115,16 @@ public partial class MainWindow : Window
             _viewModel.FontFamilies.Add(font);
 
         var preferred = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console" };
-        _viewModel.SelectedFontFamily = preferred.FirstOrDefault(name => fonts.Contains(name, StringComparer.OrdinalIgnoreCase))
+        var selected = preferred.FirstOrDefault(name => fonts.Contains(name, StringComparer.OrdinalIgnoreCase))
             ?? fonts.FirstOrDefault();
+
+        _viewModel.SelectedFontFamily = selected;
+        _viewModel.PendingFontFamily = selected;
     }
 
     private void SyncThemeWithSystem()
     {
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
         var isDark = app.ActualThemeVariant == ThemeVariant.Dark;
@@ -131,9 +142,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task ShowErrorAsync(string message) => await MessageDialog.ShowAsync(this, _localization["Msg.ErrorTitle"], message);
+    private async Task ShowErrorAsync(string message) =>
+        await MessageDialog.ShowAsync(this, _localization["Msg.ErrorTitle"], message);
 
-    private async Task ShowInfoAsync(string message) => await MessageDialog.ShowAsync(this, _localization["Msg.InfoTitle"], message);
+    private async Task ShowInfoAsync(string message) =>
+        await MessageDialog.ShowAsync(this, _localization["Msg.InfoTitle"], message);
 
     private async void OnOpenFolder(object? sender, RoutedEventArgs e)
     {
@@ -242,11 +255,11 @@ public partial class MainWindow : Window
 
     private void OnZoomOut(object? sender, RoutedEventArgs e) => AdjustTreeFontSize(-1);
 
-    private void OnZoomReset(object? sender, RoutedEventArgs e) => _viewModel.TreeFontSize = 13;
+    private void OnZoomReset(object? sender, RoutedEventArgs e) => _viewModel.TreeFontSize = 9;
 
     private void AdjustTreeFontSize(double delta)
     {
-        const double min = 8;
+        const double min = 6;
         const double max = 28;
         var next = Math.Clamp(_viewModel.TreeFontSize + delta, min, max);
         _viewModel.TreeFontSize = next;
@@ -254,12 +267,13 @@ public partial class MainWindow : Window
 
     private void OnToggleSettings(object? sender, RoutedEventArgs e)
     {
+        if (!_viewModel.IsProjectLoaded) return;
         _viewModel.SettingsVisible = !_viewModel.SettingsVisible;
     }
 
     private void OnToggleTheme(object? sender, RoutedEventArgs e)
     {
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
         var nextIsDark = !_viewModel.IsDarkTheme;
@@ -322,17 +336,137 @@ public partial class MainWindow : Window
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.F)
+        var mods = e.KeyModifiers;
+
+        // Ctrl+O (всегда доступно)
+        if (mods == KeyModifiers.Control && e.Key == Key.O)
         {
-            OnToggleSearch(sender, e);
+            OnOpenFolder(this, new RoutedEventArgs());
             e.Handled = true;
+            return;
         }
 
+        // Ctrl+F (только при загруженном проекте — как WinForms miSearch.Enabled)
+        if (mods == KeyModifiers.Control && e.Key == Key.F)
+        {
+            OnToggleSearch(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // Esc закрывает поиск
         if (e.Key == Key.Escape && _viewModel.SearchVisible)
         {
             CloseSearch();
             e.Handled = true;
+            return;
         }
+
+        // F5 refresh (как WinForms)
+        if (e.Key == Key.F5)
+        {
+            if (_viewModel.IsProjectLoaded)
+                OnRefresh(this, new RoutedEventArgs());
+
+            e.Handled = true;
+            return;
+        }
+
+        // Zoom горячие клавиши (в WinForms работают даже без проекта)
+        if (mods == KeyModifiers.Control && (e.Key == Key.OemPlus || e.Key == Key.Add))
+        {
+            AdjustTreeFontSize(1);
+            e.Handled = true;
+            return;
+        }
+
+        if (mods == KeyModifiers.Control && (e.Key == Key.OemMinus || e.Key == Key.Subtract))
+        {
+            AdjustTreeFontSize(-1);
+            e.Handled = true;
+            return;
+        }
+
+        if (mods == KeyModifiers.Control && (e.Key == Key.D0 || e.Key == Key.NumPad0))
+        {
+            OnZoomReset(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        if (!_viewModel.IsProjectLoaded)
+            return;
+
+        // Ctrl+P Options panel toggle
+        if (mods == KeyModifiers.Control && e.Key == Key.P)
+        {
+            OnToggleSettings(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // Ctrl+E Expand All
+        if (mods == KeyModifiers.Control && e.Key == Key.E)
+        {
+            ExpandCollapseTree(expand: true);
+            e.Handled = true;
+            return;
+        }
+
+        // Ctrl+W Collapse All
+        if (mods == KeyModifiers.Control && e.Key == Key.W)
+        {
+            ExpandCollapseTree(expand: false);
+            e.Handled = true;
+            return;
+        }
+
+        // Copy hotkeys (как WinForms)
+        if (mods == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.C)
+        {
+            OnCopyFullTree(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        if (mods == (KeyModifiers.Control | KeyModifiers.Alt) && e.Key == Key.C)
+        {
+            OnCopySelectedTree(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        if (mods == (KeyModifiers.Control | KeyModifiers.Alt) && e.Key == Key.V)
+        {
+            OnCopySelectedContent(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        if (mods == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.V)
+        {
+            OnCopyTreeAndContent(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+    }
+
+    private void OnTreePointerEntered(object? sender, PointerEventArgs e)
+    {
+        _treeView?.Focus();
+    }
+
+    private void OnTreePointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (!e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            return;
+
+        if (e.Delta.Y > 0)
+            AdjustTreeFontSize(1);
+        else if (e.Delta.Y < 0)
+            AdjustTreeFontSize(-1);
+
+        // В WinForms нельзя "handled", поэтому оставляем скролл как есть (бесшовно по ощущению).
     }
 
     private void ShowSearch()
@@ -414,7 +548,6 @@ public partial class MainWindow : Window
 
         var check = _viewModel.AllRootFoldersChecked;
         SetAllChecked(_viewModel.RootFolders, check, ref _suppressRootItemCheck);
-        UpdateRootSelectionCache();
         UpdateLiveOptionsFromRootSelection();
     }
 
@@ -470,31 +603,39 @@ public partial class MainWindow : Window
 
     private void OnOptionCheckedChanged(object? sender, EventArgs e)
     {
-        if (sender is SelectionOptionViewModel option)
+        if (sender is not SelectionOptionViewModel option)
+            return;
+
+        if (_viewModel.RootFolders.Contains(option))
         {
-            if (_viewModel.RootFolders.Contains(option))
-            {
-                if (_suppressRootItemCheck) return;
+            if (_suppressRootItemCheck) return;
 
-                UpdateRootSelectionCache();
-                SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck, value => _viewModel.AllRootFoldersChecked = value);
-                UpdateLiveOptionsFromRootSelection();
-            }
-            else if (_viewModel.Extensions.Contains(option))
-            {
-                if (_suppressExtensionItemCheck) return;
+            SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck,
+                value => _viewModel.AllRootFoldersChecked = value);
 
-                UpdateExtensionsSelectionCache();
-                SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
-            }
+            UpdateLiveOptionsFromRootSelection();
+        }
+        else if (_viewModel.Extensions.Contains(option))
+        {
+            if (_suppressExtensionItemCheck) return;
+
+            SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
+                value => _viewModel.AllExtensionsChecked = value);
+
+            UpdateExtensionsSelectionCache();
         }
     }
 
     private void OnIgnoreCheckedChanged(object? sender, EventArgs e)
     {
         if (_suppressIgnoreItemCheck) return;
+
+        _ignoreSelectionInitialized = true;
+
+        SyncAllCheckbox(_viewModel.IgnoreOptions, ref _suppressIgnoreAllCheck,
+            value => _viewModel.AllIgnoreChecked = value);
+
         UpdateIgnoreSelectionCache();
-        SyncAllCheckbox(_viewModel.IgnoreOptions, ref _suppressIgnoreAllCheck, value => _viewModel.AllIgnoreChecked = value);
         PopulateRootFolders(_currentPath ?? string.Empty);
         UpdateLiveOptionsFromRootSelection();
     }
@@ -503,6 +644,13 @@ public partial class MainWindow : Window
     {
         try
         {
+            // Font family — как WinForms: применяется только по Apply
+            if (!string.IsNullOrWhiteSpace(_viewModel.PendingFontFamily) &&
+                !string.Equals(_viewModel.SelectedFontFamily, _viewModel.PendingFontFamily, StringComparison.Ordinal))
+            {
+                _viewModel.SelectedFontFamily = _viewModel.PendingFontFamily;
+            }
+
             RefreshTree();
         }
         catch (Exception ex)
@@ -595,7 +743,19 @@ public partial class MainWindow : Window
                 return;
 
             _viewModel.TreeNodes.Clear();
+
             var root = BuildTreeViewModel(result.Root, null);
+
+            // Fix как в WinForms EnsureRootNodeVisible
+            try
+            {
+                root.DisplayName = new DirectoryInfo(_currentPath!).Name;
+            }
+            catch
+            {
+                // ignore
+            }
+
             _viewModel.TreeNodes.Add(root);
             root.IsExpanded = true;
 
@@ -743,9 +903,24 @@ public partial class MainWindow : Window
             : _localization.Format("Title.WithPath", _currentPath);
     }
 
+    private IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()
+    {
+        // Полный аналог WinForms: если список пуст — возвращаем кеш, а не пустой набор
+        if (_ignoreOptions.Count == 0 || _viewModel.IgnoreOptions.Count == 0)
+            return _ignoreSelectionCache;
+
+        var selected = _viewModel.IgnoreOptions
+            .Where(o => o.IsChecked)
+            .Select(o => o.Id)
+            .ToHashSet();
+
+        _ignoreSelectionCache = selected;
+        return selected;
+    }
+
     private IgnoreRules BuildIgnoreRules(string rootPath)
     {
-        var selected = _viewModel.IgnoreOptions.Where(o => o.IsChecked).Select(o => o.Id).ToHashSet();
+        var selected = GetSelectedIgnoreOptionIds();
         return _ignoreRulesService.Build(rootPath, selected);
     }
 
@@ -778,18 +953,21 @@ public partial class MainWindow : Window
 
     private void UpdateExtensionsSelectionCache()
     {
+        // Полный аналог WinForms: если список пуст — кеш НЕ затираем
+        if (_viewModel.Extensions.Count == 0)
+            return;
+
         _extensionsSelectionCache = new HashSet<string>(
             _viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
             StringComparer.OrdinalIgnoreCase);
     }
 
-    private void UpdateRootSelectionCache()
-    {
-        // no persistent cache yet, but this keeps the selection consistent when rebuilt
-    }
-
     private void UpdateIgnoreSelectionCache()
     {
+        // Полный аналог WinForms: если список пуст — кеш НЕ затираем
+        if (_ignoreOptions.Count == 0 || _viewModel.IgnoreOptions.Count == 0)
+            return;
+
         _ignoreSelectionCache = new HashSet<IgnoreOptionId>(
             _viewModel.IgnoreOptions.Where(o => o.IsChecked).Select(o => o.Id));
     }

@@ -32,7 +32,14 @@
         <MenuItem Header="{Binding MenuViewZoomOut}" Click="OnZoomOut" />
         <MenuItem Header="{Binding MenuViewZoomReset}" Click="OnZoomReset" />
         <Separator />
-        <MenuItem Header="{Binding MenuViewTheme}" IsChecked="{Binding IsDarkTheme}" ToggleType="CheckBox" Click="OnToggleTheme" />
+        <MenuItem Click="OnToggleTheme">
+          <MenuItem.Header>
+            <CheckBox Content="{Binding MenuViewTheme}"
+                      IsChecked="{Binding IsDarkTheme}"
+                      IsHitTestVisible="False"/>
+          </MenuItem.Header>
+        </MenuItem>
+
       </MenuItem>
       <MenuItem Header="{Binding MenuSearch}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSearch" />
       <MenuItem Header="{Binding MenuOptions}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSettings" />
@@ -86,11 +93,11 @@
         <ScrollViewer>
           <StackPanel Spacing="10">
             <TextBlock Classes="section-title" Text="{Binding SettingsFont}" />
-            <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding SelectedFontFamily}" />
+            <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding PendingFontFamily}" />
             <Button Content="{Binding SettingsApply}" Click="OnApplySettings" Margin="0,8,0,0" />
 
             <StackPanel Classes="settings-section">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+              <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsIgnoreTitle}" Margin="0" />
                 <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
                           IsChecked="{Binding AllIgnoreChecked}" Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
@@ -109,7 +116,7 @@
             </StackPanel>
 
             <StackPanel Classes="settings-section">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+              <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsExtensions}" Margin="0" />
                 <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
                           IsChecked="{Binding AllExtensionsChecked}" Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
@@ -128,7 +135,7 @@
             </StackPanel>
 
             <StackPanel Classes="settings-section">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+              <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsRootFolders}" Margin="0" />
                 <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
                           IsChecked="{Binding AllRootFoldersChecked}" Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />

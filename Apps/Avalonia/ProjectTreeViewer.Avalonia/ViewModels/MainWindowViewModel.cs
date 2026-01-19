@@ -12,8 +12,12 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _settingsVisible;
     private bool _searchVisible;
     private string _searchQuery = string.Empty;
+
     private string? _selectedFontFamily;
-    private double _treeFontSize = 13;
+    private string? _pendingFontFamily;
+
+    private double _treeFontSize = 9;
+
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;
     private bool _allIgnoreChecked;
@@ -98,6 +102,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    // Применённый шрифт (TreeView берет отсюда)
     public string? SelectedFontFamily
     {
         get => _selectedFontFamily;
@@ -105,6 +110,18 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             if (_selectedFontFamily == value) return;
             _selectedFontFamily = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    // Выбранный в ComboBox (как WinForms _pendingFontName)
+    public string? PendingFontFamily
+    {
+        get => _pendingFontFamily;
+        set
+        {
+            if (_pendingFontFamily == value) return;
+            _pendingFontFamily = value;
             RaisePropertyChanged();
         }
     }
