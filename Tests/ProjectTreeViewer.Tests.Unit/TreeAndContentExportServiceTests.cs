@@ -51,4 +51,23 @@ public sealed class TreeAndContentExportServiceTests
 
 		Assert.Contains("/root:", result);
 	}
+
+	// Verifies tree output is returned when selected content is empty.
+	[Fact]
+	public void Build_ReturnsTreeWhenSelectedContentEmpty()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>());
+
+		var service = new TreeAndContentExportService(new TreeExportService(), new SelectedContentExportService());
+		var result = service.Build("/root", root, new HashSet<string> { "/root/missing.txt" });
+
+		Assert.Contains("/root:", result);
+		Assert.DoesNotContain("missing.txt:", result);
+	}
 }

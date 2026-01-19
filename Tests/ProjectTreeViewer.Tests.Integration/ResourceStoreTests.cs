@@ -60,4 +60,16 @@ public sealed class ResourceStoreTests
 
 		Assert.Equal("grayFolder", key);
 	}
+
+	// Verifies unknown files map to the default unknown icon key.
+	[Fact]
+	public void IconMapper_ReturnsUnknownForUnmappedFile()
+	{
+		var mapper = new IconMapper();
+		var node = new FileSystemNode("file.unknownext", "/root/file.unknownext", false, false, new List<FileSystemNode>());
+
+		var key = mapper.GetIconKey(node);
+
+		Assert.Equal("unknownFile", key);
+	}
 }

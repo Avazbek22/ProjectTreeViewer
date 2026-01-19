@@ -54,6 +54,19 @@ public sealed class SelectedContentExportServiceTests
 		Assert.True(firstIndex < secondIndex);
 	}
 
+	// Verifies whitespace-only file content is treated as empty.
+	[Fact]
+	public void Build_SkipsWhitespaceOnlyFiles()
+	{
+		using var temp = new TemporaryDirectory();
+		var whitespace = temp.CreateFile("space.txt", "   ");
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { whitespace });
+
+		Assert.Equal(string.Empty, result);
+	}
+
 	// Verifies duplicate file paths are included once.
 	[Fact]
 	public void Build_DeduplicatesPaths()

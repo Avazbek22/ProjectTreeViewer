@@ -90,4 +90,18 @@ public sealed class FileSystemScannerTests
 
 		Assert.True(scanner.CanReadRoot(temp.Path));
 	}
+
+	// Verifies scanner gracefully handles a missing root directory.
+	[Fact]
+	public void GetExtensions_ReturnsEmptyForMissingRoot()
+	{
+		var scanner = new FileSystemScanner();
+		var rules = new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>());
+
+		var result = scanner.GetExtensions("/path/does/not/exist", rules);
+
+		Assert.Empty(result.Value);
+		Assert.False(result.RootAccessDenied);
+		Assert.False(result.HadAccessDenied);
+	}
 }

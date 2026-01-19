@@ -34,6 +34,19 @@ public sealed class LocalizationServiceTests
 		Assert.Equal("[[Missing]]", service["Missing"]);
 	}
 
+	// Verifies unknown languages fall back to English resources.
+	[Fact]
+	public void Get_ReturnsEnglishFallbackWhenLanguageMissing()
+	{
+		var catalog = new StubLocalizationCatalog(new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
+		{
+			[AppLanguage.En] = new Dictionary<string, string> { ["Key"] = "Value" }
+		});
+		var service = new LocalizationService(catalog, AppLanguage.Fr);
+
+		Assert.Equal("Value", service["Key"]);
+	}
+
 	// Verifies formatted strings use the localized template.
 	[Fact]
 	public void Format_UsesStringFormat()

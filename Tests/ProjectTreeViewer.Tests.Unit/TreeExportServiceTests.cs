@@ -53,6 +53,28 @@ public sealed class TreeExportServiceTests
 		Assert.DoesNotContain("skip.txt", result);
 	}
 
+	// Verifies selected tree export returns empty when nothing is selected.
+	[Fact]
+	public void BuildSelectedTree_ReturnsEmptyWhenNoSelections()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor("file.txt", "/root/file.txt", false, false, "text", new List<TreeNodeDescriptor>())
+			});
+
+		var service = new TreeExportService();
+
+		var result = service.BuildSelectedTree("/root", root, new HashSet<string>());
+
+		Assert.Equal(string.Empty, result);
+	}
+
 	// Verifies selection matching returns true for a descendant.
 	[Fact]
 	public void HasSelectedDescendantOrSelf_ReturnsTrueWhenMatch()

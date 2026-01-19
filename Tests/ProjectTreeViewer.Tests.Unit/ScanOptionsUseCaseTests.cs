@@ -65,6 +65,48 @@ public sealed class ScanOptionsUseCaseTests
 		Assert.False(result.HadAccessDenied);
 	}
 
+	// Verifies extensions are aggregated from root files and selected folders.
+	[Fact]
+	public void GetExtensionsForRootFolders_AggregatesRootAndFolderExtensions()
+	{
+		var scanner = new StubFileSystemScanner
+		{
+			GetRootFileExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".root" },
+				RootAccessDenied: false,
+				HadAccessDenied: false),
+			GetExtensionsHandler = (path, _) => path.EndsWith("src", StringComparison.Ordinal)
+				? new ScanResult<HashSet<string>>(
+					new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".cs", ".root" },
+					RootAccessDenied: false,
+					HadAccessDenied: false)
+				: new ScanResult<HashSet<string>>(
+					new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".md" },
+					RootAccessDenied: false,
+					HadAccessDenied: false)
+		};
+
+		var useCase = new ScanOptionsUseCase(scanner);
+
+		var result = useCase.GetExtensionsForRootFolders(
+			"/root",
+			new List<string> { "src", "docs" },
+			new IgnoreRules(
+				IgnoreBinFolders: false,
+				IgnoreObjFolders: false,
+				IgnoreHiddenFolders: false,
+				IgnoreHiddenFiles: false,
+				IgnoreDotFolders: false,
+				IgnoreDotFiles: false,
+				SmartIgnoredFolders: new HashSet<string>(),
+				SmartIgnoredFiles: new HashSet<string>()));
+
+		Assert.Equal(3, result.Value.Count);
+		Assert.Contains(".root", result.Value);
+		Assert.Contains(".cs", result.Value);
+		Assert.Contains(".md", result.Value);
+	}
+
 	// Verifies CanReadRoot delegates to the scanner.
 	[Fact]
 	public void CanReadRoot_DelegatesToScanner()

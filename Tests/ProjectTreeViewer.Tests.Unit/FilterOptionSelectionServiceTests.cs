@@ -23,6 +23,18 @@ public sealed class FilterOptionSelectionServiceTests
 		Assert.False(options.Single(o => o.Name == ".txt").IsChecked);
 	}
 
+	// Verifies extension options are sorted by name using an ordinal ignore-case comparer.
+	[Fact]
+	public void BuildExtensionOptions_SortsExtensionsCaseInsensitive()
+	{
+		var service = new FilterOptionSelectionService();
+
+		var options = service.BuildExtensionOptions(new[] { ".B", ".a" }, new HashSet<string>());
+
+		Assert.Equal(".a", options[0].Name);
+		Assert.Equal(".B", options[1].Name);
+	}
+
 	// Verifies prior selections override default extension choices.
 	[Fact]
 	public void BuildExtensionOptions_RespectsPreviousSelections()
