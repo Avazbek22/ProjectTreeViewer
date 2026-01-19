@@ -45,11 +45,13 @@ namespace ProjectTreeViewer.WinForms
         private readonly TreeAndContentExportService _treeAndContentExport;
         private readonly TreeSelectionService _selection;
         private readonly IIconStore _iconStore;
-		private readonly TreeSearchService _treeSearch;
+        private readonly TreeSearchService _treeSearch;
 
         private BuildTreeResult? _currentTree;
 
         private bool _elevationAttempted;
+		private bool _suppressThemeToggle;
+		private AppTheme _currentTheme = AppTheme.Light;
 
 		private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
 		private HashSet<IgnoreOptionId> _ignoreSelectionCache = new();
@@ -93,6 +95,7 @@ namespace ProjectTreeViewer.WinForms
 			ApplySearchPlaceholder();
 
             SetupStableLayout();
+			ApplyTheme(_currentTheme);
 
             InitTreeIcons();
 
@@ -420,6 +423,7 @@ namespace ProjectTreeViewer.WinForms
             miViewZoomIn.Text = _localization["Menu.View.ZoomIn"];
             miViewZoomOut.Text = _localization["Menu.View.ZoomOut"];
             miViewZoomReset.Text = _localization["Menu.View.ZoomReset"];
+			miViewDarkTheme.Text = _localization["Menu.View.DarkTheme"];
 
 			btnSearchNext.Text = "⮟";
 			btnSearchPrev.Text = "⮝";
@@ -715,6 +719,12 @@ namespace ProjectTreeViewer.WinForms
 		private void miViewZoomIn_Click(object? sender, EventArgs e) => ChangeTreeFontSize(+1f);
 		private void miViewZoomOut_Click(object? sender, EventArgs e) => ChangeTreeFontSize(-1f);
 		private void miViewZoomReset_Click(object? sender, EventArgs e) => SetTreeFontSize(9f);
+		private void miViewDarkTheme_CheckedChanged(object? sender, EventArgs e)
+		{
+			if (_suppressThemeToggle) return;
+
+			SetTheme(miViewDarkTheme.Checked ? AppTheme.Dark : AppTheme.Light);
+		}
 
 		private void miSearch_Click(object? sender, EventArgs e) => ToggleSearch();
 
@@ -1143,6 +1153,141 @@ namespace ProjectTreeViewer.WinForms
 			var textBox = txtSearch.TextBox;
 			_ = textBox.Handle;
 			SendMessage(textBox.Handle, EmSetCueBanner, new IntPtr(1), _localization["Menu.Search"]);
+		}
+
+		private void SetTheme(AppTheme theme)
+		{
+			if (_currentTheme == theme) return;
+
+			_currentTheme = theme;
+			ApplyTheme(theme);
+		}
+
+		private void ApplyTheme(AppTheme theme)
+		{
+			var palette = theme == AppTheme.Dark ? ThemePalette.Dark : ThemePalette.Light;
+
+			BackColor = palette.FormBackground;
+			ForeColor = palette.TextPrimary;
+
+			ApplyMenuTheme(menuStripMain, palette);
+
+			panelSettings.BackColor = palette.PanelBackground;
+			panelSettings.ForeColor = palette.TextPrimary;
+
+			treeProject.BackColor = palette.SurfaceBackground;
+			treeProject.ForeColor = palette.TextPrimary;
+			treeProject.LineColor = palette.TreeLine;
+
+			ApplyThemeToControl(panelSettings, palette);
+			ApplyThemeToControl(treeProject, palette);
+			ApplyThemeToToolStripSearch(palette);
+
+			_suppressThemeToggle = true;
+			try
+			{
+				miViewDarkTheme.Checked = theme == AppTheme.Dark;
+			}
+			finally
+			{
+				_suppressThemeToggle = false;
+			}
+		}
+
+		private void ApplyThemeToToolStripSearch(ThemePalette palette)
+		{
+			txtSearch.BackColor = palette.InputBackground;
+			txtSearch.ForeColor = palette.TextPrimary;
+			txtSearch.BorderStyle = BorderStyle.FixedSingle;
+
+			ApplyToolStripItemTheme(btnSearchNext, palette);
+			ApplyToolStripItemTheme(btnSearchPrev, palette);
+			ApplyToolStripItemTheme(btnSearchClose, palette);
+		}
+
+		private static void ApplyToolStripItemTheme(ToolStripItem item, ThemePalette palette)
+		{
+			item.BackColor = palette.MenuBackground;
+			item.ForeColor = palette.TextPrimary;
+		}
+
+		private void ApplyMenuTheme(ToolStrip toolStrip, ThemePalette palette)
+		{
+			toolStrip.BackColor = palette.MenuBackground;
+			toolStrip.ForeColor = palette.TextPrimary;
+			toolStrip.Renderer = new ThemeMenuRenderer(palette);
+
+			foreach (ToolStripItem item in toolStrip.Items)
+			{
+				item.BackColor = palette.MenuBackground;
+				item.ForeColor = palette.TextPrimary;
+
+				if (item is ToolStripMenuItem menuItem)
+					ApplyDropDownTheme(menuItem, palette);
+			}
+		}
+
+		private void ApplyDropDownTheme(ToolStripMenuItem menuItem, ThemePalette palette)
+		{
+			if (menuItem.DropDown is ToolStripDropDownMenu dropDown)
+			{
+				dropDown.BackColor = palette.MenuBackground;
+				dropDown.ForeColor = palette.TextPrimary;
+				dropDown.Renderer = new ThemeMenuRenderer(palette);
+			}
+
+			foreach (ToolStripItem child in menuItem.DropDownItems)
+			{
+				child.BackColor = palette.MenuBackground;
+				child.ForeColor = palette.TextPrimary;
+
+				if (child is ToolStripMenuItem childMenu)
+					ApplyDropDownTheme(childMenu, palette);
+			}
+		}
+
+		private void ApplyThemeToControl(Control control, ThemePalette palette)
+		{
+			switch (control)
+			{
+				case Panel:
+					control.BackColor = palette.PanelBackground;
+					control.ForeColor = palette.TextPrimary;
+					break;
+				case Label:
+					control.BackColor = palette.PanelBackground;
+					control.ForeColor = palette.TextPrimary;
+					break;
+				case Button button:
+					button.FlatStyle = FlatStyle.Flat;
+					button.UseVisualStyleBackColor = false;
+					button.BackColor = palette.ButtonBackground;
+					button.ForeColor = palette.TextPrimary;
+					button.FlatAppearance.BorderColor = palette.Border;
+					break;
+				case CheckBox:
+					control.BackColor = palette.PanelBackground;
+					control.ForeColor = palette.TextPrimary;
+					break;
+				case CheckedListBox list:
+					list.BackColor = palette.SurfaceBackground;
+					list.ForeColor = palette.TextPrimary;
+					list.BorderStyle = BorderStyle.FixedSingle;
+					break;
+				case ComboBox comboBox:
+					comboBox.BackColor = palette.InputBackground;
+					comboBox.ForeColor = palette.TextPrimary;
+					comboBox.FlatStyle = FlatStyle.Flat;
+					break;
+				case TreeView treeView:
+					treeView.BackColor = palette.SurfaceBackground;
+					treeView.ForeColor = palette.TextPrimary;
+					treeView.LineColor = palette.TreeLine;
+					break;
+			}
+
+			foreach (Control child in control.Controls)
+				ApplyThemeToControl(child, palette);
 		}
 
 		// ───────────────────────────────────────── Tree check behavior

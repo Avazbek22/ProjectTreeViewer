@@ -39,6 +39,8 @@ namespace ProjectTreeViewer.WinForms
 			miViewZoomIn = new ToolStripMenuItem();
 			miViewZoomOut = new ToolStripMenuItem();
 			miViewZoomReset = new ToolStripMenuItem();
+			miViewSep2 = new ToolStripSeparator();
+			miViewDarkTheme = new ToolStripMenuItem();
 			miSearch = new ToolStripMenuItem();
 			miOptions = new ToolStripMenuItem();
 			miLanguage = new ToolStripMenuItem();
@@ -155,7 +157,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miView
 			// 
-			miView.DropDownItems.AddRange(new ToolStripItem[] { miViewExpandAll, miViewCollapseAll, miViewSep1, miViewZoomIn, miViewZoomOut, miViewZoomReset });
+			miView.DropDownItems.AddRange(new ToolStripItem[] { miViewExpandAll, miViewCollapseAll, miViewSep1, miViewZoomIn, miViewZoomOut, miViewZoomReset, miViewSep2, miViewDarkTheme });
 			miView.Name = "miView";
 			miView.Size = new Size(14, 20);
 			// 
@@ -200,6 +202,18 @@ namespace ProjectTreeViewer.WinForms
 			miViewZoomReset.ShortcutKeys = Keys.Control | Keys.D0;
 			miViewZoomReset.Size = new Size(196, 26);
 			miViewZoomReset.Click += miViewZoomReset_Click;
+			// 
+			// miViewSep2
+			// 
+			miViewSep2.Name = "miViewSep2";
+			miViewSep2.Size = new Size(193, 6);
+			// 
+			// miViewDarkTheme
+			// 
+			miViewDarkTheme.CheckOnClick = true;
+			miViewDarkTheme.Name = "miViewDarkTheme";
+			miViewDarkTheme.Size = new Size(196, 26);
+			miViewDarkTheme.CheckedChanged += miViewDarkTheme_CheckedChanged;
 			// 
 			// miSearch
 			// 
@@ -521,6 +535,8 @@ namespace ProjectTreeViewer.WinForms
         private ToolStripMenuItem miViewZoomIn;
         private ToolStripMenuItem miViewZoomOut;
         private ToolStripMenuItem miViewZoomReset;
+        private ToolStripSeparator miViewSep2;
+        private ToolStripMenuItem miViewDarkTheme;
 		private ToolStripMenuItem miSearch;
 
         private ToolStripMenuItem miOptions;
