@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.Services;
@@ -45,6 +46,7 @@ public partial class MainWindow : Window
     private int _searchMatchIndex = -1;
     private TreeNodeViewModel? _currentSelection;
     private TextBox? _searchBox;
+    private TreeView? _treeView;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -65,6 +67,7 @@ public partial class MainWindow : Window
         DataContext = _viewModel;
         InitializeComponent();
         _searchBox = this.FindControl<TextBox>("SearchBox");
+        _treeView = this.FindControl<TreeView>("ProjectTree");
 
         _elevationAttempted = startupOptions.ElevationAttempted;
 
@@ -88,6 +91,8 @@ public partial class MainWindow : Window
 
     private async void OnOpened(object? sender, EventArgs e)
     {
+        SyncThemeWithSystem();
+
         if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
             TryOpenFolder(_startupOptions.Path!, fromDialog: false);
     }
@@ -104,6 +109,15 @@ public partial class MainWindow : Window
         var preferred = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console" };
         _viewModel.SelectedFontFamily = preferred.FirstOrDefault(name => fonts.Contains(name, StringComparer.OrdinalIgnoreCase))
             ?? fonts.FirstOrDefault();
+    }
+
+    private void SyncThemeWithSystem()
+    {
+        var app = Application.Current;
+        if (app is null) return;
+
+        var isDark = app.ActualThemeVariant == ThemeVariant.Dark;
+        _viewModel.IsDarkTheme = isDark;
     }
 
     private void ApplyLocalization()
@@ -243,6 +257,16 @@ public partial class MainWindow : Window
         _viewModel.SettingsVisible = !_viewModel.SettingsVisible;
     }
 
+    private void OnToggleTheme(object? sender, RoutedEventArgs e)
+    {
+        var app = Application.Current;
+        if (app is null) return;
+
+        var nextIsDark = !_viewModel.IsDarkTheme;
+        app.RequestedThemeVariant = nextIsDark ? ThemeVariant.Dark : ThemeVariant.Light;
+        _viewModel.IsDarkTheme = nextIsDark;
+    }
+
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
     private void OnLangEn(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.En);
     private void OnLangUz(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Uz);
@@ -261,14 +285,67 @@ public partial class MainWindow : Window
 
     private void OnSearchPrev(object? sender, RoutedEventArgs e) => NavigateSearch(-1);
 
+    private void OnToggleSearch(object? sender, RoutedEventArgs e)
+    {
+        if (!_viewModel.IsProjectLoaded) return;
+
+        if (_viewModel.SearchVisible)
+        {
+            CloseSearch();
+            return;
+        }
+
+        ShowSearch();
+    }
+
+    private void OnSearchClose(object? sender, RoutedEventArgs e) => CloseSearch();
+
+    private void OnSearchKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            CloseSearch();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Enter)
+        {
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                NavigateSearch(-1);
+            else
+                NavigateSearch(1);
+
+            e.Handled = true;
+        }
+    }
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.F)
         {
-            _searchBox?.Focus();
-            _searchBox?.SelectAll();
+            ShowSearch();
             e.Handled = true;
         }
+    }
+
+    private void ShowSearch()
+    {
+        if (!_viewModel.IsProjectLoaded) return;
+
+        _viewModel.SearchVisible = true;
+        _searchBox?.Focus();
+        _searchBox?.SelectAll();
+    }
+
+    private void CloseSearch()
+    {
+        if (!_viewModel.SearchVisible) return;
+
+        _viewModel.SearchVisible = false;
+        _viewModel.SearchQuery = string.Empty;
+        ClearSearchState();
+        _treeView?.Focus();
     }
 
     private void NavigateSearch(int step)
@@ -303,9 +380,6 @@ public partial class MainWindow : Window
         var query = _viewModel.SearchQuery;
         if (string.IsNullOrWhiteSpace(query))
         {
-            if (_currentSelection is not null)
-                _currentSelection.IsSelected = false;
-            _currentSelection = null;
             return;
         }
 
@@ -320,6 +394,12 @@ public partial class MainWindow : Window
             _searchMatchIndex = 0;
             SelectSearchMatch();
         }
+    }
+
+    private void ClearSearchState()
+    {
+        _searchMatches.Clear();
+        _searchMatchIndex = -1;
     }
 
     private void OnRootAllChanged(object? sender, RoutedEventArgs e)
@@ -445,6 +525,7 @@ public partial class MainWindow : Window
         _currentPath = path;
         _viewModel.IsProjectLoaded = true;
         _viewModel.SettingsVisible = true;
+        _viewModel.SearchVisible = false;
         UpdateTitle();
 
         ReloadProject();

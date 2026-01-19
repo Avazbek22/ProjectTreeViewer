@@ -31,10 +31,11 @@
         <MenuItem Header="{Binding MenuViewZoomIn}" Click="OnZoomIn" />
         <MenuItem Header="{Binding MenuViewZoomOut}" Click="OnZoomOut" />
         <MenuItem Header="{Binding MenuViewZoomReset}" Click="OnZoomReset" />
+        <Separator />
+        <MenuItem Header="{Binding MenuViewTheme}" IsChecked="{Binding IsDarkTheme}" ToggleType="CheckBox" Click="OnToggleTheme" />
       </MenuItem>
-      <MenuItem Header="{Binding MenuOptions}">
-        <MenuItem Header="{Binding MenuOptionsTreeSettings}" Click="OnToggleSettings" />
-      </MenuItem>
+      <MenuItem Header="{Binding MenuSearch}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSearch" />
+      <MenuItem Header="{Binding MenuOptions}" Click="OnToggleSettings" />
       <MenuItem Header="{Binding MenuLanguage}">
         <MenuItem Header="Русский" Click="OnLangRu" />
         <MenuItem Header="English" Click="OnLangEn" />
@@ -50,20 +51,22 @@
       </MenuItem>
     </Menu>
 
-    <Grid ColumnDefinitions="*,320" RowDefinitions="Auto,*">
-      <Border Grid.Row="0" Grid.Column="0" BorderThickness="0,0,0,1" BorderBrush="#2B2F36" IsEnabled="{Binding IsProjectLoaded}">
-        <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,8">
-          <TextBox Name="SearchBox"
-                   Watermark="{Binding MenuSearch}"
-                   Text="{Binding SearchQuery, Mode=TwoWay}"
-                   Width="260" />
-          <Button Content="▲" Width="32" Click="OnSearchPrev" />
-          <Button Content="▼" Width="32" Click="OnSearchNext" />
-        </StackPanel>
-      </Border>
+    <Border DockPanel.Dock="Top" Classes="search-panel" IsVisible="{Binding SearchVisible}" IsEnabled="{Binding IsProjectLoaded}">
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,6">
+        <TextBox Name="SearchBox"
+                 Watermark="{Binding MenuSearch}"
+                 Text="{Binding SearchQuery, Mode=TwoWay}"
+                 Width="260"
+                 KeyDown="OnSearchKeyDown" />
+        <Button Content="▲" Width="32" Click="OnSearchPrev" />
+        <Button Content="▼" Width="32" Click="OnSearchNext" />
+        <Button Content="✕" Width="32" Click="OnSearchClose" />
+      </StackPanel>
+    </Border>
 
+    <Grid ColumnDefinitions="*,Auto">
       <TreeView Name="ProjectTree"
-                Grid.Row="1" Grid.Column="0"
+                Grid.Column="0"
                 ItemsSource="{Binding TreeNodes}"
                 IsEnabled="{Binding IsProjectLoaded}"
                 FontFamily="{Binding SelectedFontFamily}"
@@ -79,43 +82,69 @@
         </TreeView.ItemTemplate>
       </TreeView>
 
-      <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Classes="panel" IsVisible="{Binding SettingsVisible}" IsEnabled="{Binding IsProjectLoaded}">
+      <Border Grid.Column="1" Width="320" Classes="panel" IsVisible="{Binding SettingsVisible}" IsEnabled="{Binding IsProjectLoaded}">
         <ScrollViewer>
-          <StackPanel Spacing="8">
+          <StackPanel Spacing="10">
             <TextBlock Classes="section-title" Text="{Binding SettingsFont}" />
             <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding SelectedFontFamily}" />
+            <Button Content="{Binding SettingsApply}" Click="OnApplySettings" Margin="0,8,0,0" />
 
-            <TextBlock Classes="section-title" Text="{Binding SettingsRootFolders}" />
-            <CheckBox Content="{Binding SettingsAll}" IsChecked="{Binding AllRootFoldersChecked}" Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
-            <ItemsControl ItemsSource="{Binding RootFolders}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel Classes="settings-section">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsIgnoreTitle}" Margin="0" />
+                <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
+                          IsChecked="{Binding AllIgnoreChecked}" Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
+              </Grid>
+              <Border Classes="checklist-border">
+                <ScrollViewer Classes="checklist-scroll" MaxHeight="220" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                  <ItemsControl ItemsSource="{Binding IgnoreOptions}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <CheckBox Classes="list-item" Content="{Binding Label}" IsChecked="{Binding IsChecked}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Border>
+            </StackPanel>
 
-            <TextBlock Classes="section-title" Text="{Binding SettingsExtensions}" />
-            <CheckBox Content="{Binding SettingsAll}" IsChecked="{Binding AllExtensionsChecked}" Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
-            <ItemsControl ItemsSource="{Binding Extensions}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel Classes="settings-section">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsExtensions}" Margin="0" />
+                <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
+                          IsChecked="{Binding AllExtensionsChecked}" Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
+              </Grid>
+              <Border Classes="checklist-border">
+                <ScrollViewer Classes="checklist-scroll" MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                  <ItemsControl ItemsSource="{Binding Extensions}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <CheckBox Classes="list-item" Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Border>
+            </StackPanel>
 
-            <TextBlock Classes="section-title" Text="{Binding SettingsIgnoreTitle}" />
-            <CheckBox Content="{Binding SettingsAll}" IsChecked="{Binding AllIgnoreChecked}" Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
-            <ItemsControl ItemsSource="{Binding IgnoreOptions}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <CheckBox Content="{Binding Label}" IsChecked="{Binding IsChecked}" />
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <Button Content="{Binding SettingsApply}" Click="OnApplySettings" Margin="0,12,0,0" />
+            <StackPanel Classes="settings-section">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsRootFolders}" Margin="0" />
+                <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
+                          IsChecked="{Binding AllRootFoldersChecked}" Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
+              </Grid>
+              <Border Classes="checklist-border">
+                <ScrollViewer Classes="checklist-scroll" MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                  <ItemsControl ItemsSource="{Binding RootFolders}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <CheckBox Classes="list-item" Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Border>
+            </StackPanel>
           </StackPanel>
         </ScrollViewer>
       </Border>
