@@ -17,9 +17,9 @@ public sealed class FilterOptionSelectionServiceTests
 		var options = service.BuildExtensionOptions(new[] { ".txt", ".cs", ".sln" }, new HashSet<string>());
 
 		Assert.Equal(3, options.Count);
-		Assert.True(options.Single(o => o.Value == ".cs").IsSelected);
-		Assert.True(options.Single(o => o.Value == ".sln").IsSelected);
-		Assert.False(options.Single(o => o.Value == ".txt").IsSelected);
+		Assert.True(options.Single(o => o.Name == ".cs").IsChecked);
+		Assert.True(options.Single(o => o.Name == ".sln").IsChecked);
+		Assert.False(options.Single(o => o.Name == ".txt").IsChecked);
 	}
 
 	[Fact]
@@ -30,8 +30,8 @@ public sealed class FilterOptionSelectionServiceTests
 
 		var options = service.BuildExtensionOptions(new[] { ".txt", ".cs" }, previous);
 
-		Assert.True(options.Single(o => o.Value == ".txt").IsSelected);
-		Assert.False(options.Single(o => o.Value == ".cs").IsSelected);
+		Assert.True(options.Single(o => o.Name == ".txt").IsChecked);
+		Assert.False(options.Single(o => o.Name == ".cs").IsChecked);
 	}
 
 	[Fact]
@@ -50,11 +50,11 @@ public sealed class FilterOptionSelectionServiceTests
 
 		var options = service.BuildRootFolderOptions(new[] { "bin", "obj", "logs", ".cache", "src" }, new HashSet<string>(), rules);
 
-		Assert.False(options.Single(o => o.Value == "bin").IsSelected);
-		Assert.False(options.Single(o => o.Value == "obj").IsSelected);
-		Assert.False(options.Single(o => o.Value == "logs").IsSelected);
-		Assert.False(options.Single(o => o.Value == ".cache").IsSelected);
-		Assert.True(options.Single(o => o.Value == "src").IsSelected);
+		Assert.False(options.Single(o => o.Name == "bin").IsChecked);
+		Assert.False(options.Single(o => o.Name == "obj").IsChecked);
+		Assert.False(options.Single(o => o.Name == "logs").IsChecked);
+		Assert.False(options.Single(o => o.Name == ".cache").IsChecked);
+		Assert.True(options.Single(o => o.Name == "src").IsChecked);
 	}
 
 	[Fact]
@@ -74,7 +74,7 @@ public sealed class FilterOptionSelectionServiceTests
 
 		var options = service.BuildRootFolderOptions(new[] { "bin", "src" }, previous, rules);
 
-		Assert.True(options.Single(o => o.Value == "bin").IsSelected);
-		Assert.False(options.Single(o => o.Value == "src").IsSelected);
+		Assert.True(options.Single(o => o.Name == "bin").IsChecked);
+		Assert.False(options.Single(o => o.Name == "src").IsChecked);
 	}
 }

@@ -29,8 +29,8 @@ public sealed class IgnoreOptionsServiceTests
 		var options = service.GetOptions();
 
 		Assert.Equal(6, options.Count);
-		Assert.All(options, option => Assert.True(option.IsSelectedByDefault));
-		Assert.Contains(options, option => option.Id == IgnoreOptionId.BinFolders && option.DisplayName == "Bin");
-		Assert.Contains(options, option => option.Id == IgnoreOptionId.DotFiles && option.DisplayName == "DotFiles");
+		Assert.All(options, option => Assert.True(option.DefaultChecked));
+		Assert.Contains(options, option => option.Id == IgnoreOptionId.BinFolders && option.Label == "Bin");
+		Assert.Contains(options, option => option.Id == IgnoreOptionId.DotFiles && option.Label == "DotFiles");
 	}
 }

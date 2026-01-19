@@ -17,12 +17,12 @@ public sealed class ScanOptionsUseCaseTests
 		{
 			GetExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
 				new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".b", ".a" },
-				rootAccessDenied: true,
-				hadAccessDenied: false),
+				RootAccessDenied: true,
+				HadAccessDenied: false),
 			GetRootFolderNamesHandler = (_, _) => new ScanResult<List<string>>(
 				new List<string> { "z", "a" },
-				rootAccessDenied: false,
-				hadAccessDenied: true)
+				RootAccessDenied: false,
+				HadAccessDenied: true)
 		};
 
 		var useCase = new ScanOptionsUseCase(scanner);

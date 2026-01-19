@@ -17,8 +17,8 @@ public sealed class BuildTreeUseCaseTests
 		{
 			Result = new TreeBuildResult(
 				new FileSystemNode("root", "/root", true, false, new List<FileSystemNode>()),
-				rootAccessDenied: false,
-				hadAccessDenied: false)
+				RootAccessDenied: false,
+				HadAccessDenied: false)
 		};
 
 		var catalog = new StubLocalizationCatalog(new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
