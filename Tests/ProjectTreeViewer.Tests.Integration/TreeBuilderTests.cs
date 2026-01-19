@@ -30,7 +30,7 @@ public sealed class TreeBuilderTests
 		var children = result.Root.Children.Select(c => c.Name).ToList();
 		Assert.Contains("docs", children);
 		Assert.DoesNotContain("src", children);
-		Assert.DoesNotContain("root.txt", children);
+		Assert.Contains("root.txt", children);
 
 		var docs = result.Root.Children.First(c => c.Name == "docs");
 		Assert.Single(docs.Children);
@@ -46,12 +46,13 @@ public sealed class TreeBuilderTests
 
 		var options = new TreeFilterOptions(
 			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
-			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "folder" },
 			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()));
 
 		var builder = new TreeBuilder();
 		var result = builder.Build(temp.Path, options);
 
-		Assert.True(result.Root.Children.First().IsDirectory);
+		Assert.Equal("folder", result.Root.Children.First().Name);
+		Assert.False(result.Root.Children.Last().IsDirectory);
 	}
 }
