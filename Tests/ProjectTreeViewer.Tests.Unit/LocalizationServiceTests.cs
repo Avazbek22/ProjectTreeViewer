@@ -8,6 +8,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class LocalizationServiceTests
 {
+	// Verifies the indexer returns a localized string for a known key.
 	[Fact]
 	public void Indexer_ReturnsLocalizedValue()
 	{
@@ -20,6 +21,7 @@ public sealed class LocalizationServiceTests
 		Assert.Equal("Hello", service["Greeting"]);
 	}
 
+	// Verifies missing localization keys return a readable placeholder.
 	[Fact]
 	public void Indexer_ReturnsFallbackForMissingKey()
 	{
@@ -32,6 +34,7 @@ public sealed class LocalizationServiceTests
 		Assert.Equal("[[Missing]]", service["Missing"]);
 	}
 
+	// Verifies formatted strings use the localized template.
 	[Fact]
 	public void Format_UsesStringFormat()
 	{
@@ -44,6 +47,7 @@ public sealed class LocalizationServiceTests
 		Assert.Equal("Hello World", service.Format("Format", "World"));
 	}
 
+	// Verifies changing language triggers the LanguageChanged event.
 	[Fact]
 	public void SetLanguage_RaisesEventWhenChanged()
 	{
@@ -62,6 +66,7 @@ public sealed class LocalizationServiceTests
 		Assert.Equal(AppLanguage.Ru, service.CurrentLanguage);
 	}
 
+	// Verifies setting the same language does not raise change events.
 	[Fact]
 	public void SetLanguage_DoesNothingWhenSame()
 	{

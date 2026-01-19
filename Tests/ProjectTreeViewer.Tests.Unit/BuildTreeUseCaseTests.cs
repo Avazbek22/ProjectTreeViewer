@@ -10,6 +10,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class BuildTreeUseCaseTests
 {
+	// Verifies the use case returns a presented tree with icon mapping applied.
 	[Fact]
 	public void Execute_ReturnsPresentedTree()
 	{

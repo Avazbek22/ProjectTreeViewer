@@ -7,6 +7,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class CommandLineOptionsTests
 {
+	// Verifies parsing returns the default when no CLI args are provided.
 	[Fact]
 	public void Parse_ReturnsEmptyWhenNoArgs()
 	{
@@ -15,6 +16,7 @@ public sealed class CommandLineOptionsTests
 		Assert.Equal(CommandLineOptions.Empty, result);
 	}
 
+	// Verifies parsing captures path, language, and elevation flags.
 	[Fact]
 	public void Parse_ReadsPathLanguageAndElevation()
 	{
@@ -25,6 +27,7 @@ public sealed class CommandLineOptionsTests
 		Assert.True(result.ElevationAttempted);
 	}
 
+	// Verifies unknown arguments are ignored without side effects.
 	[Fact]
 	public void Parse_IgnoresUnknownArgs()
 	{
@@ -33,6 +36,7 @@ public sealed class CommandLineOptionsTests
 		Assert.Equal(CommandLineOptions.Empty, result);
 	}
 
+	// Verifies the elevation flag can be toggled on an options instance.
 	[Fact]
 	public void WithElevationAttempted_SetsFlag()
 	{
@@ -41,6 +45,7 @@ public sealed class CommandLineOptionsTests
 		Assert.True(result.ElevationAttempted);
 	}
 
+	// Verifies arguments are rendered with quotes when the path contains spaces.
 	[Fact]
 	public void ToArguments_QuotesPathsWithSpaces()
 	{
@@ -55,12 +60,14 @@ public sealed class CommandLineOptionsTests
 		Assert.Contains("--elevationAttempted", args);
 	}
 
+	// Verifies unsupported language codes return null.
 	[Fact]
 	public void ParseLanguage_ReturnsNullForUnknown()
 	{
 		Assert.Null(CommandLineOptions.ParseLanguage("xx"));
 	}
 
+	// Verifies unknown languages fall back to English in serialization.
 	[Fact]
 	public void LanguageToCode_UsesEnglishFallback()
 	{
@@ -69,6 +76,7 @@ public sealed class CommandLineOptionsTests
 		Assert.Equal("en", value);
 	}
 
+	// Verifies system language detection maps culture codes to app languages.
 	[Fact]
 	public void DetectSystemLanguage_ReturnsExpectedForCulture()
 	{

@@ -8,6 +8,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class IgnoreOptionsServiceTests
 {
+	// Verifies ignore options are localized and default-selected flags are set.
 	[Fact]
 	public void GetOptions_ReturnsLocalizedOptions()
 	{

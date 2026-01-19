@@ -9,6 +9,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class IgnoreRulesServiceTests
 {
+	// Verifies selected ignore options and smart-ignore rules are merged into IgnoreRules.
 	[Fact]
 	public void Build_CombinesSelectedOptionsAndSmartIgnore()
 	{

@@ -10,6 +10,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class ScanOptionsUseCaseTests
 {
+	// Verifies scan results are sorted and access-denied flags are combined.
 	[Fact]
 	public void Execute_SortsResultsAndCombinesAccessFlags()
 	{
@@ -42,6 +43,7 @@ public sealed class ScanOptionsUseCaseTests
 		Assert.True(result.HadAccessDenied);
 	}
 
+	// Verifies no folder selection returns only root file extensions.
 	[Fact]
 	public void GetExtensionsForRootFolders_ReturnsRootFilesWhenNoFolders()
 	{
@@ -63,6 +65,7 @@ public sealed class ScanOptionsUseCaseTests
 		Assert.False(result.HadAccessDenied);
 	}
 
+	// Verifies CanReadRoot delegates to the scanner.
 	[Fact]
 	public void CanReadRoot_DelegatesToScanner()
 	{

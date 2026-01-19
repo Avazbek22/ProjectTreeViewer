@@ -8,6 +8,7 @@ namespace ProjectTreeViewer.Tests.Integration;
 
 public sealed class FileSystemScannerTests
 {
+	// Verifies scanning returns extensions from files across the tree.
 	[Fact]
 	public void GetExtensions_ReturnsExtensionsFromTree()
 	{
@@ -28,6 +29,7 @@ public sealed class FileSystemScannerTests
 		Assert.False(result.HadAccessDenied);
 	}
 
+	// Verifies ignore rules exclude hidden and dot files.
 	[Fact]
 	public void GetExtensions_RespectsIgnoreRules()
 	{
@@ -45,6 +47,7 @@ public sealed class FileSystemScannerTests
 		Assert.Contains(".txt", result.Value);
 	}
 
+	// Verifies root file extension scanning ignores nested files.
 	[Fact]
 	public void GetRootFileExtensions_ReturnsOnlyRootFiles()
 	{
@@ -61,6 +64,7 @@ public sealed class FileSystemScannerTests
 		Assert.DoesNotContain(".txt", result.Value);
 	}
 
+	// Verifies ignore rules filter root folder names.
 	[Fact]
 	public void GetRootFolderNames_RespectsIgnoreRules()
 	{
@@ -77,6 +81,7 @@ public sealed class FileSystemScannerTests
 		Assert.Contains("src", result.Value);
 	}
 
+	// Verifies CanReadRoot returns true for accessible directories.
 	[Fact]
 	public void CanReadRoot_ReturnsTrueForExistingFolder()
 	{

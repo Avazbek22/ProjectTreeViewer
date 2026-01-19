@@ -8,6 +8,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class TreeAndContentExportServiceTests
 {
+	// Verifies selected files drive both tree and content exports.
 	[Fact]
 	public void Build_UsesSelectedTreeAndContentWhenSelectionsProvided()
 	{
@@ -33,6 +34,7 @@ public sealed class TreeAndContentExportServiceTests
 		Assert.Contains("Hello", result);
 	}
 
+	// Verifies full tree is used when no selections are provided.
 	[Fact]
 	public void Build_FallsBackToFullTreeWhenSelectionEmpty()
 	{

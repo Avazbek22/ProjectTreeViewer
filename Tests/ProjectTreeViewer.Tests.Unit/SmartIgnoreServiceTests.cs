@@ -9,6 +9,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class SmartIgnoreServiceTests
 {
+	// Verifies smart-ignore rules are merged and de-duplicated.
 	[Fact]
 	public void Build_MergesRuleResults()
 	{

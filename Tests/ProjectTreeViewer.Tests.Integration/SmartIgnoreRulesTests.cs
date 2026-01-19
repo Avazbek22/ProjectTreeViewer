@@ -6,6 +6,7 @@ namespace ProjectTreeViewer.Tests.Integration;
 
 public sealed class SmartIgnoreRulesTests
 {
+	// Verifies the common rule includes standard SCM/temp entries.
 	[Fact]
 	public void CommonSmartIgnoreRule_ReturnsKnownEntries()
 	{
@@ -16,6 +17,7 @@ public sealed class SmartIgnoreRulesTests
 		Assert.Contains("thumbs.db", result.FileNames);
 	}
 
+	// Verifies frontend ignore rule is empty when no marker files exist.
 	[Fact]
 	public void FrontendArtifactsIgnoreRule_ReturnsEmptyWhenNoMarkers()
 	{
@@ -27,6 +29,7 @@ public sealed class SmartIgnoreRulesTests
 		Assert.Empty(result.FolderNames);
 	}
 
+	// Verifies frontend ignore rule activates when marker files exist.
 	[Fact]
 	public void FrontendArtifactsIgnoreRule_ReturnsFoldersWhenMarkerPresent()
 	{

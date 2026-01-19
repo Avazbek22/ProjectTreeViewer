@@ -7,6 +7,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class TreeExportServiceTests
 {
+	// Verifies the full tree export renders ASCII output with the root and children.
 	[Fact]
 	public void BuildFullTree_ReturnsAsciiTree()
 	{
@@ -28,6 +29,7 @@ public sealed class TreeExportServiceTests
 		Assert.Contains("└── file.txt", result);
 	}
 
+	// Verifies selected tree export only includes selected paths.
 	[Fact]
 	public void BuildSelectedTree_ReturnsOnlySelectedPaths()
 	{
@@ -51,6 +53,7 @@ public sealed class TreeExportServiceTests
 		Assert.DoesNotContain("skip.txt", result);
 	}
 
+	// Verifies selection matching returns true for a descendant.
 	[Fact]
 	public void HasSelectedDescendantOrSelf_ReturnsTrueWhenMatch()
 	{
@@ -70,6 +73,7 @@ public sealed class TreeExportServiceTests
 		Assert.True(TreeExportService.HasSelectedDescendantOrSelf(node, selected));
 	}
 
+	// Verifies selection matching returns false when nothing is selected.
 	[Fact]
 	public void HasSelectedDescendantOrSelf_ReturnsFalseWhenNoMatch()
 	{

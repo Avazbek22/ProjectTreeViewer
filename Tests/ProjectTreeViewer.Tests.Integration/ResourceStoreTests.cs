@@ -7,6 +7,7 @@ namespace ProjectTreeViewer.Tests.Integration;
 
 public sealed class ResourceStoreTests
 {
+	// Verifies localization resources are loaded for English.
 	[Fact]
 	public void JsonLocalizationCatalog_LoadsResources()
 	{
@@ -16,6 +17,7 @@ public sealed class ResourceStoreTests
 		Assert.Contains("Settings.Ignore.BinFolders", dict.Keys);
 	}
 
+	// Verifies embedded icon store returns bytes for known keys.
 	[Fact]
 	public void EmbeddedIconStore_ReturnsKnownIconBytes()
 	{
@@ -26,6 +28,7 @@ public sealed class ResourceStoreTests
 		Assert.NotEmpty(bytes);
 	}
 
+	// Verifies requesting an unknown icon key throws.
 	[Fact]
 	public void EmbeddedIconStore_ThrowsForMissingKey()
 	{
@@ -34,6 +37,7 @@ public sealed class ResourceStoreTests
 		Assert.Throws<KeyNotFoundException>(() => store.GetIconBytes("missing"));
 	}
 
+	// Verifies icon mapping uses file extensions.
 	[Fact]
 	public void IconMapper_MapsKnownExtensions()
 	{
@@ -45,6 +49,7 @@ public sealed class ResourceStoreTests
 		Assert.Equal("csharp", key);
 	}
 
+	// Verifies icon mapping marks gray folders correctly.
 	[Fact]
 	public void IconMapper_MapsGrayFolders()
 	{

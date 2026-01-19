@@ -8,6 +8,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class SelectedContentExportServiceTests
 {
+	// Verifies missing or empty files are ignored when exporting content.
 	[Fact]
 	public void Build_SkipsMissingAndEmptyFiles()
 	{
@@ -24,6 +25,7 @@ public sealed class SelectedContentExportServiceTests
 		Assert.DoesNotContain("missing.txt", result);
 	}
 
+	// Verifies binary files are excluded from clipboard content.
 	[Fact]
 	public void Build_SkipsBinaryFiles()
 	{
@@ -36,6 +38,7 @@ public sealed class SelectedContentExportServiceTests
 		Assert.Equal(string.Empty, result);
 	}
 
+	// Verifies exported content is ordered by file path.
 	[Fact]
 	public void Build_WritesFilesInSortedOrder()
 	{
@@ -51,6 +54,7 @@ public sealed class SelectedContentExportServiceTests
 		Assert.True(firstIndex < secondIndex);
 	}
 
+	// Verifies duplicate file paths are included once.
 	[Fact]
 	public void Build_DeduplicatesPaths()
 	{

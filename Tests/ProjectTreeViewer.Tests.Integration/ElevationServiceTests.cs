@@ -5,6 +5,7 @@ namespace ProjectTreeViewer.Tests.Integration;
 
 public sealed class ElevationServiceTests
 {
+	// Verifies non-Windows environments report no admin privileges.
 	[Fact]
 	public void IsAdministrator_ReturnsFalseOnNonWindows()
 	{
@@ -14,6 +15,7 @@ public sealed class ElevationServiceTests
 			Assert.False(service.IsAdministrator);
 	}
 
+	// Verifies non-Windows environments cannot relaunch with elevation.
 	[Fact]
 	public void TryRelaunchAsAdministrator_ReturnsFalseOnNonWindows()
 	{

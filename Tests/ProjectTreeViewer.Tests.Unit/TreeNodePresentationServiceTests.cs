@@ -8,6 +8,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class TreeNodePresentationServiceTests
 {
+	// Verifies access-denied nodes use localized display names and icons.
 	[Fact]
 	public void Build_UsesLocalizationForAccessDenied()
 	{

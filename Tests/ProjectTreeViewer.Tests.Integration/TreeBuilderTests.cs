@@ -10,6 +10,7 @@ namespace ProjectTreeViewer.Tests.Integration;
 
 public sealed class TreeBuilderTests
 {
+	// Verifies root-folder filtering applies to directories while root files still match extensions.
 	[Fact]
 	public void Build_FiltersByRootFoldersAndExtensions()
 	{
@@ -37,6 +38,7 @@ public sealed class TreeBuilderTests
 		Assert.Equal("info.txt", docs.Children[0].Name);
 	}
 
+	// Verifies directories are ordered before files in the root listing.
 	[Fact]
 	public void Build_OrdersDirectoriesBeforeFiles()
 	{

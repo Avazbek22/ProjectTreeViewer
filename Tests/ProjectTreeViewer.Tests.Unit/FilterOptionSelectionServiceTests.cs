@@ -9,6 +9,7 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class FilterOptionSelectionServiceTests
 {
+	// Verifies default extensions are pre-selected when there are no prior selections.
 	[Fact]
 	public void BuildExtensionOptions_SelectsDefaultsWhenNoPrevious()
 	{
@@ -22,6 +23,7 @@ public sealed class FilterOptionSelectionServiceTests
 		Assert.False(options.Single(o => o.Name == ".txt").IsChecked);
 	}
 
+	// Verifies prior selections override default extension choices.
 	[Fact]
 	public void BuildExtensionOptions_RespectsPreviousSelections()
 	{
@@ -34,6 +36,7 @@ public sealed class FilterOptionSelectionServiceTests
 		Assert.False(options.Single(o => o.Name == ".cs").IsChecked);
 	}
 
+	// Verifies ignored folders are not pre-selected when no prior selections exist.
 	[Fact]
 	public void BuildRootFolderOptions_ExcludesIgnoredWhenNoPrevious()
 	{
@@ -57,6 +60,7 @@ public sealed class FilterOptionSelectionServiceTests
 		Assert.True(options.Single(o => o.Name == "src").IsChecked);
 	}
 
+	// Verifies explicit previous folder selections are honored.
 	[Fact]
 	public void BuildRootFolderOptions_RespectsPreviousSelections()
 	{
