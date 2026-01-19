@@ -113,7 +113,7 @@ public partial class MainWindow : Window
 
     private void SyncThemeWithSystem()
     {
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
         var isDark = app.ActualThemeVariant == ThemeVariant.Dark;
@@ -259,7 +259,7 @@ public partial class MainWindow : Window
 
     private void OnToggleTheme(object? sender, RoutedEventArgs e)
     {
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
         var nextIsDark = !_viewModel.IsDarkTheme;

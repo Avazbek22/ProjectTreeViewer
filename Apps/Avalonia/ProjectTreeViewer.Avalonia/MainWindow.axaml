@@ -32,7 +32,14 @@
         <MenuItem Header="{Binding MenuViewZoomOut}" Click="OnZoomOut" />
         <MenuItem Header="{Binding MenuViewZoomReset}" Click="OnZoomReset" />
         <Separator />
-        <MenuItem Header="{Binding MenuViewTheme}" IsChecked="{Binding IsDarkTheme}" ToggleType="CheckBox" Click="OnToggleTheme" />
+        <MenuItem Click="OnToggleTheme">
+          <MenuItem.Header>
+            <CheckBox Content="{Binding MenuViewTheme}"
+                      IsChecked="{Binding IsDarkTheme}"
+                      IsHitTestVisible="False"/>
+          </MenuItem.Header>
+        </MenuItem>
+
       </MenuItem>
       <MenuItem Header="{Binding MenuSearch}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSearch" />
       <MenuItem Header="{Binding MenuOptions}">
