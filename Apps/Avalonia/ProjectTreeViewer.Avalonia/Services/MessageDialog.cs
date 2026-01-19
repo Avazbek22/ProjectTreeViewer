@@ -1,5 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace ProjectTreeViewer.Avalonia.Services;
 
@@ -28,8 +31,8 @@ public static class MessageDialog
         var text = new TextBlock
         {
             Text = message,
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            Margin = new Avalonia.Thickness(12),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(12),
             VerticalAlignment = VerticalAlignment.Center
         };
 
@@ -37,16 +40,18 @@ public static class MessageDialog
         {
             Content = "OK",
             HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Avalonia.Thickness(12),
+            Margin = new Thickness(12),
             Width = 80
         };
 
         var panel = new DockPanel();
         DockPanel.SetDock(button, Dock.Bottom);
+
         panel.Children.Add(button);
         panel.Children.Add(text);
 
-        button.Click += (_, _) => ((Window)panel.GetVisualRoot()!).Close();
+        button.Click += (_, _) =>
+            (panel.GetVisualRoot() as Window)?.Close();
 
         return panel;
     }

@@ -2,11 +2,14 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.Services;
 using ProjectTreeViewer.Avalonia.ViewModels;
+using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Contracts;
 using ProjectTreeViewer.Kernel.Models;
 
@@ -661,7 +664,9 @@ public partial class MainWindow : Window
 
     private async Task SetClipboardTextAsync(string content)
     {
-        if (Application.Current?.Clipboard is { } clipboard)
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+        if (clipboard != null)
             await clipboard.SetTextAsync(content);
     }
 

@@ -4,6 +4,7 @@ using ProjectTreeViewer.Infrastructure.Elevation;
 using ProjectTreeViewer.Infrastructure.FileSystem;
 using ProjectTreeViewer.Infrastructure.ResourceStore;
 using ProjectTreeViewer.Infrastructure.SmartIgnore;
+using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.Avalonia.Services;

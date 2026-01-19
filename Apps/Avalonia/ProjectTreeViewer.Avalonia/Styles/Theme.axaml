@@ -1,73 +1,81 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Color x:Key="AppBackgroundColor">#121214</Color>
-  <Color x:Key="AppPanelColor">#1C1E22</Color>
-  <Color x:Key="AppBorderColor">#2B2F36</Color>
-  <Color x:Key="AppAccentColor">#4CC2FF</Color>
-  <Color x:Key="AppTextColor">#E7E9EF</Color>
-  <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
+    <Styles.Resources>
+        <ResourceDictionary>
 
-  <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
-  <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
-  <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
-  <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
-  <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
-  <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
+            <!-- Colors -->
+            <Color x:Key="AppBackgroundColor">#121214</Color>
+            <Color x:Key="AppPanelColor">#17171A</Color>
+            <Color x:Key="AppBorderColor">#2B2F36</Color>
+            <Color x:Key="AppAccentColor">#4CC2FF</Color>
+            <Color x:Key="AppTextColor">#E7E9EF</Color>
+            <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
 
-  <Style Selector="Window">
-    <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
-    <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
-  </Style>
+            <!-- Brushes -->
+            <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+            <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
+            <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+            <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+            <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
+            <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
 
-  <Style Selector="Menu">
-    <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
-    <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-    <Setter Property="BorderThickness" Value="0,0,0,1" />
-  </Style>
+        </ResourceDictionary>
+    </Styles.Resources>
 
-  <Style Selector="TextBox">
-    <Setter Property="Background" Value="#16181C" />
-    <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-    <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
-  </Style>
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+    </Style>
 
-  <Style Selector="ComboBox">
-    <Setter Property="Background" Value="#16181C" />
-    <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-    <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
-  </Style>
+    <Style Selector="Menu">
+        <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
 
-  <Style Selector="TreeView">
-    <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
-    <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-  </Style>
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="#16181C" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+    </Style>
 
-  <Style Selector="Button">
-    <Setter Property="Background" Value="#23262C" />
-    <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-    <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
-  </Style>
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="#16181C" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+    </Style>
 
-  <Style Selector="Button:pointerover">
-    <Setter Property="Background" Value="#2B3038" />
-  </Style>
+    <Style Selector="TreeView">
+        <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+    </Style>
 
-  <Style Selector="ScrollViewer">
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
+    <Style Selector="Button">
+        <Setter Property="Background" Value="#23262C" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+    </Style>
 
-  <Style Selector=".section-title">
-    <Setter Property="Foreground" Value="{StaticResource AppMutedTextBrush}" />
-    <Setter Property="FontSize" Value="12" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="Margin" Value="0,16,0,6" />
-  </Style>
+    <Style Selector="Button:pointerover">
+        <Setter Property="Background" Value="#2B3038" />
+    </Style>
 
-  <Style Selector=".panel">
-    <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
-    <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="6" />
-    <Setter Property="Padding" Value="12" />
-  </Style>
+    <Style Selector="ScrollViewer">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector=".section-title">
+        <Setter Property="Foreground" Value="{StaticResource AppMutedTextBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,16,0,6" />
+    </Style>
+
+    <Style Selector=".panel">
+        <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="12" />
+    </Style>
 </Styles>

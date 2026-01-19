@@ -55,7 +55,7 @@
         <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,8">
           <TextBox Name="SearchBox"
                    Watermark="{Binding MenuSearch}"
-                   Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   Text="{Binding SearchQuery, Mode=TwoWay}"
                    Width="260" />
           <Button Content="▲" Width="32" Click="OnSearchPrev" />
           <Button Content="▼" Width="32" Click="OnSearchNext" />

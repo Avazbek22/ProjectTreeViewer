@@ -6,7 +6,7 @@ using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.Avalonia;
 
-public sealed class App : Application
+public sealed class App : global::Avalonia.Application
 {
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
