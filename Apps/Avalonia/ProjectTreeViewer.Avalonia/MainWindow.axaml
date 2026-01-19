@@ -64,7 +64,7 @@
 
       <TreeView Name="ProjectTree"
                 Grid.Row="1" Grid.Column="0"
-                Items="{Binding TreeNodes}"
+                ItemsSource="{Binding TreeNodes}"
                 IsEnabled="{Binding IsProjectLoaded}"
                 FontFamily="{Binding SelectedFontFamily}"
                 FontSize="{Binding TreeFontSize}">
@@ -83,11 +83,11 @@
         <ScrollViewer>
           <StackPanel Spacing="8">
             <TextBlock Classes="section-title" Text="{Binding SettingsFont}" />
-            <ComboBox Items="{Binding FontFamilies}" SelectedItem="{Binding SelectedFontFamily}" />
+            <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding SelectedFontFamily}" />
 
             <TextBlock Classes="section-title" Text="{Binding SettingsRootFolders}" />
             <CheckBox Content="{Binding SettingsAll}" IsChecked="{Binding AllRootFoldersChecked}" Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
-            <ItemsControl Items="{Binding RootFolders}">
+            <ItemsControl ItemsSource="{Binding RootFolders}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
@@ -97,7 +97,7 @@
 
             <TextBlock Classes="section-title" Text="{Binding SettingsExtensions}" />
             <CheckBox Content="{Binding SettingsAll}" IsChecked="{Binding AllExtensionsChecked}" Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
-            <ItemsControl Items="{Binding Extensions}">
+            <ItemsControl ItemsSource="{Binding Extensions}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
@@ -107,7 +107,7 @@
 
             <TextBlock Classes="section-title" Text="{Binding SettingsIgnoreTitle}" />
             <CheckBox Content="{Binding SettingsAll}" IsChecked="{Binding AllIgnoreChecked}" Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
-            <ItemsControl Items="{Binding IgnoreOptions}">
+            <ItemsControl ItemsSource="{Binding IgnoreOptions}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <CheckBox Content="{Binding Label}" IsChecked="{Binding IsChecked}" />

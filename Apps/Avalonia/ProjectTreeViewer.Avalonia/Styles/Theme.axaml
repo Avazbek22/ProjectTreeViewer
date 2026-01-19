@@ -64,18 +64,19 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
 
-    <Style Selector=".section-title">
+    <Style Selector="TextBlock.section-title">
         <Setter Property="Foreground" Value="{StaticResource AppMutedTextBrush}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Margin" Value="0,16,0,6" />
     </Style>
 
-    <Style Selector=".panel">
+    <Style Selector="Border.panel">
         <Setter Property="Background" Value="{StaticResource AppPanelBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="12" />
     </Style>
+
 </Styles>
