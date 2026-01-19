@@ -324,7 +324,13 @@ public partial class MainWindow : Window
     {
         if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.F)
         {
-            ShowSearch();
+            OnToggleSearch(sender, e);
+            e.Handled = true;
+        }
+
+        if (e.Key == Key.Escape && _viewModel.SearchVisible)
+        {
+            CloseSearch();
             e.Handled = true;
         }
     }

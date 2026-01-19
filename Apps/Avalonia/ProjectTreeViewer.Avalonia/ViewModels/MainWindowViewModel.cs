@@ -9,7 +9,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private string _title;
     private bool _isProjectLoaded;
-    private bool _settingsVisible = true;
+    private bool _settingsVisible;
     private bool _searchVisible;
     private string _searchQuery = string.Empty;
     private string? _selectedFontFamily;
