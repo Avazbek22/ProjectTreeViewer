@@ -44,7 +44,6 @@ public partial class MainWindow : Window
 
     private readonly List<TreeNodeViewModel> _searchMatches = new();
     private int _searchMatchIndex = -1;
-    private TreeNodeViewModel? _currentSelection;
     private TextBox? _searchBox;
     private TreeView? _treeView;
 
@@ -279,6 +278,7 @@ public partial class MainWindow : Window
         var nextIsDark = !_viewModel.IsDarkTheme;
         app.RequestedThemeVariant = nextIsDark ? ThemeVariant.Dark : ThemeVariant.Light;
         _viewModel.IsDarkTheme = nextIsDark;
+        UpdateSearchHighlights(_viewModel.SearchQuery);
     }
 
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
@@ -504,12 +504,7 @@ public partial class MainWindow : Window
 
         var node = _searchMatches[_searchMatchIndex];
         node.EnsureParentsExpanded();
-
-        if (_currentSelection is not null)
-            _currentSelection.IsSelected = false;
-
-        node.IsSelected = true;
-        _currentSelection = node;
+        BringNodeIntoView(node);
     }
 
     private void UpdateSearchMatches()
@@ -518,6 +513,7 @@ public partial class MainWindow : Window
         _searchMatchIndex = -1;
 
         var query = _viewModel.SearchQuery;
+        UpdateSearchHighlights(query);
         if (string.IsNullOrWhiteSpace(query))
         {
             return;
@@ -540,6 +536,34 @@ public partial class MainWindow : Window
     {
         _searchMatches.Clear();
         _searchMatchIndex = -1;
+        UpdateSearchHighlights(string.Empty);
+    }
+
+    private void UpdateSearchHighlights(string? query)
+    {
+        var (background, foreground) = GetSearchHighlightBrushes();
+        foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
+            node.UpdateSearchHighlight(query, background, foreground);
+    }
+
+    private (IBrush? background, IBrush? foreground) GetSearchHighlightBrushes()
+    {
+        IBrush? background = null;
+        IBrush? foreground = null;
+
+        if (TryFindResource("TreeSearchHighlightBrush", out var bg))
+            background = bg as IBrush;
+
+        if (TryFindResource("TreeSearchHighlightTextBrush", out var fg))
+            foreground = fg as IBrush;
+
+        return (background, foreground);
+    }
+
+    private void BringNodeIntoView(TreeNodeViewModel node)
+    {
+        if (_treeView?.ItemContainerGenerator.ContainerFromItem(node) is TreeViewItem item)
+            item.BringIntoView();
     }
 
     private void OnRootAllChanged(object? sender, RoutedEventArgs e)
@@ -878,6 +902,8 @@ public partial class MainWindow : Window
             _suppressIgnoreItemCheck = false;
         }
 
+        if (_viewModel.AllIgnoreChecked)
+            SetAllChecked(_viewModel.IgnoreOptions, true, ref _suppressIgnoreItemCheck);
         UpdateIgnoreSelectionCache();
         SyncIgnoreAllCheckbox();
     }

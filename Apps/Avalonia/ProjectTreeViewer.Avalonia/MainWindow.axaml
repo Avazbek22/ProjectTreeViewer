@@ -77,13 +77,20 @@
                 ItemsSource="{Binding TreeNodes}"
                 IsEnabled="{Binding IsProjectLoaded}"
                 FontFamily="{Binding SelectedFontFamily}"
-                FontSize="{Binding TreeFontSize}">
+                FontSize="{Binding TreeFontSize}"
+                AlternationCount="2">
         <TreeView.ItemTemplate>
           <TreeDataTemplate ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
-              <Image Source="{Binding Icon}" Width="16" Height="16" />
-              <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+              <Image Source="{Binding Icon}"
+                     Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                     Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                     Stretch="Uniform"
+                     VerticalAlignment="Center" />
+              <TextBlock Text="{Binding DisplayName}"
+                         TextHighlighters="{Binding SearchHighlights}"
+                         VerticalAlignment="Center" />
             </StackPanel>
           </TreeDataTemplate>
         </TreeView.ItemTemplate>
@@ -99,7 +106,7 @@
             <StackPanel Classes="settings-section">
               <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsIgnoreTitle}" Margin="0" />
-                <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
+                <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
                           IsChecked="{Binding AllIgnoreChecked}" Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
               </Grid>
               <Border Classes="checklist-border">
@@ -118,7 +125,7 @@
             <StackPanel Classes="settings-section">
               <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsExtensions}" Margin="0" />
-                <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
+                <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
                           IsChecked="{Binding AllExtensionsChecked}" Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
               </Grid>
               <Border Classes="checklist-border">
@@ -137,7 +144,7 @@
             <StackPanel Classes="settings-section">
               <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsRootFolders}" Margin="0" />
-                <CheckBox Classes="section-all" Grid.Column="1" Content="{Binding SettingsAll}"
+                <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
                           IsChecked="{Binding AllRootFoldersChecked}" Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
               </Grid>
               <Border Classes="checklist-border">

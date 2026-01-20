@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using ProjectTreeViewer.Kernel.Contracts;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
@@ -28,6 +29,8 @@ public sealed class TreeNodeViewModel : ViewModelBase
     public IList<TreeNodeViewModel> Children { get; } = new List<TreeNodeViewModel>();
 
     public IImage? Icon { get; set; }
+
+    public TextHighlighterCollection SearchHighlights { get; } = new();
 
     public string DisplayName
     {
@@ -105,6 +108,40 @@ public sealed class TreeNodeViewModel : ViewModelBase
     {
         Icon = icon;
         RaisePropertyChanged(nameof(Icon));
+    }
+
+    public void UpdateSearchHighlight(string? query, IBrush? background, IBrush? foreground)
+    {
+        SearchHighlights.Clear();
+
+        if (string.IsNullOrWhiteSpace(query))
+            return;
+
+        var ranges = new List<TextRange>();
+        var startIndex = 0;
+        while (startIndex < DisplayName.Length)
+        {
+            var index = DisplayName.IndexOf(query, startIndex, StringComparison.OrdinalIgnoreCase);
+            if (index < 0)
+                break;
+
+            ranges.Add(new TextRange(index, query.Length));
+            startIndex = index + query.Length;
+        }
+
+        if (ranges.Count == 0)
+            return;
+
+        var highlighter = new TextHighlighter
+        {
+            Background = background,
+            Foreground = foreground
+        };
+
+        foreach (var range in ranges)
+            highlighter.Ranges.Add(range);
+
+        SearchHighlights.Add(highlighter);
     }
 
     private void SetChecked(bool value, bool updateChildren, bool updateParent)
