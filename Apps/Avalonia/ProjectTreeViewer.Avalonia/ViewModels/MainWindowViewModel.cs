@@ -16,7 +16,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string? _selectedFontFamily;
     private string? _pendingFontFamily;
 
-    private double _treeFontSize = 9;
+    private double _treeFontSize = 10;
 
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;
@@ -27,6 +27,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     {
         _localization = localization;
         _title = localization["Title.Default"];
+        _allExtensionsChecked = true;
+        _allRootFoldersChecked = true;
+        _allIgnoreChecked = true;
         UpdateLocalization();
     }
 
@@ -134,8 +137,11 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (Math.Abs(_treeFontSize - value) < 0.1) return;
             _treeFontSize = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(TreeIconSize));
         }
     }
+
+    public double TreeIconSize => Math.Max(12, Math.Round(TreeFontSize * 1.25, 0));
 
     public bool AllExtensionsChecked
     {

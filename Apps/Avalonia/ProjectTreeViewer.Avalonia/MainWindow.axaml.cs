@@ -1,8 +1,14 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
@@ -44,7 +50,6 @@ public partial class MainWindow : Window
 
     private readonly List<TreeNodeViewModel> _searchMatches = new();
     private int _searchMatchIndex = -1;
-    private TreeNodeViewModel? _currentSelection;
     private TextBox? _searchBox;
     private TreeView? _treeView;
 
@@ -80,6 +85,9 @@ public partial class MainWindow : Window
         _elevationAttempted = startupOptions.ElevationAttempted;
 
         _localization.LanguageChanged += (_, _) => ApplyLocalization();
+        var app = global::Avalonia.Application.Current;
+        if (app is not null)
+            app.ActualThemeVariantChanged += OnThemeChanged;
 
         InitializeFonts();
         HookOptionListeners(_viewModel.RootFolders);
@@ -95,6 +103,11 @@ public partial class MainWindow : Window
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
         Opened += OnOpened;
+    }
+
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        UpdateSearchHighlights(_viewModel.SearchQuery);
     }
 
     private async void OnOpened(object? sender, EventArgs e)
@@ -279,6 +292,7 @@ public partial class MainWindow : Window
         var nextIsDark = !_viewModel.IsDarkTheme;
         app.RequestedThemeVariant = nextIsDark ? ThemeVariant.Dark : ThemeVariant.Light;
         _viewModel.IsDarkTheme = nextIsDark;
+        UpdateSearchHighlights(_viewModel.SearchQuery);
     }
 
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
@@ -504,12 +518,9 @@ public partial class MainWindow : Window
 
         var node = _searchMatches[_searchMatchIndex];
         node.EnsureParentsExpanded();
-
-        if (_currentSelection is not null)
-            _currentSelection.IsSelected = false;
-
-        node.IsSelected = true;
-        _currentSelection = node;
+        SelectTreeNode(node);
+        BringNodeIntoView(node);
+        _treeView?.Focus();
     }
 
     private void UpdateSearchMatches()
@@ -518,6 +529,7 @@ public partial class MainWindow : Window
         _searchMatchIndex = -1;
 
         var query = _viewModel.SearchQuery;
+        UpdateSearchHighlights(query);
         if (string.IsNullOrWhiteSpace(query))
         {
             return;
@@ -540,6 +552,57 @@ public partial class MainWindow : Window
     {
         _searchMatches.Clear();
         _searchMatchIndex = -1;
+        UpdateSearchHighlights(string.Empty);
+    }
+
+    private void UpdateSearchHighlights(string? query)
+    {
+        var (background, foreground) = GetSearchHighlightBrushes();
+        foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
+            node.UpdateSearchHighlight(query, background, foreground);
+    }
+
+    private (IBrush? background, IBrush? foreground) GetSearchHighlightBrushes()
+    {
+        var app = global::Avalonia.Application.Current;
+        var theme = app?.ActualThemeVariant;
+
+        IBrush? background = null;
+        IBrush? foreground = null;
+
+        if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true)
+            background = bg as IBrush;
+
+        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true)
+            foreground = fg as IBrush;
+
+        if (foreground is null && app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true)
+            foreground = textFg as IBrush;
+
+        background ??= new SolidColorBrush(Color.Parse("#FFEB3B"));
+
+        foreground ??= theme == ThemeVariant.Dark
+            ? new SolidColorBrush(Color.Parse("#E7E9EF"))
+            : new SolidColorBrush(Color.Parse("#1A1A1A"));
+
+        return (background, foreground);
+    }
+
+    private void BringNodeIntoView(TreeNodeViewModel node)
+    {
+        var item = _treeView?.GetLogicalDescendants()
+            .OfType<TreeViewItem>()
+            .FirstOrDefault(container => ReferenceEquals(container.DataContext, node));
+
+        item?.BringIntoView();
+    }
+
+    private void SelectTreeNode(TreeNodeViewModel node)
+    {
+        if (_treeView is not null)
+            _treeView.SelectedItem = node;
+
+        node.IsSelected = true;
     }
 
     private void OnRootAllChanged(object? sender, RoutedEventArgs e)
@@ -877,6 +940,9 @@ public partial class MainWindow : Window
         {
             _suppressIgnoreItemCheck = false;
         }
+
+        if (_viewModel.AllIgnoreChecked)
+            SetAllChecked(_viewModel.IgnoreOptions, true, ref _suppressIgnoreItemCheck);
 
         UpdateIgnoreSelectionCache();
         SyncIgnoreAllCheckbox();

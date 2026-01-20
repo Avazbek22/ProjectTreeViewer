@@ -1,3 +1,4 @@
+using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using ProjectTreeViewer.Kernel.Contracts;
 
@@ -28,6 +29,8 @@ public sealed class TreeNodeViewModel : ViewModelBase
     public IList<TreeNodeViewModel> Children { get; } = new List<TreeNodeViewModel>();
 
     public IImage? Icon { get; set; }
+
+    public InlineCollection DisplayInlines { get; } = new();
 
     public string DisplayName
     {
@@ -105,6 +108,45 @@ public sealed class TreeNodeViewModel : ViewModelBase
     {
         Icon = icon;
         RaisePropertyChanged(nameof(Icon));
+    }
+
+    public void UpdateSearchHighlight(string? query, IBrush? background, IBrush? foreground)
+    {
+        DisplayInlines.Clear();
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            DisplayInlines.Add(new Run(DisplayName));
+            RaisePropertyChanged(nameof(DisplayInlines));
+            return;
+        }
+
+        var startIndex = 0;
+        while (startIndex < DisplayName.Length)
+        {
+            var index = DisplayName.IndexOf(query, startIndex, StringComparison.OrdinalIgnoreCase);
+            if (index < 0)
+            {
+                DisplayInlines.Add(new Run(DisplayName[startIndex..]));
+                break;
+            }
+
+            if (index > startIndex)
+                DisplayInlines.Add(new Run(DisplayName[startIndex..index]));
+
+            DisplayInlines.Add(new Run(DisplayName.Substring(index, query.Length))
+            {
+                Background = background,
+                Foreground = foreground
+            });
+
+            startIndex = index + query.Length;
+        }
+
+        if (DisplayInlines.Count == 0)
+            DisplayInlines.Add(new Run(DisplayName));
+
+        RaisePropertyChanged(nameof(DisplayInlines));
     }
 
     private void SetChecked(bool value, bool updateChildren, bool updateParent)
