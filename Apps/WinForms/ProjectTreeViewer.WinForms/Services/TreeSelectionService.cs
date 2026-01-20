@@ -6,6 +6,8 @@ public sealed class TreeSelectionService
 {
 	public IEnumerable<string> GetCheckedPaths(TreeNodeCollection nodes)
 	{
+		// Depth-first traversal of TreeView nodes to collect checked paths.
+		// The UI stores each node's filesystem path in Tag (string).
 		foreach (TreeNode node in nodes)
 		{
 			if (node.Checked && node.Tag is string path)

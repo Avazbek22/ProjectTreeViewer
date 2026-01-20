@@ -16,8 +16,11 @@ namespace ProjectTreeViewer.WinForms
 {
     public partial class Form1 : Form
     {
+		// Currently loaded project root. When null, UI features tied to a loaded tree are disabled/hidden.
 		private string? _currentPath;
+		// Staged font choice from the combo box (applied only when the user presses "Apply").
 		private string _pendingFontName = "Consolas";
+		// Guard flags to prevent feedback loops when we programmatically toggle TreeView/checkbox states.
 		private bool _suppressAfterCheck;
 		private bool _suppressIgnoreItemCheck;
 		private bool _suppressIgnoreAllCheck;
@@ -27,8 +30,10 @@ namespace ProjectTreeViewer.WinForms
 		private bool _suppressRootAllCheck;
 		private bool _suppressSearchTextChanged;
 
+        // Cached font size for the TreeView; used for zoom and to keep row height in sync.
         private float _treeFontSize;
 
+        // Startup options (e.g., CLI-specified path). Used to auto-open a project on first show.
         private readonly CommandLineOptions _startupOptions;
 
         private readonly LocalizationService _localization;
@@ -47,14 +52,20 @@ namespace ProjectTreeViewer.WinForms
         private readonly IIconStore _iconStore;
 		private readonly TreeSearchService _treeSearch;
 
+        // Last built tree. Null until the first successful load.
         private BuildTreeResult? _currentTree;
 
+        // Tracks whether we already attempted elevation; avoids repeated UAC prompts.
         private bool _elevationAttempted;
 
+		// Ignore options/selection are recalculated based on root-folder selection, so we cache
+		// the user's last explicit choices to keep "live" UI changes stable.
 		private IReadOnlyList<IgnoreOptionDescriptor> _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
 		private HashSet<IgnoreOptionId> _ignoreSelectionCache = new();
 		private bool _ignoreSelectionInitialized;
+		// Extensions are also updated live as roots change; cache used to preserve user intent.
 		private HashSet<string> _extensionsSelectionCache = new(StringComparer.OrdinalIgnoreCase);
+		// Search state for Ctrl+F tree search in the menu strip.
 		private IReadOnlyList<TreeNode> _searchMatches = Array.Empty<TreeNode>();
 		private int _searchMatchIndex = -1;
 		private string _searchQuery = string.Empty;
@@ -62,6 +73,7 @@ namespace ProjectTreeViewer.WinForms
         private const int TreeIconSize = 24;
 		private const int EmSetCueBanner = 0x1501;
 
+        // Icons for file/folder nodes; sized to TreeIconSize.
         private ImageList? _treeImages;
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -89,6 +101,7 @@ namespace ProjectTreeViewer.WinForms
             _iconStore = services.IconStore;
 			_treeSearch = new TreeSearchService();
 
+            // Base layout and controls are created by the designer.
             InitializeComponent();
 			ApplySearchPlaceholder();
 
@@ -106,11 +119,15 @@ namespace ProjectTreeViewer.WinForms
 
             _localization.LanguageChanged += (_, _) => ApplyLocalization();
 
+            // Font list is loaded immediately, but the selection only applies on "Apply".
             LoadFonts();
             _pendingFontName = (string?)cboFont.SelectedItem ?? "Consolas";
 
+            // Initialize ignore list even before a project is loaded (items are set later
+            // when root selection becomes available).
             InitIgnoreList();
 
+            // Until a project is loaded, keep menu actions and settings hidden/disabled.
             SetMenuEnabled(false);
             ApplyLocalization();
 
@@ -183,6 +200,8 @@ namespace ProjectTreeViewer.WinForms
         // ───────────────────────────────────────── Ignore list init (replaces 3 left checkboxes)
 		private void InitIgnoreList()
         {
+			// The ignore list in the UI is dynamic: it reflects the ignore-rule presets and
+			// can be reset when the selected root folders change.
             _suppressIgnoreItemCheck = true;
             try
             {
@@ -208,6 +227,7 @@ namespace ProjectTreeViewer.WinForms
 
         private void UpdateIgnoreListLocalization()
         {
+			// When language changes, ignore option labels update too. We preserve selections.
 			var selectedRoots = GetSelectedRootFolders();
 			if (selectedRoots.Count == 0)
 			{
@@ -253,7 +273,9 @@ namespace ProjectTreeViewer.WinForms
             // ItemCheck fires BEFORE the state changes. Update lists after WinForms applies the new check state.
             BeginInvoke(new Action(() =>
             {
+				// Mark that the user made an explicit selection so we can restore it on future updates.
 				_ignoreSelectionInitialized = true;
+				// Re-sync the "All" checkbox and rebuild dependent options.
 				SyncIgnoreAllCheckbox();
 				UpdateIgnoreSelectionCache();
 				PopulateRootFolders(_currentPath ?? "");
@@ -263,6 +285,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()
 		{
+			// When no UI list is available, fall back to cached selections to avoid losing state.
 			if (_ignoreOptions.Count == 0 || lstIgnore.Items.Count == 0)
 				return _ignoreSelectionCache;
 
@@ -279,6 +302,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private IgnoreRules BuildIgnoreRules(string path)
 		{
+			// Ignore rules are computed from the current checkbox selection.
 			var selected = GetSelectedIgnoreOptionIds();
 			return _ignoreRulesService.Build(path, selected);
 		}
@@ -295,6 +319,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void UpdateIgnoreSelectionCache()
 		{
+			// Cache current ignore selections so we can restore them when the list is rebuilt.
 			if (_ignoreOptions.Count == 0 || lstIgnore.Items.Count == 0)
 				return;
 
@@ -310,6 +335,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void UpdateExtensionsSelectionCache()
 		{
+			// Cache extension selections since the list is regenerated when root selection changes.
 			if (lstExtensions.Items.Count == 0)
 				return;
 
@@ -325,6 +351,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private static void SetAllChecked(CheckedListBox list, bool selectAll, ref bool suppressFlag)
 		{
+			// Helper for "Select All" checkboxes; ensures ItemCheck doesn't recurse.
 			suppressFlag = true;
 			for (int i = 0; i < list.Items.Count; i++)
 				list.SetItemChecked(i, selectAll);
@@ -333,6 +360,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private static void SyncAllCheckbox(CheckBox checkBox, CheckedListBox list, ref bool suppressFlag)
 		{
+			// Keep the "All" checkbox aligned with list state (checked only when all items are checked).
 			bool allChecked = list.Items.Count > 0 && list.CheckedItems.Count == list.Items.Count;
 			suppressFlag = true;
 			checkBox.Checked = allChecked;
@@ -394,6 +422,7 @@ namespace ProjectTreeViewer.WinForms
 
         private void Form1_Shown(object? sender, EventArgs e)
         {
+			// Auto-open startup path if provided by CLI options.
             if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
                 TryOpenFolder(_startupOptions.Path!, fromDialog: false);
         }
@@ -401,6 +430,7 @@ namespace ProjectTreeViewer.WinForms
         // ───────────────────────────────────────── Localization
         private void ApplyLocalization()
         {
+			// All UI text comes from localization; this method refreshes labels and menu items.
             miFile.Text = _localization["Menu.File"];
             miFileOpen.Text = _localization["Menu.File.Open"];
             miFileRefresh.Text = _localization["Menu.File.Refresh"];
@@ -476,6 +506,7 @@ namespace ProjectTreeViewer.WinForms
         // ───────────────────────────────────────── UI helpers
         private void SetMenuEnabled(bool enabled)
         {
+			// Menu actions are only available once a project is loaded.
             miFileRefresh.Enabled = enabled;
 
             miCopyFullTree.Enabled = enabled;
@@ -520,6 +551,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void ShowSearch()
 		{
+			// Search controls are placed in the menu strip and only visible on demand.
 			if (!miSearch.Enabled)
 				return;
 
@@ -530,6 +562,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void ToggleSearch()
 		{
+			// Ctrl+F toggles the inline search bar.
 			if (!miSearch.Enabled)
 				return;
 
@@ -544,6 +577,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void CloseSearch()
 		{
+			// Clear current query and hide search controls without losing tree focus.
 			_suppressSearchTextChanged = true;
 			try
 			{
@@ -561,6 +595,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void SetSearchVisible(bool visible)
 		{
+			// Search is implemented as ToolStrip items aligned to the right.
 			txtSearch.Visible = visible;
 			btnSearchNext.Visible = visible;
 			btnSearchPrev.Visible = visible;
@@ -599,6 +634,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void UpdateSearchResults(bool selectFirst)
 		{
+			// Live search: match nodes as the user types; optionally select the first match.
 			var query = txtSearch.Text.Trim();
 			if (string.IsNullOrWhiteSpace(query))
 			{
@@ -622,6 +658,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void FindNext()
 		{
+			// Cycle forward through search matches.
 			if (string.IsNullOrWhiteSpace(txtSearch.Text)) return;
 			if (_searchMatches.Count == 0)
 			{
@@ -635,6 +672,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void FindPrevious()
 		{
+			// Cycle backward through search matches.
 			if (string.IsNullOrWhiteSpace(txtSearch.Text)) return;
 			if (_searchMatches.Count == 0)
 			{
@@ -648,6 +686,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void SelectSearchMatch(TreeNode node)
 		{
+			// Jump to the node in the TreeView to show context.
 			treeProject.SelectedNode = node;
 			node.EnsureVisible();
 		}
@@ -661,6 +700,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void RefreshSearchIndex()
 		{
+			// Rebuild search index whenever tree contents change.
 			_treeSearch.Rebuild(treeProject);
 			_searchMatches = Array.Empty<TreeNode>();
 			_searchMatchIndex = -1;
@@ -720,6 +760,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void miOptions_Click(object? sender, EventArgs e)
 		{
+			// Settings panel toggles visibility; it is hidden by default before a project load.
 			panelSettings.Visible = !panelSettings.Visible;
 			ApplyStableLayout();
 		}
@@ -812,6 +853,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private bool EnsureTreeReady()
 		{
+			// Prevent copy actions when nothing is loaded.
 			if (string.IsNullOrWhiteSpace(_currentPath)) return false;
 			return _currentTree is not null;
 		}
@@ -836,6 +878,7 @@ namespace ProjectTreeViewer.WinForms
         // ───────────────────────────────────────── Open folder / elevation
         private void TryOpenFolder(string path, bool fromDialog)
         {
+			// Loading a project enables the menu and reveals settings panel controls.
             if (!Directory.Exists(path))
             {
                 _messages.ShowErrorFormat("Msg.PathNotFound", path);
@@ -855,6 +898,7 @@ namespace ProjectTreeViewer.WinForms
 
             SetMenuEnabled(true);
 
+			// Settings panel (filters, font, ignore options) becomes visible only after load.
 			panelSettings.Visible = true;
             ReloadProject();
         }
@@ -887,6 +931,7 @@ namespace ProjectTreeViewer.WinForms
         {
             try
             {
+				// Apply pending font changes and refresh tree rendering.
                 if (treeProject.Font.FontFamily.Name != _pendingFontName)
                     treeProject.Font = new Font(_pendingFontName, _treeFontSize);
 
@@ -903,6 +948,7 @@ namespace ProjectTreeViewer.WinForms
         {
 			if (_suppressExtensionsAllCheck) return;
 
+			// "All extensions" checkbox: toggles all extension entries at once.
 			bool selectAll = checkBoxAll.Checked;
 			SetAllChecked(lstExtensions, selectAll, ref _suppressExtensionsItemCheck);
 			UpdateExtensionsSelectionCache();
@@ -912,6 +958,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (_suppressIgnoreAllCheck) return;
 
+			// "All ignore rules" checkbox: toggles all ignore options and refreshes dependent lists.
 			_ignoreSelectionInitialized = true;
 			bool selectAll = checkBoxIgnoreAll.Checked;
 			SetAllChecked(lstIgnore, selectAll, ref _suppressIgnoreItemCheck);
@@ -924,6 +971,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (_suppressRootAllCheck) return;
 
+			// "All root folders" checkbox: selects/deselects every root, which recalculates extensions/ignore options.
 			bool selectAll = checkBoxRootAll.Checked;
 			SetAllChecked(lstRootFolders, selectAll, ref _suppressRootItemCheck);
 			UpdateLiveOptionsFromRootSelection();
@@ -933,6 +981,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (_suppressExtensionsItemCheck) return;
 
+			// ItemCheck occurs before state flips, so defer sync to keep accurate "All" checkbox state.
 			BeginInvoke(new Action(() =>
 			{
 				SyncAllCheckbox(checkBoxAll, lstExtensions, ref _suppressExtensionsAllCheck);
@@ -944,6 +993,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (_suppressRootItemCheck) return;
 
+			// Root folders drive the "live" filter lists (extensions and ignore options).
 			BeginInvoke(new Action(() =>
 			{
 				SyncAllCheckbox(checkBoxRootAll, lstRootFolders, ref _suppressRootAllCheck);
@@ -956,6 +1006,7 @@ namespace ProjectTreeViewer.WinForms
 
         private void LoadFonts()
         {
+			// Keep the list small and stable so the UI is predictable across machines.
             cboFont.Items.AddRange(new[]
                 { "Consolas", "Courier New", "Lucida Console", "Fira Code", "Times New Roman", "Tahoma" });
             cboFont.SelectedItem = "Consolas";
@@ -966,6 +1017,7 @@ namespace ProjectTreeViewer.WinForms
         {
             if (string.IsNullOrEmpty(_currentPath)) return;
 
+			// Populate root folder list from disk, then recalculate live options before rebuilding tree.
             PopulateRootFolders(_currentPath);
 			UpdateLiveOptionsFromRootSelection();
 
@@ -976,6 +1028,7 @@ namespace ProjectTreeViewer.WinForms
         {
             if (string.IsNullOrEmpty(_currentPath)) return;
 
+			// Allowed extensions/roots are taken from current checkbox selections.
             var allowedExt = new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(),
                 StringComparer.OrdinalIgnoreCase);
             var allowedRoot = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(),
@@ -997,7 +1050,7 @@ namespace ProjectTreeViewer.WinForms
                 if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
                     return;
 
-                // Render without ExpandAll: expansion is "layer-by-layer"
+                // Render without ExpandAll: expansion is "layer-by-layer" so the UI stays responsive.
                 _renderer.Render(treeProject, result.Root, expandAll: false);
 
                 // Fix: always show the real root folder as the first line in the TreeView
@@ -1019,12 +1072,14 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (string.IsNullOrEmpty(path)) return;
 
+			// Persist earlier user choices where possible; otherwise use defaults from the selection service.
 			var prev = _extensionsSelectionCache.Count > 0
 				? new HashSet<string>(_extensionsSelectionCache, StringComparer.OrdinalIgnoreCase)
 				: new HashSet<string>(lstExtensions.CheckedItems.Cast<string>(), StringComparer.OrdinalIgnoreCase);
 
 			if (rootFolders.Count == 0)
 			{
+				// No roots selected: the extension list is empty and "All" is cleared.
 				lstExtensions.Items.Clear();
 				_suppressExtensionsAllCheck = true;
 				checkBoxAll.Checked = false;
@@ -1033,6 +1088,7 @@ namespace ProjectTreeViewer.WinForms
 				return;
 			}
 
+			// Live extensions depend on both root selection and current ignore rules.
 			var ignoreRules = BuildIgnoreRules(path);
 			var scan = _scanOptions.GetExtensionsForRootFolders(path, rootFolders, ignoreRules);
 			if (scan.RootAccessDenied && TryElevateAndRestart(path))
@@ -1057,6 +1113,7 @@ namespace ProjectTreeViewer.WinForms
         {
             if (string.IsNullOrEmpty(path)) return;
 
+			// Root folders are a high-level filter; selection here drives extension/ignore availability.
             var prev = new HashSet<string>(lstRootFolders.CheckedItems.Cast<string>(),
                 StringComparer.OrdinalIgnoreCase);
 
@@ -1081,6 +1138,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void PopulateIgnoreOptionsForRootSelection(IReadOnlyCollection<string> rootFolders)
 		{
+			// Ignore options are also live: list is rebuilt when root folders change.
 			var previousSelections = _ignoreSelectionCache;
 
 			_suppressIgnoreItemCheck = true;
@@ -1093,6 +1151,7 @@ namespace ProjectTreeViewer.WinForms
 
 					if (rootFolders.Count == 0)
 					{
+						// When nothing is selected, hide ignore options (no context to compute them).
 						_ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
 						_suppressIgnoreAllCheck = true;
 						checkBoxIgnoreAll.Checked = false;
@@ -1133,6 +1192,7 @@ namespace ProjectTreeViewer.WinForms
 		{
 			if (string.IsNullOrEmpty(_currentPath)) return;
 
+			// Root selection is the source-of-truth for live filter lists.
 			var selectedRoots = GetSelectedRootFolders();
 			PopulateExtensionsForRootSelection(_currentPath, selectedRoots);
 			PopulateIgnoreOptionsForRootSelection(selectedRoots);
@@ -1140,6 +1200,7 @@ namespace ProjectTreeViewer.WinForms
 
 		private void ApplySearchPlaceholder()
 		{
+			// Use Win32 cue banner for the search box placeholder (localized).
 			var textBox = txtSearch.TextBox;
 			_ = textBox.Handle;
 			SendMessage(textBox.Handle, EmSetCueBanner, new IntPtr(1), _localization["Menu.Search"]);
@@ -1148,6 +1209,7 @@ namespace ProjectTreeViewer.WinForms
 		// ───────────────────────────────────────── Tree check behavior
 		private void treeProject_BeforeExpand(object? sender, TreeViewCancelEventArgs e)
 		{
+			// Ensure row height stays correct when the tree changes visual state.
 			UpdateTreeItemHeight();
 		}
 
@@ -1159,7 +1221,9 @@ namespace ProjectTreeViewer.WinForms
             {
                 _suppressAfterCheck = true;
 
+				// Checking a parent selects all children. Unchecking clears all children.
                 SetChildrenChecked(e.Node, e.Node.Checked);
+				// Parent nodes are checked only when all children are checked.
                 UpdateParentsChecked(e.Node.Parent);
             }
             finally
