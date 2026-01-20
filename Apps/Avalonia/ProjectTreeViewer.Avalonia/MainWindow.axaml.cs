@@ -557,8 +557,7 @@ public partial class MainWindow : Window
         if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true)
             background = bg as IBrush;
 
-        if (app?.Resources.TryGetResource("AppAccentBrush", theme, out var accentBrush) == true)
-            background ??= accentBrush as IBrush;
+        background ??= new SolidColorBrush(Color.Parse("#FFEB3B"));
 
         return (background, null);
     }
@@ -842,9 +841,6 @@ public partial class MainWindow : Window
             _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
         _suppressExtensionItemCheck = false;
 
-        if (_viewModel.AllExtensionsChecked)
-            SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
-
         SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
         UpdateExtensionsSelectionCache();
     }
@@ -868,9 +864,6 @@ public partial class MainWindow : Window
         foreach (var option in options)
             _viewModel.RootFolders.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
         _suppressRootItemCheck = false;
-
-        if (_viewModel.AllRootFoldersChecked)
-            SetAllChecked(_viewModel.RootFolders, true, ref _suppressRootItemCheck);
 
         SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck, value => _viewModel.AllRootFoldersChecked = value);
     }
