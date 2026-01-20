@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
@@ -13,7 +14,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _searchVisible;
     private string _searchQuery = string.Empty;
 
-    private string? _selectedFontFamily;
+    private FontFamily? _selectedFontFamily;
     private string? _pendingFontFamily;
 
     private double _treeFontSize = 12;
@@ -22,6 +23,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _allRootFoldersChecked;
     private bool _allIgnoreChecked;
     private bool _isDarkTheme;
+    private bool _isCompactMode;
+    private bool _isMicaTheme;
+    private bool _isAcrylicTheme;
 
     public MainWindowViewModel(LocalizationService localization)
     {
@@ -105,8 +109,41 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool IsCompactMode
+    {
+        get => _isCompactMode;
+        set
+        {
+            if (_isCompactMode == value) return;
+            _isCompactMode = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool IsMicaTheme
+    {
+        get => _isMicaTheme;
+        set
+        {
+            if (_isMicaTheme == value) return;
+            _isMicaTheme = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool IsAcrylicTheme
+    {
+        get => _isAcrylicTheme;
+        set
+        {
+            if (_isAcrylicTheme == value) return;
+            _isAcrylicTheme = value;
+            RaisePropertyChanged();
+        }
+    }
+
     // Применённый шрифт (TreeView берет отсюда)
-    public string? SelectedFontFamily
+    public FontFamily? SelectedFontFamily
     {
         get => _selectedFontFamily;
         set
@@ -192,6 +229,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuViewZoomOut { get; private set; } = string.Empty;
     public string MenuViewZoomReset { get; private set; } = string.Empty;
     public string MenuViewTheme { get; private set; } = string.Empty;
+    public string MenuViewMica { get; private set; } = string.Empty;
+    public string MenuViewAcrylic { get; private set; } = string.Empty;
+    public string MenuViewCompact { get; private set; } = string.Empty;
     public string MenuOptions { get; private set; } = string.Empty;
     public string MenuOptionsTreeSettings { get; private set; } = string.Empty;
     public string MenuLanguage { get; private set; } = string.Empty;
@@ -223,6 +263,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuViewZoomOut = _localization["Menu.View.ZoomOut"];
         MenuViewZoomReset = _localization["Menu.View.ZoomReset"];
         MenuViewTheme = _localization["Menu.View.DarkTheme"];
+        MenuViewMica = _localization["Menu.View.Mica"];
+        MenuViewAcrylic = _localization["Menu.View.Acrylic"];
+        MenuViewCompact = _localization["Menu.View.Compact"];
         MenuOptions = _localization["Menu.Options"];
         MenuOptionsTreeSettings = _localization["Menu.Options.TreeSettings"];
         MenuLanguage = _localization["Menu.Language"];
@@ -252,6 +295,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuViewZoomOut));
         RaisePropertyChanged(nameof(MenuViewZoomReset));
         RaisePropertyChanged(nameof(MenuViewTheme));
+        RaisePropertyChanged(nameof(MenuViewMica));
+        RaisePropertyChanged(nameof(MenuViewAcrylic));
+        RaisePropertyChanged(nameof(MenuViewCompact));
         RaisePropertyChanged(nameof(MenuOptions));
         RaisePropertyChanged(nameof(MenuOptionsTreeSettings));
         RaisePropertyChanged(nameof(MenuLanguage));

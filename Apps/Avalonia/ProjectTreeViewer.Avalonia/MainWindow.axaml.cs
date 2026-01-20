@@ -10,10 +10,12 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
+using ProjectTreeViewer.Avalonia.Converters;
 using ProjectTreeViewer.Avalonia.Services;
 using ProjectTreeViewer.Avalonia.ViewModels;
 using ProjectTreeViewer.Kernel.Abstractions;
@@ -52,6 +54,7 @@ public partial class MainWindow : Window
     private int _searchMatchIndex = -1;
     private TextBox? _searchBox;
     private TreeView? _treeView;
+    private WindowMaterial _windowMaterial;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -98,11 +101,14 @@ public partial class MainWindow : Window
         {
             if (args.PropertyName == nameof(MainWindowViewModel.SearchQuery))
                 UpdateSearchMatches();
+            if (args.PropertyName == nameof(MainWindowViewModel.IsCompactMode))
+                ApplyCompactMode(_viewModel.IsCompactMode);
         };
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
         Opened += OnOpened;
+        ApplyCompactMode(_viewModel.IsCompactMode);
     }
 
     private void OnThemeChanged(object? sender, EventArgs e)
@@ -123,19 +129,37 @@ public partial class MainWindow : Window
 
     private void InitializeFonts()
     {
-        var fonts = FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
-            .ToList() ?? new List<string>();
+        var allowedFonts = new[]
+        {
+            "Consolas",
+            "Courier New",
+            "Lucida Console",
+            "Fira Code",
+            "Times New Roman",
+            "Tahoma"
+        };
 
-        foreach (var font in fonts)
+        var installed = FontManager.Current?.SystemFonts?
+            .Select(f => f.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+            ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var availableFonts = allowedFonts
+            .Where(font => installed.Contains(font))
+            .ToList();
+
+        if (availableFonts.Count == 0)
+            availableFonts.AddRange(allowedFonts);
+
+        foreach (var font in availableFonts)
             _viewModel.FontFamilies.Add(font);
 
-        var preferred = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console" };
-        var selected = preferred.FirstOrDefault(name => fonts.Contains(name, StringComparer.OrdinalIgnoreCase))
-            ?? fonts.FirstOrDefault();
+        var selectedName = availableFonts.Contains("Consolas", StringComparer.OrdinalIgnoreCase)
+            ? "Consolas"
+            : availableFonts.FirstOrDefault() ?? "Consolas";
 
-        _viewModel.SelectedFontFamily = selected;
-        _viewModel.PendingFontFamily = selected;
+        _viewModel.SelectedFontFamily = new FontFamily(selectedName);
+        _viewModel.PendingFontFamily = selectedName;
     }
 
     private void SyncThemeWithSystem()
@@ -296,6 +320,23 @@ public partial class MainWindow : Window
         app.RequestedThemeVariant = nextIsDark ? ThemeVariant.Dark : ThemeVariant.Light;
         _viewModel.IsDarkTheme = nextIsDark;
         UpdateSearchHighlights(_viewModel.SearchQuery);
+    }
+
+    private void OnToggleMica(object? sender, RoutedEventArgs e)
+    {
+        var next = _viewModel.IsMicaTheme ? WindowMaterial.None : WindowMaterial.Mica;
+        SetWindowMaterial(next);
+    }
+
+    private void OnToggleAcrylic(object? sender, RoutedEventArgs e)
+    {
+        var next = _viewModel.IsAcrylicTheme ? WindowMaterial.None : WindowMaterial.Acrylic;
+        SetWindowMaterial(next);
+    }
+
+    private void OnToggleCompactMode(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.IsCompactMode = !_viewModel.IsCompactMode;
     }
 
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
@@ -727,9 +768,9 @@ public partial class MainWindow : Window
         {
             // Font family — как WinForms: применяется только по Apply
             if (!string.IsNullOrWhiteSpace(_viewModel.PendingFontFamily) &&
-                !string.Equals(_viewModel.SelectedFontFamily, _viewModel.PendingFontFamily, StringComparison.Ordinal))
+                !string.Equals(_viewModel.SelectedFontFamily?.Name, _viewModel.PendingFontFamily, StringComparison.Ordinal))
             {
-                _viewModel.SelectedFontFamily = _viewModel.PendingFontFamily;
+                _viewModel.SelectedFontFamily = new FontFamily(_viewModel.PendingFontFamily);
             }
 
             RefreshTree();
@@ -846,6 +887,70 @@ public partial class MainWindow : Window
         {
             Cursor = new Cursor(StandardCursorType.Arrow);
         }
+    }
+
+    private void SetWindowMaterial(WindowMaterial material)
+    {
+        if (_windowMaterial == material) return;
+
+        _windowMaterial = material;
+        _viewModel.IsMicaTheme = material == WindowMaterial.Mica;
+        _viewModel.IsAcrylicTheme = material == WindowMaterial.Acrylic;
+
+        ApplyWindowMaterial(material);
+    }
+
+    private void ApplyWindowMaterial(WindowMaterial material)
+    {
+        var hints = material switch
+        {
+            WindowMaterial.Mica => new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.None },
+            WindowMaterial.Acrylic => new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.None },
+            _ => new[] { WindowTransparencyLevel.None }
+        };
+
+        TransparencyLevelHint = hints;
+
+        if (material == WindowMaterial.None)
+            ClearValue(BackgroundProperty);
+        else
+            Background = Brushes.Transparent;
+    }
+
+    private void ApplyCompactMode(bool isCompact)
+    {
+        SetResource("TreeItemPadding", isCompact ? new Thickness(4, 1) : new Thickness(6, 2));
+        SetResource("PanelPadding", isCompact ? new Thickness(8) : new Thickness(12));
+        SetResource("SectionTitleMargin", isCompact ? new Thickness(0, 10, 0, 4) : new Thickness(0, 16, 0, 6));
+        SetResource("SettingsSectionMargin", isCompact ? new Thickness(0, 6, 0, 0) : new Thickness(0, 10, 0, 0));
+        SetResource("SettingsHeaderMargin", isCompact ? new Thickness(0, 2, 0, 4) : new Thickness(0, 0, 0, 6));
+        SetResource("SettingsHeaderTextMargin", isCompact ? new Thickness(0, 1, 0, 0) : new Thickness(0, 2, 0, 0));
+        SetResource("SectionAllMargin", isCompact ? new Thickness(0, 1, 4, 0) : new Thickness(0, 2, 4, 0));
+        SetResource("ChecklistPadding", isCompact ? new Thickness(4) : new Thickness(6));
+        SetResource("ChecklistItemMargin", isCompact ? new Thickness(0, 1) : new Thickness(0, 2));
+        SetResource("SearchPanelMargin", isCompact ? new Thickness(8, 4) : new Thickness(12, 6));
+        SetResource("SettingsSectionSpacing", isCompact ? 4d : 6d);
+        SetResource("SearchPanelSpacing", isCompact ? 6d : 8d);
+        SetResource("TreeItemSpacing", isCompact ? 4d : 6d);
+
+        if (global::Avalonia.Application.Current?.Resources.TryGetResource(
+                "TreeIndentConverter", null, out var converter) == true &&
+            converter is TreeIndentConverter treeIndent)
+        {
+            treeIndent.IndentSize = isCompact ? 12 : 16;
+        }
+    }
+
+    private void SetResource<T>(string key, T value)
+    {
+        Resources[key] = value!;
+    }
+
+    private enum WindowMaterial
+    {
+        None,
+        Mica,
+        Acrylic
     }
 
     private TreeNodeViewModel BuildTreeViewModel(TreeNodeDescriptor descriptor, TreeNodeViewModel? parent)
