@@ -80,8 +80,16 @@
                 FontSize="{Binding TreeFontSize}">
         <TreeView.ItemTemplate>
           <TreeDataTemplate ItemsSource="{Binding Children}">
-            <Border BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="0,1">
-              <StackPanel Orientation="Horizontal" Spacing="6">
+            <Grid ColumnDefinitions="Auto,*">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding Level, RelativeSource={RelativeSource AncestorType=TreeViewItem}, Converter={StaticResource TreeIndentConverter}}" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Border Grid.Column="0"
+                      BorderBrush="{DynamicResource AppBorderBrush}"
+                      BorderThickness="0,0,1,0"
+                      Margin="0,2" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
                 <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
                 <Image Source="{Binding Icon}"
                        Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
@@ -91,7 +99,7 @@
                 <TextBlock Inlines="{Binding DisplayInlines}"
                            VerticalAlignment="Center" />
               </StackPanel>
-            </Border>
+            </Grid>
           </TreeDataTemplate>
         </TreeView.ItemTemplate>
       </TreeView>

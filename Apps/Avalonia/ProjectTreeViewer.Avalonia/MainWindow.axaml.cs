@@ -549,14 +549,23 @@ public partial class MainWindow : Window
 
     private (IBrush? background, IBrush? foreground) GetSearchHighlightBrushes()
     {
+        var app = Application.Current;
+        var theme = app?.ActualThemeVariant;
+
         IBrush? background = null;
         IBrush? foreground = null;
 
-        if (TryFindResource("TreeSearchHighlightBrush", out var bg))
+        if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true)
             background = bg as IBrush;
 
-        if (TryFindResource("TreeSearchHighlightTextBrush", out var fg))
+        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true)
             foreground = fg as IBrush;
+
+        if (app?.Resources.TryGetResource("AppTextBrush", theme, out var textBrush) == true)
+            foreground ??= textBrush as IBrush;
+
+        if (app?.Resources.TryGetResource("AppAccentBrush", theme, out var accentBrush) == true)
+            background ??= accentBrush as IBrush;
 
         return (background, foreground);
     }
