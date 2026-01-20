@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
@@ -562,8 +563,11 @@ public partial class MainWindow : Window
 
     private void BringNodeIntoView(TreeNodeViewModel node)
     {
-        if (_treeView?.ItemContainerGenerator.ContainerFromItem(node) is TreeViewItem item)
-            item.BringIntoView();
+        var item = _treeView?.GetLogicalDescendants()
+            .OfType<TreeViewItem>()
+            .FirstOrDefault(container => ReferenceEquals(container.DataContext, node));
+
+        item?.BringIntoView();
     }
 
     private void OnRootAllChanged(object? sender, RoutedEventArgs e)

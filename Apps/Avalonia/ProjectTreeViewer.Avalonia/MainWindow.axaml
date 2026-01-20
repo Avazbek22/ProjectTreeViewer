@@ -77,21 +77,21 @@
                 ItemsSource="{Binding TreeNodes}"
                 IsEnabled="{Binding IsProjectLoaded}"
                 FontFamily="{Binding SelectedFontFamily}"
-                FontSize="{Binding TreeFontSize}"
-                AlternationCount="2">
+                FontSize="{Binding TreeFontSize}">
         <TreeView.ItemTemplate>
           <TreeDataTemplate ItemsSource="{Binding Children}">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
-              <Image Source="{Binding Icon}"
-                     Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
-                     Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
-                     Stretch="Uniform"
-                     VerticalAlignment="Center" />
-              <TextBlock Text="{Binding DisplayName}"
-                         TextHighlighters="{Binding SearchHighlights}"
-                         VerticalAlignment="Center" />
-            </StackPanel>
+            <Border BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="0,1">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
+                <Image Source="{Binding Icon}"
+                       Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                       Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                       Stretch="Uniform"
+                       VerticalAlignment="Center" />
+                <TextBlock Inlines="{Binding DisplayInlines}"
+                           VerticalAlignment="Center" />
+              </StackPanel>
+            </Border>
           </TreeDataTemplate>
         </TreeView.ItemTemplate>
       </TreeView>

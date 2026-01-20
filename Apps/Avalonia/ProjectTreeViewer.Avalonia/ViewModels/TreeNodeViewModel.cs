@@ -1,5 +1,5 @@
+using Avalonia.Controls.Documents;
 using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
 using ProjectTreeViewer.Kernel.Contracts;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
@@ -30,7 +30,7 @@ public sealed class TreeNodeViewModel : ViewModelBase
 
     public IImage? Icon { get; set; }
 
-    public TextHighlighterCollection SearchHighlights { get; } = new();
+    public InlineCollection DisplayInlines { get; } = new();
 
     public string DisplayName
     {
@@ -112,36 +112,41 @@ public sealed class TreeNodeViewModel : ViewModelBase
 
     public void UpdateSearchHighlight(string? query, IBrush? background, IBrush? foreground)
     {
-        SearchHighlights.Clear();
+        DisplayInlines.Clear();
 
         if (string.IsNullOrWhiteSpace(query))
+        {
+            DisplayInlines.Add(new Run(DisplayName));
+            RaisePropertyChanged(nameof(DisplayInlines));
             return;
+        }
 
-        var ranges = new List<TextRange>();
         var startIndex = 0;
         while (startIndex < DisplayName.Length)
         {
             var index = DisplayName.IndexOf(query, startIndex, StringComparison.OrdinalIgnoreCase);
             if (index < 0)
+            {
+                DisplayInlines.Add(new Run(DisplayName[startIndex..]));
                 break;
+            }
 
-            ranges.Add(new TextRange(index, query.Length));
+            if (index > startIndex)
+                DisplayInlines.Add(new Run(DisplayName[startIndex..index]));
+
+            DisplayInlines.Add(new Run(DisplayName.Substring(index, query.Length))
+            {
+                Background = background,
+                Foreground = foreground
+            });
+
             startIndex = index + query.Length;
         }
 
-        if (ranges.Count == 0)
-            return;
+        if (DisplayInlines.Count == 0)
+            DisplayInlines.Add(new Run(DisplayName));
 
-        var highlighter = new TextHighlighter
-        {
-            Background = background,
-            Foreground = foreground
-        };
-
-        foreach (var range in ranges)
-            highlighter.Ranges.Add(range);
-
-        SearchHighlights.Add(highlighter);
+        RaisePropertyChanged(nameof(DisplayInlines));
     }
 
     private void SetChecked(bool value, bool updateChildren, bool updateParent)
