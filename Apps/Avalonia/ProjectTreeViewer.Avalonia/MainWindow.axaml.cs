@@ -107,7 +107,10 @@ public partial class MainWindow : Window
 
     private void OnThemeChanged(object? sender, EventArgs e)
     {
-        UpdateSearchHighlights(_viewModel.SearchQuery);
+        // Defer update to let theme resources settle first
+        global::Avalonia.Threading.Dispatcher.UIThread.Post(
+            () => UpdateSearchHighlights(_viewModel.SearchQuery),
+            global::Avalonia.Threading.DispatcherPriority.Background);
     }
 
     private async void OnOpened(object? sender, EventArgs e)
@@ -268,7 +271,7 @@ public partial class MainWindow : Window
 
     private void OnZoomOut(object? sender, RoutedEventArgs e) => AdjustTreeFontSize(-1);
 
-    private void OnZoomReset(object? sender, RoutedEventArgs e) => _viewModel.TreeFontSize = 9;
+    private void OnZoomReset(object? sender, RoutedEventArgs e) => _viewModel.TreeFontSize = 12;
 
     private void AdjustTreeFontSize(double delta)
     {
@@ -557,35 +560,34 @@ public partial class MainWindow : Window
 
     private void UpdateSearchHighlights(string? query)
     {
-        var (background, foreground) = GetSearchHighlightBrushes();
+        var (highlightBackground, highlightForeground, normalForeground) = GetSearchHighlightBrushes();
         foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
-            node.UpdateSearchHighlight(query, background, foreground);
+            node.UpdateSearchHighlight(query, highlightBackground, highlightForeground, normalForeground);
     }
 
-    private (IBrush? background, IBrush? foreground) GetSearchHighlightBrushes()
+    private (IBrush highlightBackground, IBrush highlightForeground, IBrush normalForeground) GetSearchHighlightBrushes()
     {
         var app = global::Avalonia.Application.Current;
-        var theme = app?.ActualThemeVariant;
+        var theme = app?.ActualThemeVariant ?? ThemeVariant.Light;
 
-        IBrush? background = null;
-        IBrush? foreground = null;
-
-        if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true)
-            background = bg as IBrush;
-
-        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true)
-            foreground = fg as IBrush;
-
-        if (foreground is null && app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true)
-            foreground = textFg as IBrush;
-
-        background ??= new SolidColorBrush(Color.Parse("#FFEB3B"));
-
-        foreground ??= theme == ThemeVariant.Dark
+        // Set fallback defaults FIRST based on theme
+        IBrush highlightBackground = new SolidColorBrush(Color.Parse("#FFEB3B"));
+        IBrush highlightForeground = new SolidColorBrush(Color.Parse("#000000"));
+        IBrush normalForeground = theme == ThemeVariant.Dark
             ? new SolidColorBrush(Color.Parse("#E7E9EF"))
             : new SolidColorBrush(Color.Parse("#1A1A1A"));
 
-        return (background, foreground);
+        // Override with resources only if they're valid IBrush (pattern matching)
+        if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true && bg is IBrush bgBrush)
+            highlightBackground = bgBrush;
+
+        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true && fg is IBrush fgBrush)
+            highlightForeground = fgBrush;
+
+        if (app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true && textFg is IBrush textBrush)
+            normalForeground = textBrush;
+
+        return (highlightBackground, highlightForeground, normalForeground);
     }
 
     private void BringNodeIntoView(TreeNodeViewModel node)
@@ -609,7 +611,12 @@ public partial class MainWindow : Window
     {
         if (_suppressRootAllCheck) return;
 
-        var check = _viewModel.AllRootFoldersChecked;
+        // Get value directly from control - event fires BEFORE binding updates ViewModel
+        var check = (sender as CheckBox)?.IsChecked == true;
+        _suppressRootAllCheck = true;
+        _viewModel.AllRootFoldersChecked = check;
+        _suppressRootAllCheck = false;
+
         SetAllChecked(_viewModel.RootFolders, check, ref _suppressRootItemCheck);
         UpdateLiveOptionsFromRootSelection();
     }
@@ -618,7 +625,12 @@ public partial class MainWindow : Window
     {
         if (_suppressExtensionAllCheck) return;
 
-        var check = _viewModel.AllExtensionsChecked;
+        // Get value directly from control - event fires BEFORE binding updates ViewModel
+        var check = (sender as CheckBox)?.IsChecked == true;
+        _suppressExtensionAllCheck = true;
+        _viewModel.AllExtensionsChecked = check;
+        _suppressExtensionAllCheck = false;
+
         SetAllChecked(_viewModel.Extensions, check, ref _suppressExtensionItemCheck);
         UpdateExtensionsSelectionCache();
     }
@@ -628,7 +640,13 @@ public partial class MainWindow : Window
         if (_suppressIgnoreAllCheck) return;
 
         _ignoreSelectionInitialized = true;
-        var check = _viewModel.AllIgnoreChecked;
+
+        // Get value directly from control - event fires BEFORE binding updates ViewModel
+        var check = (sender as CheckBox)?.IsChecked == true;
+        _suppressIgnoreAllCheck = true;
+        _viewModel.AllIgnoreChecked = check;
+        _suppressIgnoreAllCheck = false;
+
         SetAllChecked(_viewModel.IgnoreOptions, check, ref _suppressIgnoreItemCheck);
         UpdateIgnoreSelectionCache();
         PopulateRootFolders(_currentPath ?? string.Empty);

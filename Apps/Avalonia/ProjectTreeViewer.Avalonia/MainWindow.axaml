@@ -102,76 +102,80 @@
       </TreeView>
 
       <Border Grid.Column="1" Width="320" Classes="panel" IsVisible="{Binding SettingsVisible}" IsEnabled="{Binding IsProjectLoaded}">
-        <ScrollViewer>
-          <StackPanel Spacing="10">
+        <Grid RowDefinitions="Auto,*,*,*">
+          <!-- Font section - Auto height -->
+          <StackPanel Grid.Row="0" Spacing="6">
             <TextBlock Classes="section-title" Text="{Binding SettingsFont}" />
             <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding PendingFontFamily}" />
             <Button Content="{Binding SettingsApply}" Click="OnApplySettings" Margin="0,8,0,0" />
-
-            <StackPanel Classes="settings-section">
-              <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
-                <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsIgnoreTitle}" Margin="0" />
-                <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
-                          IsChecked="{Binding AllIgnoreChecked, Mode=TwoWay}"
-                          Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
-              </Grid>
-              <Border Classes="checklist-border">
-                <ScrollViewer Classes="checklist-scroll" MaxHeight="220" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                  <ItemsControl ItemsSource="{Binding IgnoreOptions}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                        <CheckBox Classes="list-item" Content="{Binding Label}"
-                                  IsChecked="{Binding IsChecked, Mode=TwoWay}" />
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
-              </Border>
-            </StackPanel>
-
-            <StackPanel Classes="settings-section">
-              <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
-                <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsExtensions}" Margin="0" />
-                <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
-                          IsChecked="{Binding AllExtensionsChecked, Mode=TwoWay}"
-                          Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
-              </Grid>
-              <Border Classes="checklist-border">
-                <ScrollViewer Classes="checklist-scroll" MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                  <ItemsControl ItemsSource="{Binding Extensions}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                        <CheckBox Classes="list-item" Content="{Binding Name}"
-                                  IsChecked="{Binding IsChecked, Mode=TwoWay}" />
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
-              </Border>
-            </StackPanel>
-
-            <StackPanel Classes="settings-section">
-              <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
-                <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsRootFolders}" Margin="0" />
-                <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
-                          IsChecked="{Binding AllRootFoldersChecked, Mode=TwoWay}"
-                          Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
-              </Grid>
-              <Border Classes="checklist-border">
-                <ScrollViewer Classes="checklist-scroll" MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                  <ItemsControl ItemsSource="{Binding RootFolders}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                        <CheckBox Classes="list-item" Content="{Binding Name}"
-                                  IsChecked="{Binding IsChecked, Mode=TwoWay}" />
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
-              </Border>
-            </StackPanel>
           </StackPanel>
-        </ScrollViewer>
+
+          <!-- Ignore section - equal star height -->
+          <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid Grid.Row="0" ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
+              <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsIgnoreTitle}" Margin="0" />
+              <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
+                        IsChecked="{Binding AllIgnoreChecked, Mode=TwoWay}"
+                        Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
+            </Grid>
+            <Border Grid.Row="1" Classes="checklist-border">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding IgnoreOptions}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <CheckBox Classes="list-item" Content="{Binding Label}"
+                                IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Border>
+          </Grid>
+
+          <!-- Extensions section - equal star height -->
+          <Grid Grid.Row="2" RowDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid Grid.Row="0" ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
+              <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsExtensions}" Margin="0" />
+              <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
+                        IsChecked="{Binding AllExtensionsChecked, Mode=TwoWay}"
+                        Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
+            </Grid>
+            <Border Grid.Row="1" Classes="checklist-border">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Extensions}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <CheckBox Classes="list-item" Content="{Binding Name}"
+                                IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Border>
+          </Grid>
+
+          <!-- RootFolders section - equal star height -->
+          <Grid Grid.Row="3" RowDefinitions="Auto,*" Margin="0,10,0,0">
+            <Grid Grid.Row="0" ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
+              <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsRootFolders}" Margin="0" />
+              <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
+                        IsChecked="{Binding AllRootFoldersChecked, Mode=TwoWay}"
+                        Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
+            </Grid>
+            <Border Grid.Row="1" Classes="checklist-border">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding RootFolders}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <CheckBox Classes="list-item" Content="{Binding Name}"
+                                IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Border>
+          </Grid>
+        </Grid>
       </Border>
     </Grid>
   </DockPanel>

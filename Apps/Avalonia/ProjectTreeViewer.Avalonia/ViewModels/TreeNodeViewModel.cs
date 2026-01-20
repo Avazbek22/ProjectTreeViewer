@@ -110,13 +110,13 @@ public sealed class TreeNodeViewModel : ViewModelBase
         RaisePropertyChanged(nameof(Icon));
     }
 
-    public void UpdateSearchHighlight(string? query, IBrush? background, IBrush? foreground)
+    public void UpdateSearchHighlight(string? query, IBrush? highlightBackground, IBrush? highlightForeground, IBrush? normalForeground)
     {
         DisplayInlines.Clear();
 
         if (string.IsNullOrWhiteSpace(query))
         {
-            DisplayInlines.Add(new Run(DisplayName));
+            DisplayInlines.Add(new Run(DisplayName) { Foreground = normalForeground });
             RaisePropertyChanged(nameof(DisplayInlines));
             return;
         }
@@ -127,24 +127,24 @@ public sealed class TreeNodeViewModel : ViewModelBase
             var index = DisplayName.IndexOf(query, startIndex, StringComparison.OrdinalIgnoreCase);
             if (index < 0)
             {
-                DisplayInlines.Add(new Run(DisplayName[startIndex..]));
+                DisplayInlines.Add(new Run(DisplayName[startIndex..]) { Foreground = normalForeground });
                 break;
             }
 
             if (index > startIndex)
-                DisplayInlines.Add(new Run(DisplayName[startIndex..index]));
+                DisplayInlines.Add(new Run(DisplayName[startIndex..index]) { Foreground = normalForeground });
 
             DisplayInlines.Add(new Run(DisplayName.Substring(index, query.Length))
             {
-                Background = background,
-                Foreground = foreground
+                Background = highlightBackground,
+                Foreground = highlightForeground
             });
 
             startIndex = index + query.Length;
         }
 
         if (DisplayInlines.Count == 0)
-            DisplayInlines.Add(new Run(DisplayName));
+            DisplayInlines.Add(new Run(DisplayName) { Foreground = normalForeground });
 
         RaisePropertyChanged(nameof(DisplayInlines));
     }
