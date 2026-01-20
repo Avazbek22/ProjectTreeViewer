@@ -13,6 +13,8 @@ public static class WinFormsCompositionRoot
 {
 	public static WinFormsAppServices CreateDefault(CommandLineOptions options)
 	{
+		// Composition root wires application, infrastructure, and WinForms services together.
+		// This keeps Form1 focused on UI behavior rather than object construction.
 		var localizationCatalog = new JsonLocalizationCatalog();
 		var localization = new LocalizationService(localizationCatalog, options.Language ?? CommandLineOptions.DetectSystemLanguage());
 		var iconStore = new EmbeddedIconStore();
@@ -22,6 +24,7 @@ public static class WinFormsCompositionRoot
 		var treeBuilder = new TreeBuilder();
 		var scanOptionsUseCase = new ScanOptionsUseCase(scanner);
 		var buildTreeUseCase = new BuildTreeUseCase(treeBuilder, treePresenter);
+		// Smart ignore rules define common folders/artifacts the UI can toggle via ignore options.
 		var smartIgnoreRules = new ISmartIgnoreRule[]
 		{
 			new CommonSmartIgnoreRule(),
@@ -38,6 +41,7 @@ public static class WinFormsCompositionRoot
 		var selection = new TreeSelectionService();
 		var elevation = new ElevationService();
 
+		// Bundle all dependencies for Form1 so UI logic can focus on behavior.
 		return new WinFormsAppServices(
 			Localization: localization,
 			Elevation: elevation,
