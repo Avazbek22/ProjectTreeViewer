@@ -55,6 +55,8 @@ public partial class MainWindow : Window
     private TextBox? _searchBox;
     private TreeView? _treeView;
     private WindowMaterial _windowMaterial;
+    private IBrush? _defaultBackgroundBrush;
+    private IBrush? _defaultPanelBrush;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -115,7 +117,16 @@ public partial class MainWindow : Window
     {
         // Defer update to let theme resources settle first
         global::Avalonia.Threading.Dispatcher.UIThread.Post(
-            () => UpdateSearchHighlights(_viewModel.SearchQuery),
+            () =>
+            {
+                UpdateSearchHighlights(_viewModel.SearchQuery);
+                if (_windowMaterial != WindowMaterial.None)
+                {
+                    _defaultBackgroundBrush = null;
+                    _defaultPanelBrush = null;
+                    ApplyMaterialBrushes(_windowMaterial);
+                }
+            },
             global::Avalonia.Threading.DispatcherPriority.Background);
     }
 
@@ -912,9 +923,53 @@ public partial class MainWindow : Window
         TransparencyLevelHint = hints;
 
         if (material == WindowMaterial.None)
+        {
             ClearValue(BackgroundProperty);
+            RestoreMaterialBrushes();
+        }
         else
+        {
             Background = Brushes.Transparent;
+            ApplyMaterialBrushes(material);
+        }
+    }
+
+    private void ApplyMaterialBrushes(WindowMaterial material)
+    {
+        _defaultBackgroundBrush ??= GetResourceBrush("AppBackgroundBrush");
+        _defaultPanelBrush ??= GetResourceBrush("AppPanelBrush");
+
+        if (_defaultBackgroundBrush is SolidColorBrush bgBrush)
+        {
+            var background = ApplyAlpha(bgBrush.Color, material == WindowMaterial.Mica ? 0xCC : 0xB8);
+            SetResource("AppBackgroundBrush", new SolidColorBrush(background));
+        }
+
+        if (_defaultPanelBrush is SolidColorBrush panelBrush)
+        {
+            var panel = ApplyAlpha(panelBrush.Color, material == WindowMaterial.Mica ? 0xD0 : 0xC0);
+            SetResource("AppPanelBrush", new SolidColorBrush(panel));
+        }
+    }
+
+    private void RestoreMaterialBrushes()
+    {
+        if (_defaultBackgroundBrush is not null)
+            SetResource("AppBackgroundBrush", _defaultBackgroundBrush);
+        if (_defaultPanelBrush is not null)
+            SetResource("AppPanelBrush", _defaultPanelBrush);
+    }
+
+    private IBrush? GetResourceBrush(string key)
+    {
+        var app = global::Avalonia.Application.Current;
+        var theme = app?.ActualThemeVariant ?? ThemeVariant.Light;
+        return app?.Resources.TryGetResource(key, theme, out var brush) == true ? brush as IBrush : null;
+    }
+
+    private static Color ApplyAlpha(Color color, byte alpha)
+    {
+        return new Color(alpha, color.R, color.G, color.B);
     }
 
     private void ApplyCompactMode(bool isCompact)
@@ -928,10 +983,13 @@ public partial class MainWindow : Window
         SetResource("SectionAllMargin", isCompact ? new Thickness(0, 1, 4, 0) : new Thickness(0, 2, 4, 0));
         SetResource("ChecklistPadding", isCompact ? new Thickness(4) : new Thickness(6));
         SetResource("ChecklistItemMargin", isCompact ? new Thickness(0, 1) : new Thickness(0, 2));
+        SetResource("ChecklistItemPadding", isCompact ? new Thickness(1, 0) : new Thickness(2, 0));
         SetResource("SearchPanelMargin", isCompact ? new Thickness(8, 4) : new Thickness(12, 6));
         SetResource("SettingsSectionSpacing", isCompact ? 4d : 6d);
         SetResource("SearchPanelSpacing", isCompact ? 6d : 8d);
         SetResource("TreeItemSpacing", isCompact ? 4d : 6d);
+        SetResource("TreeItemMinHeight", isCompact ? 18d : 22d);
+        SetResource("ChecklistItemMinHeight", isCompact ? 18d : 22d);
 
         if (global::Avalonia.Application.Current?.Resources.TryGetResource(
                 "TreeIndentConverter", null, out var converter) == true &&

@@ -61,10 +61,13 @@
             <Thickness x:Key="SectionAllMargin">0,2,4,0</Thickness>
             <Thickness x:Key="ChecklistPadding">6</Thickness>
             <Thickness x:Key="ChecklistItemMargin">0,2</Thickness>
+            <Thickness x:Key="ChecklistItemPadding">2,0</Thickness>
             <Thickness x:Key="SearchPanelMargin">12,6</Thickness>
             <x:Double x:Key="SettingsSectionSpacing">6</x:Double>
             <x:Double x:Key="SearchPanelSpacing">8</x:Double>
             <x:Double x:Key="TreeItemSpacing">6</x:Double>
+            <x:Double x:Key="TreeItemMinHeight">22</x:Double>
+            <x:Double x:Key="ChecklistItemMinHeight">22</x:Double>
         </ResourceDictionary>
     </Styles.Resources>
 
@@ -103,6 +106,8 @@
         <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType=TreeView}}" />
         <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType=TreeView}}" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+        <Setter Property="MinHeight" Value="{DynamicResource TreeItemMinHeight}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
     <Style Selector="TreeViewItem:pointerover">
@@ -173,12 +178,23 @@
 
     <Style Selector="CheckBox.list-item">
         <Setter Property="Margin" Value="{DynamicResource ChecklistItemMargin}" />
+        <Setter Property="Padding" Value="{DynamicResource ChecklistItemPadding}" />
+        <Setter Property="MinHeight" Value="{DynamicResource ChecklistItemMinHeight}" />
     </Style>
 
     <Style Selector="CheckBox.section-all">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Right" />
         <Setter Property="Margin" Value="{DynamicResource SectionAllMargin}" />
+        <Setter Property="Padding" Value="{DynamicResource ChecklistItemPadding}" />
+        <Setter Property="MinHeight" Value="{DynamicResource ChecklistItemMinHeight}" />
+    </Style>
+
+    <Style Selector="CheckBox.tree-item-checkbox">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="MinHeight" Value="{DynamicResource TreeItemMinHeight}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style Selector="ScrollViewer.checklist-scroll">

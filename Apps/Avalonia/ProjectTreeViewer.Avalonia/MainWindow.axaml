@@ -109,8 +109,13 @@
                 <ColumnDefinition Width="{Binding Level, RelativeSource={RelativeSource AncestorType=TreeViewItem}, Converter={StaticResource TreeIndentConverter}}" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{DynamicResource TreeItemSpacing}">
-                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="1"
+                          Orientation="Horizontal"
+                          Spacing="{DynamicResource TreeItemSpacing}"
+                          VerticalAlignment="Center">
+                <CheckBox Classes="tree-item-checkbox"
+                          IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                          VerticalAlignment="Center" />
                 <Image Source="{Binding Icon}"
                        Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
                        Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
