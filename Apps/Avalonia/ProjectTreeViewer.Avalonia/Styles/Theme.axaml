@@ -12,7 +12,7 @@
                     <Color x:Key="AppTextColor">#1A1A1A</Color>
                     <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
                     <Color x:Key="TreeSelectionColor">#DCEEFF</Color>
-                    <Color x:Key="TreeSearchHighlightColor">#FFEB3B</Color>
+                    <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
 
                     <!-- Brushes -->
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
@@ -24,7 +24,7 @@
                     <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
                     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
                     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
-                    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="{StaticResource AppTextColor}" />
+                    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
@@ -36,7 +36,7 @@
                     <Color x:Key="AppTextColor">#E7E9EF</Color>
                     <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
                     <Color x:Key="TreeSelectionColor">#254861</Color>
-                    <Color x:Key="TreeSearchHighlightColor">#FFEB3B</Color>
+                    <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
 
                     <!-- Brushes -->
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
@@ -48,7 +48,7 @@
                     <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
                     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
                     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
-                    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="{StaticResource AppTextColor}" />
+                    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
@@ -81,6 +81,7 @@
     <Style Selector="TreeView">
         <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="TreeViewItem">
@@ -91,6 +92,7 @@
 
     <Style Selector="TreeViewItem:pointerover">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="TreeViewItem:selected">
@@ -122,6 +124,10 @@
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Margin" Value="0,16,0,6" />
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="Border.panel">

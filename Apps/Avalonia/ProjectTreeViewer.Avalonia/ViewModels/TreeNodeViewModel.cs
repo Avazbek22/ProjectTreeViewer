@@ -136,7 +136,8 @@ public sealed class TreeNodeViewModel : ViewModelBase
 
             DisplayInlines.Add(new Run(DisplayName.Substring(index, query.Length))
             {
-                Background = background
+                Background = background,
+                Foreground = foreground
             });
 
             startIndex = index + query.Length;

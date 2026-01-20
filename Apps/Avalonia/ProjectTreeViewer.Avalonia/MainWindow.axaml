@@ -85,19 +85,16 @@
                 <ColumnDefinition Width="{Binding Level, RelativeSource={RelativeSource AncestorType=TreeViewItem}, Converter={StaticResource TreeIndentConverter}}" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <Border Grid.Column="0"
-                      BorderBrush="{DynamicResource AppBorderBrush}"
-                      BorderThickness="0,0,1,0"
-                      Margin="0,2" />
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
+                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
                 <Image Source="{Binding Icon}"
                        Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
                        Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
                        Stretch="Uniform"
                        VerticalAlignment="Center" />
                 <TextBlock Inlines="{Binding DisplayInlines}"
-                           VerticalAlignment="Center" />
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource AppTextBrush}" />
               </StackPanel>
             </Grid>
           </TreeDataTemplate>
@@ -115,14 +112,16 @@
               <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsIgnoreTitle}" Margin="0" />
                 <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
-                          IsChecked="{Binding AllIgnoreChecked}" Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
+                          IsChecked="{Binding AllIgnoreChecked, Mode=TwoWay}"
+                          Checked="OnIgnoreAllChanged" Unchecked="OnIgnoreAllChanged" />
               </Grid>
               <Border Classes="checklist-border">
                 <ScrollViewer Classes="checklist-scroll" MaxHeight="220" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                   <ItemsControl ItemsSource="{Binding IgnoreOptions}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
-                        <CheckBox Classes="list-item" Content="{Binding Label}" IsChecked="{Binding IsChecked}" />
+                        <CheckBox Classes="list-item" Content="{Binding Label}"
+                                  IsChecked="{Binding IsChecked, Mode=TwoWay}" />
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
@@ -134,14 +133,16 @@
               <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsExtensions}" Margin="0" />
                 <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
-                          IsChecked="{Binding AllExtensionsChecked}" Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
+                          IsChecked="{Binding AllExtensionsChecked, Mode=TwoWay}"
+                          Checked="OnExtensionsAllChanged" Unchecked="OnExtensionsAllChanged" />
               </Grid>
               <Border Classes="checklist-border">
                 <ScrollViewer Classes="checklist-scroll" MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                   <ItemsControl ItemsSource="{Binding Extensions}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
-                        <CheckBox Classes="list-item" Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                        <CheckBox Classes="list-item" Content="{Binding Name}"
+                                  IsChecked="{Binding IsChecked, Mode=TwoWay}" />
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
@@ -153,14 +154,16 @@
               <Grid ColumnDefinitions="*,8,Auto" Margin="0,0,0,6">
                 <TextBlock Classes="section-title" Grid.Column="0" Text="{Binding SettingsRootFolders}" Margin="0" />
                 <CheckBox Classes="section-all" Grid.Column="2" Content="{Binding SettingsAll}"
-                          IsChecked="{Binding AllRootFoldersChecked}" Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
+                          IsChecked="{Binding AllRootFoldersChecked, Mode=TwoWay}"
+                          Checked="OnRootAllChanged" Unchecked="OnRootAllChanged" />
               </Grid>
               <Border Classes="checklist-border">
                 <ScrollViewer Classes="checklist-scroll" MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                   <ItemsControl ItemsSource="{Binding RootFolders}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
-                        <CheckBox Classes="list-item" Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                        <CheckBox Classes="list-item" Content="{Binding Name}"
+                                  IsChecked="{Binding IsChecked, Mode=TwoWay}" />
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>

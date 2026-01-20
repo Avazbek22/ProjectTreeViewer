@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -80,6 +85,9 @@ public partial class MainWindow : Window
         _elevationAttempted = startupOptions.ElevationAttempted;
 
         _localization.LanguageChanged += (_, _) => ApplyLocalization();
+        var app = global::Avalonia.Application.Current;
+        if (app is not null)
+            app.ActualThemeVariantChanged += OnThemeChanged;
 
         InitializeFonts();
         HookOptionListeners(_viewModel.RootFolders);
@@ -95,6 +103,11 @@ public partial class MainWindow : Window
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
         Opened += OnOpened;
+    }
+
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        UpdateSearchHighlights(_viewModel.SearchQuery);
     }
 
     private async void OnOpened(object? sender, EventArgs e)
@@ -505,7 +518,9 @@ public partial class MainWindow : Window
 
         var node = _searchMatches[_searchMatchIndex];
         node.EnsureParentsExpanded();
+        SelectTreeNode(node);
         BringNodeIntoView(node);
+        _treeView?.Focus();
     }
 
     private void UpdateSearchMatches()
@@ -549,17 +564,28 @@ public partial class MainWindow : Window
 
     private (IBrush? background, IBrush? foreground) GetSearchHighlightBrushes()
     {
-        var app = Application.Current;
+        var app = global::Avalonia.Application.Current;
         var theme = app?.ActualThemeVariant;
 
         IBrush? background = null;
+        IBrush? foreground = null;
 
         if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true)
             background = bg as IBrush;
 
+        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true)
+            foreground = fg as IBrush;
+
+        if (foreground is null && app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true)
+            foreground = textFg as IBrush;
+
         background ??= new SolidColorBrush(Color.Parse("#FFEB3B"));
 
-        return (background, null);
+        foreground ??= theme == ThemeVariant.Dark
+            ? new SolidColorBrush(Color.Parse("#E7E9EF"))
+            : new SolidColorBrush(Color.Parse("#1A1A1A"));
+
+        return (background, foreground);
     }
 
     private void BringNodeIntoView(TreeNodeViewModel node)
@@ -569,6 +595,14 @@ public partial class MainWindow : Window
             .FirstOrDefault(container => ReferenceEquals(container.DataContext, node));
 
         item?.BringIntoView();
+    }
+
+    private void SelectTreeNode(TreeNodeViewModel node)
+    {
+        if (_treeView is not null)
+            _treeView.SelectedItem = node;
+
+        node.IsSelected = true;
     }
 
     private void OnRootAllChanged(object? sender, RoutedEventArgs e)
@@ -841,6 +875,9 @@ public partial class MainWindow : Window
             _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
         _suppressExtensionItemCheck = false;
 
+        if (_viewModel.AllExtensionsChecked)
+            SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
+
         SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
         UpdateExtensionsSelectionCache();
     }
@@ -864,6 +901,9 @@ public partial class MainWindow : Window
         foreach (var option in options)
             _viewModel.RootFolders.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
         _suppressRootItemCheck = false;
+
+        if (_viewModel.AllRootFoldersChecked)
+            SetAllChecked(_viewModel.RootFolders, true, ref _suppressRootItemCheck);
 
         SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck, value => _viewModel.AllRootFoldersChecked = value);
     }
@@ -900,6 +940,9 @@ public partial class MainWindow : Window
         {
             _suppressIgnoreItemCheck = false;
         }
+
+        if (_viewModel.AllIgnoreChecked)
+            SetAllChecked(_viewModel.IgnoreOptions, true, ref _suppressIgnoreItemCheck);
 
         UpdateIgnoreSelectionCache();
         SyncIgnoreAllCheckbox();
