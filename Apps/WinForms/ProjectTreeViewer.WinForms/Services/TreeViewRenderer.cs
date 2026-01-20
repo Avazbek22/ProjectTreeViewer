@@ -7,6 +7,7 @@ public sealed class TreeViewRenderer
 {
 	public void Render(TreeView treeView, TreeNodeDescriptor rootNode, bool expandAll)
 	{
+		// Centralized UI rendering: rebuilds the entire TreeView from a descriptor model.
 		treeView.BeginUpdate();
 		try
 		{
@@ -28,6 +29,7 @@ public sealed class TreeViewRenderer
 
 	private static TreeNode CreateTreeNode(TreeNodeDescriptor model)
 	{
+		// Each node carries full path in Tag and icon keys for normal/selected states.
 		var node = new TreeNode(model.DisplayName)
 		{
 			Tag = model.FullPath,
@@ -35,6 +37,7 @@ public sealed class TreeViewRenderer
 			SelectedImageKey = model.IconKey
 		};
 
+		// Recursively project child descriptors into child TreeNodes.
 		foreach (var child in model.Children)
 			node.Nodes.Add(CreateTreeNode(child));
 

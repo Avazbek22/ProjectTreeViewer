@@ -21,6 +21,7 @@ namespace ProjectTreeViewer.WinForms
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+			// Main menu strip that also hosts the inline search UI (right-aligned).
 			menuStripMain = new MenuStrip();
 			miFile = new ToolStripMenuItem();
 			miFileOpen = new ToolStripMenuItem();
@@ -56,6 +57,7 @@ namespace ProjectTreeViewer.WinForms
 			btnSearchPrev = new ToolStripButton();
 			btnSearchNext = new ToolStripButton();
 			btnSearchClose = new ToolStripButton();
+			// Right-side settings panel with filter options. Hidden until a project is loaded.
 			panelSettings = new Panel();
 			labelFont = new Label();
 			cboFont = new ComboBox();
@@ -69,6 +71,7 @@ namespace ProjectTreeViewer.WinForms
 			labelRootFolders = new Label();
 			checkBoxRootAll = new CheckBox();
 			lstRootFolders = new CheckedListBox();
+			// Tree view that renders the project structure and supports checkbox selection.
 			treeProject = new TreeView();
 			menuStripMain.SuspendLayout();
 			panelSettings.SuspendLayout();
@@ -77,6 +80,7 @@ namespace ProjectTreeViewer.WinForms
 			// menuStripMain
 			// 
 			menuStripMain.ImageScalingSize = new Size(20, 20);
+			// Search widgets are placed in the menu strip for compact inline UX.
 			menuStripMain.Items.AddRange(new ToolStripItem[] { miFile, miCopy, miView, miSearch, miOptions, miLanguage, miHelp, btnSearchClose, txtSearch, btnSearchNext, btnSearchPrev });
 			menuStripMain.Location = new Point(0, 0);
 			menuStripMain.Name = "menuStripMain";
@@ -85,6 +89,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miFile
 			// 
+			// File menu: load/refresh project or exit.
 			miFile.DropDownItems.AddRange(new ToolStripItem[] { miFileOpen, miFileRefresh, miFileSep1, miFileExit });
 			miFile.Name = "miFile";
 			miFile.Size = new Size(14, 20);
@@ -98,6 +103,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miFileRefresh
 			// 
+			// Refresh is disabled until a project is loaded.
 			miFileRefresh.Enabled = false;
 			miFileRefresh.Name = "miFileRefresh";
 			miFileRefresh.ShortcutKeys = Keys.F5;
@@ -117,12 +123,14 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miCopy
 			// 
+			// Copy menu: export various tree/content representations to clipboard.
 			miCopy.DropDownItems.AddRange(new ToolStripItem[] { miCopyFullTree, miCopySelectedTree, miCopySelectedContent, miCopyFullTreeAndContent });
 			miCopy.Name = "miCopy";
 			miCopy.Size = new Size(14, 20);
 			// 
 			// miCopyFullTree
 			// 
+			// Copy actions are disabled until the tree is built.
 			miCopyFullTree.Enabled = false;
 			miCopyFullTree.Name = "miCopyFullTree";
 			miCopyFullTree.ShortcutKeys = Keys.Control | Keys.Shift | Keys.C;
@@ -155,12 +163,14 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miView
 			// 
+			// View menu: expand/collapse and zoom control for the TreeView.
 			miView.DropDownItems.AddRange(new ToolStripItem[] { miViewExpandAll, miViewCollapseAll, miViewSep1, miViewZoomIn, miViewZoomOut, miViewZoomReset });
 			miView.Name = "miView";
 			miView.Size = new Size(14, 20);
 			// 
 			// miViewExpandAll
 			// 
+			// Disabled until the tree exists.
 			miViewExpandAll.Enabled = false;
 			miViewExpandAll.Name = "miViewExpandAll";
 			miViewExpandAll.ShortcutKeys = Keys.Control | Keys.E;
@@ -203,6 +213,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miSearch
 			// 
+			// Search menu item toggles the inline search controls in the menu strip.
 			miSearch.Name = "miSearch";
 			miSearch.ShortcutKeys = Keys.Control | Keys.F;
 			miSearch.ShowShortcutKeys = false;
@@ -211,6 +222,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miOptions
 			// 
+			// Options panel is unavailable until a project is loaded.
 			miOptions.Enabled = false;
 			miOptions.Name = "miOptions";
 			miOptions.ShortcutKeys = Keys.Control | Keys.P;
@@ -220,6 +232,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miLanguage
 			// 
+			// Language selector: checkable items indicate current language.
 			miLanguage.DropDownItems.AddRange(new ToolStripItem[] { miLangRu, miLangEn, miLangUz, miLangTg, miLangKk, miLangFr, miLangDe, miLangIt });
 			miLanguage.Name = "miLanguage";
 			miLanguage.Size = new Size(14, 20);
@@ -274,6 +287,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// miHelp
 			// 
+			// Help menu for "About" dialog.
 			miHelp.DropDownItems.AddRange(new ToolStripItem[] { miHelpAbout });
 			miHelp.Name = "miHelp";
 			miHelp.Size = new Size(14, 20);
@@ -286,6 +300,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// txtSearch
 			// 
+			// Inline search textbox, hidden by default, shown via Ctrl+F or the Search menu.
 			txtSearch.Alignment = ToolStripItemAlignment.Right;
 			txtSearch.AutoSize = false;
 			txtSearch.BorderStyle = BorderStyle.FixedSingle;
@@ -297,6 +312,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// btnSearchPrev
 			// 
+			// Search navigation (previous match), right-aligned next to textbox.
 			btnSearchPrev.Alignment = ToolStripItemAlignment.Right;
 			btnSearchPrev.DisplayStyle = ToolStripItemDisplayStyle.Text;
 			btnSearchPrev.Name = "btnSearchPrev";
@@ -306,6 +322,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// btnSearchNext
 			// 
+			// Search navigation (next match).
 			btnSearchNext.Alignment = ToolStripItemAlignment.Right;
 			btnSearchNext.DisplayStyle = ToolStripItemDisplayStyle.Text;
 			btnSearchNext.Name = "btnSearchNext";
@@ -315,6 +332,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// btnSearchClose
 			// 
+			// Search close button hides search UI and clears query.
 			btnSearchClose.Alignment = ToolStripItemAlignment.Right;
 			btnSearchClose.DisplayStyle = ToolStripItemDisplayStyle.Text;
 			btnSearchClose.Name = "btnSearchClose";
@@ -324,6 +342,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// panelSettings
 			// 
+			// Settings panel is scrollable to fit all filters on smaller screens.
 			panelSettings.AutoScroll = true;
 			panelSettings.BackColor = SystemColors.Control;
 			panelSettings.BorderStyle = BorderStyle.FixedSingle;
@@ -343,10 +362,12 @@ namespace ProjectTreeViewer.WinForms
 			panelSettings.Name = "panelSettings";
 			panelSettings.Size = new Size(320, 962);
 			panelSettings.TabIndex = 1;
+			// Hidden at startup: becomes visible after a project is loaded or when Options is toggled.
 			panelSettings.Visible = false;
 			// 
 			// labelFont
 			// 
+			// Font selector label and drop-down control.
 			labelFont.AutoSize = true;
 			labelFont.Location = new Point(12, 12);
 			labelFont.Name = "labelFont";
@@ -355,6 +376,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// cboFont
 			// 
+			// Font choice is staged; applied via the "Apply" button.
 			cboFont.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			cboFont.DropDownStyle = ComboBoxStyle.DropDownList;
 			cboFont.Location = new Point(12, 38);
@@ -365,6 +387,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// btnApply
 			// 
+			// Apply button re-renders the tree with the selected font.
 			btnApply.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			btnApply.Location = new Point(12, 74);
 			btnApply.Name = "btnApply";
@@ -374,6 +397,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// labelIgnore
 			// 
+			// Ignore options section header.
 			labelIgnore.AutoSize = true;
 			labelIgnore.Location = new Point(13, 132);
 			labelIgnore.Name = "labelIgnore";
@@ -382,6 +406,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// lstIgnore
 			// 
+			// List of ignore presets; rebuilt dynamically based on root selection.
 			lstIgnore.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstIgnore.CheckOnClick = true;
 			lstIgnore.FormattingEnabled = true;
@@ -392,6 +417,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// checkBoxIgnoreAll
 			// 
+			// "All" checkbox for ignore list (toggles all ignore rules).
 			checkBoxIgnoreAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			checkBoxIgnoreAll.AutoSize = true;
 			checkBoxIgnoreAll.Checked = true;
@@ -404,6 +430,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// labelExtensions
 			// 
+			// Extensions filter section header.
 			labelExtensions.AutoSize = true;
 			labelExtensions.Location = new Point(9, 388);
 			labelExtensions.Name = "labelExtensions";
@@ -412,6 +439,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// checkBoxAll
 			// 
+			// "All" checkbox for extension list.
 			checkBoxAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			checkBoxAll.AutoSize = true;
 			checkBoxAll.Checked = true;
@@ -424,6 +452,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// lstExtensions
 			// 
+			// Extensions list is populated from scan results for selected roots.
 			lstExtensions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstExtensions.CheckOnClick = true;
 			lstExtensions.FormattingEnabled = true;
@@ -435,6 +464,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// labelRootFolders
 			// 
+			// Root folders filter section header.
 			labelRootFolders.AutoSize = true;
 			labelRootFolders.Location = new Point(9, 638);
 			labelRootFolders.Name = "labelRootFolders";
@@ -443,6 +473,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// checkBoxRootAll
 			// 
+			// "All" checkbox for root folders.
 			checkBoxRootAll.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			checkBoxRootAll.AutoSize = true;
 			checkBoxRootAll.Checked = true;
@@ -455,6 +486,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// lstRootFolders
 			// 
+			// Root folders list drives the "live" extension/ignore options.
 			lstRootFolders.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			lstRootFolders.CheckOnClick = true;
 			lstRootFolders.FormattingEnabled = true;
@@ -466,6 +498,7 @@ namespace ProjectTreeViewer.WinForms
 			// 
 			// treeProject
 			// 
+			// Tree nodes are checkable to select files/folders for copy/export.
 			treeProject.CheckBoxes = true;
 			treeProject.Font = new Font("Consolas", 9F);
 			treeProject.HideSelection = false;
