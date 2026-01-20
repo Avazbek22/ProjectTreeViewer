@@ -12,7 +12,7 @@
                     <Color x:Key="AppTextColor">#1A1A1A</Color>
                     <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
                     <Color x:Key="TreeSelectionColor">#DCEEFF</Color>
-                    <Color x:Key="TreeSearchHighlightColor">#FFEF9C</Color>
+                    <Color x:Key="TreeSearchHighlightColor">#FFEB3B</Color>
 
                     <!-- Brushes -->
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
@@ -36,7 +36,7 @@
                     <Color x:Key="AppTextColor">#E7E9EF</Color>
                     <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
                     <Color x:Key="TreeSelectionColor">#254861</Color>
-                    <Color x:Key="TreeSearchHighlightColor">#3D4C68</Color>
+                    <Color x:Key="TreeSearchHighlightColor">#FFEB3B</Color>
 
                     <!-- Brushes -->
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />

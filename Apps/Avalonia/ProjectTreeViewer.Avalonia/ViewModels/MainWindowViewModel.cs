@@ -16,7 +16,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string? _selectedFontFamily;
     private string? _pendingFontFamily;
 
-    private double _treeFontSize = 9;
+    private double _treeFontSize = 10;
 
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;

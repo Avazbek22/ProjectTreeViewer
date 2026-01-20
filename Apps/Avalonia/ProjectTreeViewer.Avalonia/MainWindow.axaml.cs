@@ -553,21 +553,14 @@ public partial class MainWindow : Window
         var theme = app?.ActualThemeVariant;
 
         IBrush? background = null;
-        IBrush? foreground = null;
 
         if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true)
             background = bg as IBrush;
 
-        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true)
-            foreground = fg as IBrush;
-
-        if (app?.Resources.TryGetResource("AppTextBrush", theme, out var textBrush) == true)
-            foreground ??= textBrush as IBrush;
-
         if (app?.Resources.TryGetResource("AppAccentBrush", theme, out var accentBrush) == true)
             background ??= accentBrush as IBrush;
 
-        return (background, foreground);
+        return (background, null);
     }
 
     private void BringNodeIntoView(TreeNodeViewModel node)
@@ -915,8 +908,6 @@ public partial class MainWindow : Window
             _suppressIgnoreItemCheck = false;
         }
 
-        if (_viewModel.AllIgnoreChecked)
-            SetAllChecked(_viewModel.IgnoreOptions, true, ref _suppressIgnoreItemCheck);
         UpdateIgnoreSelectionCache();
         SyncIgnoreAllCheckbox();
     }
