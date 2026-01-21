@@ -4,9 +4,9 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <!-- Colors -->
-                    <Color x:Key="AppBackgroundColor">#FFFFFF</Color>
-                    <Color x:Key="AppPanelColor">#F3F3F3</Color>
+                    <!-- Colors - more transparent for better Mica effect -->
+                    <Color x:Key="AppBackgroundColor">#D0FFFFFF</Color>
+                    <Color x:Key="AppPanelColor">#E0F3F3F3</Color>
                     <Color x:Key="AppBorderColor">#C7C7C7</Color>
                     <Color x:Key="AppAccentColor">#0078D4</Color>
                     <Color x:Key="AppTextColor">#1A1A1A</Color>
@@ -28,9 +28,9 @@
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
-                    <!-- Colors -->
-                    <Color x:Key="AppBackgroundColor">#121214</Color>
-                    <Color x:Key="AppPanelColor">#17171A</Color>
+                    <!-- Colors - more transparent for better Mica effect -->
+                    <Color x:Key="AppBackgroundColor">#C0121214</Color>
+                    <Color x:Key="AppPanelColor">#D017171A</Color>
                     <Color x:Key="AppBorderColor">#2B2F36</Color>
                     <Color x:Key="AppAccentColor">#4CC2FF</Color>
                     <Color x:Key="AppTextColor">#E7E9EF</Color>
@@ -86,23 +86,61 @@
 
     <Style Selector="TreeViewItem">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="Padding" Value="4,1" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
+    <!-- Compact mode - even more reduced spacing -->
+    <Style Selector="Window.compact-mode TreeViewItem">
+        <Setter Property="Padding" Value="2,0" />
+    </Style>
+
+    <Style Selector="Window.compact-mode CheckBox.list-item">
+        <Setter Property="Margin" Value="0,0" />
+        <Setter Property="Padding" Value="4,1" />
+    </Style>
+
+    <Style Selector="Window.compact-mode TextBlock.section-title">
+        <Setter Property="Margin" Value="0,8,0,2" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+
+    <Style Selector="Window.compact-mode CheckBox.section-all">
+        <Setter Property="Margin" Value="0,4,4,0" />
+    </Style>
+
+    <Style Selector="Window.compact-mode Border.panel">
+        <Setter Property="Padding" Value="8" />
+    </Style>
+
+    <Style Selector="Window.compact-mode Border.checklist-border">
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <!-- Disable all hover and selection highlighting -->
     <Style Selector="TreeViewItem:pointerover">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="TreeViewItem:selected">
-        <Setter Property="Background" Value="{DynamicResource TreeSelectionBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource TreeSelectionTextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="TreeViewItem:selected:pointerover">
-        <Setter Property="Background" Value="{DynamicResource TreeSelectionBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource TreeSelectionTextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+    </Style>
+
+    <Style Selector="TreeViewItem:selected:focus">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+    </Style>
+
+    <Style Selector="TreeViewItem:pressed">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
     </Style>
 
     <Style Selector="Button">
@@ -121,9 +159,10 @@
 
     <Style Selector="TextBlock.section-title">
         <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Margin" Value="0,16,0,6" />
+        <Setter Property="Margin" Value="0,14,0,6" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
     </Style>
 
     <Style Selector="TextBlock">
@@ -135,13 +174,31 @@
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="Padding" Value="12" />
+        <Setter Property="Padding" Value="10" />
     </Style>
 
     <Style Selector="Border.search-panel">
         <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+
+    <Style Selector="Border.filter-panel">
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+
+    <Style Selector="Button.menu-icon-button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.menu-icon-button:pointerover">
+        <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
     </Style>
 
     <Style Selector="StackPanel.settings-section">
@@ -152,21 +209,27 @@
         <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="6" />
+        <Setter Property="Padding" Value="5" />
     </Style>
 
     <Style Selector="CheckBox.list-item">
-        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="Margin" Value="0,1" />
     </Style>
 
     <Style Selector="CheckBox.section-all">
-        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
         <Setter Property="HorizontalAlignment" Value="Right" />
-        <Setter Property="Margin" Value="0,0,4,0" />
+        <Setter Property="Margin" Value="0,6,4,0" />
     </Style>
 
     <Style Selector="ScrollViewer.checklist-scroll">
         <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Fix font inheritance for TextBlock in TreeView -->
+    <Style Selector="TreeView TextBlock">
+        <Setter Property="FontFamily" Value="{Binding $parent[TreeView].FontFamily}" />
+        <Setter Property="FontSize" Value="{Binding $parent[TreeView].FontSize}" />
     </Style>
 
 </Styles>

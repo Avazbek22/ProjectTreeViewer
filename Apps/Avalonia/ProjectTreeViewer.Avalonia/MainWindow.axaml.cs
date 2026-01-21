@@ -51,7 +51,9 @@ public partial class MainWindow : Window
     private readonly List<TreeNodeViewModel> _searchMatches = new();
     private int _searchMatchIndex = -1;
     private TextBox? _searchBox;
+    private TextBox? _filterBox;
     private TreeView? _treeView;
+    private System.Timers.Timer? _filterDebounceTimer;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -74,7 +76,15 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _searchBox = this.FindControl<TextBox>("SearchBox");
+        _filterBox = this.FindControl<TextBox>("FilterBox");
         _treeView = this.FindControl<TreeView>("ProjectTree");
+
+        _filterDebounceTimer = new System.Timers.Timer(300);
+        _filterDebounceTimer.AutoReset = false;
+        _filterDebounceTimer.Elapsed += (_, _) =>
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(ApplyFilterRealtime);
+        };
 
         if (_treeView is not null)
         {
@@ -98,6 +108,8 @@ public partial class MainWindow : Window
         {
             if (args.PropertyName == nameof(MainWindowViewModel.SearchQuery))
                 UpdateSearchMatches();
+            else if (args.PropertyName == nameof(MainWindowViewModel.NameFilter))
+                OnNameFilterChanged();
         };
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
@@ -123,17 +135,26 @@ public partial class MainWindow : Window
 
     private void InitializeFonts()
     {
-        var fonts = FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
-            .ToList() ?? new List<string>();
+        // Only use predefined fonts like WinForms
+        var predefinedFonts = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console", "Cascadia Code", "JetBrains Mono" };
 
-        foreach (var font in fonts)
-            _viewModel.FontFamilies.Add(font);
+        var systemFonts = FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        var preferred = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console" };
-        var selected = preferred.FirstOrDefault(name => fonts.Contains(name, StringComparer.OrdinalIgnoreCase))
-            ?? fonts.FirstOrDefault();
+        // Add only predefined fonts that exist on system
+        foreach (var font in predefinedFonts)
+        {
+            if (systemFonts.Contains(font))
+                _viewModel.FontFamilies.Add(font);
+        }
 
+        // If no predefined fonts found, add Consolas and Courier New as fallbacks
+        if (_viewModel.FontFamilies.Count == 0)
+        {
+            _viewModel.FontFamilies.Add("Consolas");
+            _viewModel.FontFamilies.Add("Courier New");
+        }
+
+        var selected = _viewModel.FontFamilies.FirstOrDefault() ?? "Consolas";
         _viewModel.SelectedFontFamily = selected;
         _viewModel.PendingFontFamily = selected;
     }
@@ -287,15 +308,58 @@ public partial class MainWindow : Window
         _viewModel.SettingsVisible = !_viewModel.SettingsVisible;
     }
 
-    private void OnToggleTheme(object? sender, RoutedEventArgs e)
+    private void OnSetLightTheme(object? sender, RoutedEventArgs e)
     {
         var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
-        var nextIsDark = !_viewModel.IsDarkTheme;
-        app.RequestedThemeVariant = nextIsDark ? ThemeVariant.Dark : ThemeVariant.Light;
-        _viewModel.IsDarkTheme = nextIsDark;
+        app.RequestedThemeVariant = ThemeVariant.Light;
+        _viewModel.IsDarkTheme = false;
         UpdateSearchHighlights(_viewModel.SearchQuery);
+        UpdateFilterHighlights(_viewModel.NameFilter);
+    }
+
+    private void OnSetDarkTheme(object? sender, RoutedEventArgs e)
+    {
+        var app = global::Avalonia.Application.Current;
+        if (app is null) return;
+
+        app.RequestedThemeVariant = ThemeVariant.Dark;
+        _viewModel.IsDarkTheme = true;
+        UpdateSearchHighlights(_viewModel.SearchQuery);
+        UpdateFilterHighlights(_viewModel.NameFilter);
+    }
+
+    private void OnToggleMica(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.IsMicaEnabled = !_viewModel.IsMicaEnabled;
+        UpdateTransparencyEffect();
+    }
+
+    private void OnToggleAcrylic(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.IsAcrylicEnabled = !_viewModel.IsAcrylicEnabled;
+        UpdateTransparencyEffect();
+    }
+
+    private void UpdateTransparencyEffect()
+    {
+        if (_viewModel.IsMicaEnabled)
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
+        else if (_viewModel.IsAcrylicEnabled)
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
+        else
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+    }
+
+    private void OnToggleCompactMode(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.IsCompactMode = !_viewModel.IsCompactMode;
+
+        if (_viewModel.IsCompactMode)
+            Classes.Add("compact-mode");
+        else
+            Classes.Remove("compact-mode");
     }
 
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
@@ -330,6 +394,104 @@ public partial class MainWindow : Window
     }
 
     private void OnSearchClose(object? sender, RoutedEventArgs e) => CloseSearch();
+
+    private void OnToggleFilter(object? sender, RoutedEventArgs e)
+    {
+        if (!_viewModel.IsProjectLoaded) return;
+
+        if (_viewModel.FilterVisible)
+        {
+            CloseFilter();
+            return;
+        }
+
+        ShowFilter();
+    }
+
+    private void OnFilterClose(object? sender, RoutedEventArgs e) => CloseFilter();
+
+    private void OnFilterKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            CloseFilter();
+            e.Handled = true;
+        }
+    }
+
+    private void ShowFilter()
+    {
+        if (!_viewModel.IsProjectLoaded) return;
+
+        _viewModel.FilterVisible = true;
+        _filterBox?.Focus();
+        _filterBox?.SelectAll();
+    }
+
+    private void CloseFilter()
+    {
+        if (!_viewModel.FilterVisible) return;
+
+        _viewModel.FilterVisible = false;
+        _viewModel.NameFilter = string.Empty;
+        ApplyFilterRealtime();
+        _treeView?.Focus();
+    }
+
+    private void OnNameFilterChanged()
+    {
+        _filterDebounceTimer?.Stop();
+        _filterDebounceTimer?.Start();
+    }
+
+    private void ApplyFilterRealtime()
+    {
+        if (string.IsNullOrEmpty(_currentPath)) return;
+
+        RefreshTree();
+        UpdateFilterHighlights(_viewModel.NameFilter);
+
+        // Auto-expand folders with matching items
+        if (!string.IsNullOrWhiteSpace(_viewModel.NameFilter))
+        {
+            SmartExpandForFilter(_viewModel.NameFilter);
+        }
+    }
+
+    private void UpdateFilterHighlights(string? query)
+    {
+        var (highlightBackground, highlightForeground, normalForeground) = GetSearchHighlightBrushes();
+        foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
+            node.UpdateSearchHighlight(query, highlightBackground, highlightForeground, normalForeground);
+    }
+
+    private void SmartExpandForFilter(string filter)
+    {
+        foreach (var node in _viewModel.TreeNodes)
+        {
+            SmartExpandNode(node, filter);
+        }
+    }
+
+    private bool SmartExpandNode(TreeNodeViewModel node, string filter)
+    {
+        bool hasMatchingDescendant = false;
+        bool selfMatches = node.DisplayName.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+        foreach (var child in node.Children)
+        {
+            if (SmartExpandNode(child, filter))
+                hasMatchingDescendant = true;
+        }
+
+        // Expand this node if it has matching children (but not if only self matches)
+        if (hasMatchingDescendant)
+            node.IsExpanded = true;
+        else if (!selfMatches)
+            node.IsExpanded = false;
+
+        return selfMatches || hasMatchingDescendant;
+    }
 
     private void OnSearchKeyDown(object? sender, KeyEventArgs e)
     {
@@ -367,6 +529,15 @@ public partial class MainWindow : Window
         if (mods == KeyModifiers.Control && e.Key == Key.F)
         {
             OnToggleSearch(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // Ctrl+Shift+N - Filter by name
+        if (mods == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.N)
+        {
+            if (_viewModel.IsProjectLoaded)
+                OnToggleFilter(this, new RoutedEventArgs());
             e.Handled = true;
             return;
         }
@@ -535,6 +706,11 @@ public partial class MainWindow : Window
         UpdateSearchHighlights(query);
         if (string.IsNullOrWhiteSpace(query))
         {
+            // Collapse all when search is cleared
+            foreach (var node in _viewModel.TreeNodes)
+            {
+                CollapseAllExceptRoot(node);
+            }
             return;
         }
 
@@ -544,10 +720,45 @@ public partial class MainWindow : Window
                 _searchMatches.Add(node);
         }
 
+        // Smart expand - only expand folders that contain matching items
+        foreach (var node in _viewModel.TreeNodes)
+        {
+            SmartExpandForSearch(node, query);
+        }
+
         if (_searchMatches.Count > 0)
         {
             _searchMatchIndex = 0;
             SelectSearchMatch();
+        }
+    }
+
+    private bool SmartExpandForSearch(TreeNodeViewModel node, string query)
+    {
+        bool hasMatchingDescendant = false;
+        bool selfMatches = node.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase);
+
+        foreach (var child in node.Children)
+        {
+            if (SmartExpandForSearch(child, query))
+                hasMatchingDescendant = true;
+        }
+
+        // Expand this node if it has matching children
+        if (hasMatchingDescendant)
+            node.IsExpanded = true;
+        else if (!selfMatches && node.Children.Count > 0)
+            node.IsExpanded = false;
+
+        return selfMatches || hasMatchingDescendant;
+    }
+
+    private void CollapseAllExceptRoot(TreeNodeViewModel node)
+    {
+        foreach (var child in node.Children)
+        {
+            child.IsExpanded = false;
+            CollapseAllExceptRoot(child);
         }
     }
 
@@ -809,10 +1020,13 @@ public partial class MainWindow : Window
 
         var ignoreRules = BuildIgnoreRules(_currentPath);
 
+        var nameFilter = string.IsNullOrWhiteSpace(_viewModel.NameFilter) ? null : _viewModel.NameFilter.Trim();
+
         var options = new TreeFilterOptions(
             AllowedExtensions: allowedExt,
             AllowedRootFolders: allowedRoot,
-            IgnoreRules: ignoreRules);
+            IgnoreRules: ignoreRules,
+            NameFilter: nameFilter);
 
         Cursor = new Cursor(StandardCursorType.Wait);
         try

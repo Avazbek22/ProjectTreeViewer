@@ -4,7 +4,9 @@
         x:Class="ProjectTreeViewer.Avalonia.MainWindow"
         Title="{Binding Title}"
         Width="1200" Height="820"
-        MinWidth="900" MinHeight="600">
+        MinWidth="900" MinHeight="600"
+        TransparencyLevelHint="Mica, AcrylicBlur, Blur"
+        Background="Transparent">
   <Window.Styles>
     <Style Selector="TreeViewItem">
       <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -13,50 +15,91 @@
   </Window.Styles>
 
   <DockPanel>
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Header="{Binding MenuFile}">
-        <MenuItem Header="{Binding MenuFileOpen}" Click="OnOpenFolder" />
-        <MenuItem Header="{Binding MenuFileRefresh}" Click="OnRefresh" IsEnabled="{Binding IsProjectLoaded}" />
-        <MenuItem Header="{Binding MenuFileExit}" Click="OnExit" />
-      </MenuItem>
-      <MenuItem Header="{Binding MenuCopy}" IsEnabled="{Binding IsProjectLoaded}">
-        <MenuItem Header="{Binding MenuCopyFullTree}" Click="OnCopyFullTree" />
-        <MenuItem Header="{Binding MenuCopySelectedTree}" Click="OnCopySelectedTree" />
-        <MenuItem Header="{Binding MenuCopySelectedContent}" Click="OnCopySelectedContent" />
-        <MenuItem Header="{Binding MenuCopyTreeAndContent}" Click="OnCopyTreeAndContent" />
-      </MenuItem>
-      <MenuItem Header="{Binding MenuView}" IsEnabled="{Binding IsProjectLoaded}">
-        <MenuItem Header="{Binding MenuViewExpandAll}" Click="OnExpandAll" />
-        <MenuItem Header="{Binding MenuViewCollapseAll}" Click="OnCollapseAll" />
-        <MenuItem Header="{Binding MenuViewZoomIn}" Click="OnZoomIn" />
-        <MenuItem Header="{Binding MenuViewZoomOut}" Click="OnZoomOut" />
-        <MenuItem Header="{Binding MenuViewZoomReset}" Click="OnZoomReset" />
-        <Separator />
-        <MenuItem Click="OnToggleTheme">
-          <MenuItem.Header>
-            <CheckBox Content="{Binding MenuViewTheme}"
-                      IsChecked="{Binding IsDarkTheme}"
-                      IsHitTestVisible="False"/>
-          </MenuItem.Header>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+      <Menu Grid.Column="0">
+        <MenuItem Header="{Binding MenuFile}">
+          <MenuItem Header="{Binding MenuFileOpen}" Click="OnOpenFolder" />
+          <MenuItem Header="{Binding MenuFileRefresh}" Click="OnRefresh" IsEnabled="{Binding IsProjectLoaded}" />
+          <MenuItem Header="{Binding MenuFileExit}" Click="OnExit" />
         </MenuItem>
-
-      </MenuItem>
-      <MenuItem Header="{Binding MenuSearch}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSearch" />
-      <MenuItem Header="{Binding MenuOptions}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSettings" />
-      <MenuItem Header="{Binding MenuLanguage}">
-        <MenuItem Header="Русский" Click="OnLangRu" />
-        <MenuItem Header="English" Click="OnLangEn" />
-        <MenuItem Header="Oʻzbek" Click="OnLangUz" />
-        <MenuItem Header="Тоҷикӣ" Click="OnLangTg" />
-        <MenuItem Header="Қазақ" Click="OnLangKk" />
-        <MenuItem Header="Français" Click="OnLangFr" />
-        <MenuItem Header="Deutsch" Click="OnLangDe" />
-        <MenuItem Header="Italiano" Click="OnLangIt" />
-      </MenuItem>
-      <MenuItem Header="{Binding MenuHelp}">
-        <MenuItem Header="{Binding MenuHelpAbout}" Click="OnAbout" />
-      </MenuItem>
-    </Menu>
+        <MenuItem Header="{Binding MenuCopy}" IsEnabled="{Binding IsProjectLoaded}">
+          <MenuItem Header="{Binding MenuCopyFullTree}" Click="OnCopyFullTree" />
+          <MenuItem Header="{Binding MenuCopySelectedTree}" Click="OnCopySelectedTree" />
+          <MenuItem Header="{Binding MenuCopySelectedContent}" Click="OnCopySelectedContent" />
+          <MenuItem Header="{Binding MenuCopyTreeAndContent}" Click="OnCopyTreeAndContent" />
+        </MenuItem>
+        <MenuItem Header="{Binding MenuView}" IsEnabled="{Binding IsProjectLoaded}">
+          <MenuItem Header="{Binding MenuViewExpandAll}" Click="OnExpandAll" />
+          <MenuItem Header="{Binding MenuViewCollapseAll}" Click="OnCollapseAll" />
+          <MenuItem Header="{Binding MenuViewZoomIn}" Click="OnZoomIn" />
+          <MenuItem Header="{Binding MenuViewZoomOut}" Click="OnZoomOut" />
+          <MenuItem Header="{Binding MenuViewZoomReset}" Click="OnZoomReset" />
+          <Separator />
+          <MenuItem Header="{Binding MenuViewThemeTitle}">
+            <MenuItem Click="OnSetLightTheme">
+              <MenuItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="○" IsVisible="{Binding !IsDarkTheme}" />
+                  <TextBlock Text="{Binding MenuViewLightTheme}" />
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
+            <MenuItem Click="OnSetDarkTheme">
+              <MenuItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="○" IsVisible="{Binding IsDarkTheme}" />
+                  <TextBlock Text="{Binding MenuViewDarkTheme}" />
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
+            <Separator />
+            <MenuItem Click="OnToggleMica">
+              <MenuItem.Header>
+                <CheckBox Content="{Binding MenuViewMica}"
+                          IsChecked="{Binding IsMicaEnabled}"
+                          IsHitTestVisible="False"/>
+              </MenuItem.Header>
+            </MenuItem>
+            <MenuItem Click="OnToggleAcrylic">
+              <MenuItem.Header>
+                <CheckBox Content="{Binding MenuViewAcrylic}"
+                          IsChecked="{Binding IsAcrylicEnabled}"
+                          IsHitTestVisible="False"/>
+              </MenuItem.Header>
+            </MenuItem>
+          </MenuItem>
+          <MenuItem Click="OnToggleCompactMode">
+            <MenuItem.Header>
+              <CheckBox Content="{Binding MenuViewCompactMode}"
+                        IsChecked="{Binding IsCompactMode}"
+                        IsHitTestVisible="False"/>
+            </MenuItem.Header>
+          </MenuItem>
+        </MenuItem>
+        <MenuItem Header="{Binding MenuSearch}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSearch" />
+        <MenuItem Header="{Binding MenuOptions}" IsEnabled="{Binding IsProjectLoaded}" Click="OnToggleSettings" />
+        <MenuItem Header="{Binding MenuLanguage}">
+          <MenuItem Header="Русский" Click="OnLangRu" />
+          <MenuItem Header="English" Click="OnLangEn" />
+          <MenuItem Header="Oʻzbek" Click="OnLangUz" />
+          <MenuItem Header="Тоҷикӣ" Click="OnLangTg" />
+          <MenuItem Header="Қазақ" Click="OnLangKk" />
+          <MenuItem Header="Français" Click="OnLangFr" />
+          <MenuItem Header="Deutsch" Click="OnLangDe" />
+          <MenuItem Header="Italiano" Click="OnLangIt" />
+        </MenuItem>
+        <MenuItem Header="{Binding MenuHelp}">
+          <MenuItem Header="{Binding MenuHelpAbout}" Click="OnAbout" />
+        </MenuItem>
+      </Menu>
+      <Button Grid.Column="1"
+              Classes="menu-icon-button"
+              Content="🔍"
+              FontSize="14"
+              Click="OnToggleFilter"
+              IsEnabled="{Binding IsProjectLoaded}"
+              ToolTip.Tip="{Binding FilterTooltip}" />
+    </Grid>
 
     <Border DockPanel.Dock="Top" Classes="search-panel" IsVisible="{Binding SearchVisible}" IsEnabled="{Binding IsProjectLoaded}">
       <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,6">
@@ -68,6 +111,17 @@
         <Button Content="▲" Width="32" Click="OnSearchPrev" />
         <Button Content="▼" Width="32" Click="OnSearchNext" />
         <Button Content="✕" Width="32" Click="OnSearchClose" />
+      </StackPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Top" Classes="filter-panel" IsVisible="{Binding FilterVisible}" IsEnabled="{Binding IsProjectLoaded}">
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="12,6">
+        <TextBox Name="FilterBox"
+                 Watermark="{Binding FilterByNamePlaceholder}"
+                 Text="{Binding NameFilter, Mode=TwoWay}"
+                 Width="260"
+                 KeyDown="OnFilterKeyDown" />
+        <Button Content="✕" Width="32" Click="OnFilterClose" />
       </StackPanel>
     </Border>
 
@@ -107,7 +161,8 @@
           <StackPanel Grid.Row="0" Spacing="6">
             <TextBlock Classes="section-title" Text="{Binding SettingsFont}" />
             <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding PendingFontFamily}" />
-            <Button Content="{Binding SettingsApply}" Click="OnApplySettings" Margin="0,8,0,0" />
+
+            <Button Content="{Binding SettingsApply}" Click="OnApplySettings" Margin="0,10,0,0" />
           </StackPanel>
 
           <!-- Ignore section - equal star height -->

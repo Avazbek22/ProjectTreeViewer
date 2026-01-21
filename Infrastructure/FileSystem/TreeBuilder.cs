@@ -57,6 +57,7 @@ public sealed class TreeBuilder : ITreeBuilder
 		}
 
 		var children = (List<FileSystemNode>)parent.Children;
+		var hasNameFilter = !string.IsNullOrWhiteSpace(options.NameFilter);
 
 		foreach (var entry in entries)
 		{
@@ -80,9 +81,21 @@ public sealed class TreeBuilder : ITreeBuilder
 					isAccessDenied: false,
 					children: new List<FileSystemNode>());
 
-				children.Add(dirNode);
-
 				BuildChildren(dirNode, entry.FullName, options, isRoot: false, state);
+
+				// If name filter is active, only include directories that have matching children or match themselves
+				if (hasNameFilter)
+				{
+					bool hasMatchingChildren = dirNode.Children.Count > 0;
+					bool matchesName = name.Contains(options.NameFilter!, StringComparison.OrdinalIgnoreCase);
+
+					if (hasMatchingChildren || matchesName)
+						children.Add(dirNode);
+				}
+				else
+				{
+					children.Add(dirNode);
+				}
 			}
 			else
 			{
@@ -94,6 +107,10 @@ public sealed class TreeBuilder : ITreeBuilder
 
 				var ext = Path.GetExtension(name);
 				if (!options.AllowedExtensions.Contains(ext))
+					continue;
+
+				// Apply name filter for files
+				if (hasNameFilter && !name.Contains(options.NameFilter!, StringComparison.OrdinalIgnoreCase))
 					continue;
 
 				children.Add(new FileSystemNode(

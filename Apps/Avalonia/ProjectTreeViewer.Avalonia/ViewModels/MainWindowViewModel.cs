@@ -12,6 +12,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _settingsVisible;
     private bool _searchVisible;
     private string _searchQuery = string.Empty;
+    private string _nameFilter = string.Empty;
 
     private string? _selectedFontFamily;
     private string? _pendingFontFamily;
@@ -22,6 +23,10 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _allRootFoldersChecked;
     private bool _allIgnoreChecked;
     private bool _isDarkTheme;
+    private bool _isCompactMode;
+    private bool _filterVisible;
+    private bool _isMicaEnabled = true;
+    private bool _isAcrylicEnabled;
 
     public MainWindowViewModel(LocalizationService localization)
     {
@@ -94,6 +99,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public string NameFilter
+    {
+        get => _nameFilter;
+        set
+        {
+            if (_nameFilter == value) return;
+            _nameFilter = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public bool IsDarkTheme
     {
         get => _isDarkTheme;
@@ -102,6 +118,54 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (_isDarkTheme == value) return;
             _isDarkTheme = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public bool IsCompactMode
+    {
+        get => _isCompactMode;
+        set
+        {
+            if (_isCompactMode == value) return;
+            _isCompactMode = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool FilterVisible
+    {
+        get => _filterVisible;
+        set
+        {
+            if (_filterVisible == value) return;
+            _filterVisible = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool IsMicaEnabled
+    {
+        get => _isMicaEnabled;
+        set
+        {
+            if (_isMicaEnabled == value) return;
+            _isMicaEnabled = value;
+            if (value) _isAcrylicEnabled = false;
+            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsAcrylicEnabled));
+        }
+    }
+
+    public bool IsAcrylicEnabled
+    {
+        get => _isAcrylicEnabled;
+        set
+        {
+            if (_isAcrylicEnabled == value) return;
+            _isAcrylicEnabled = value;
+            if (value) _isMicaEnabled = false;
+            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsMicaEnabled));
         }
     }
 
@@ -191,7 +255,12 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuViewZoomIn { get; private set; } = string.Empty;
     public string MenuViewZoomOut { get; private set; } = string.Empty;
     public string MenuViewZoomReset { get; private set; } = string.Empty;
-    public string MenuViewTheme { get; private set; } = string.Empty;
+    public string MenuViewThemeTitle { get; private set; } = string.Empty;
+    public string MenuViewLightTheme { get; private set; } = string.Empty;
+    public string MenuViewDarkTheme { get; private set; } = string.Empty;
+    public string MenuViewMica { get; private set; } = string.Empty;
+    public string MenuViewAcrylic { get; private set; } = string.Empty;
+    public string MenuViewCompactMode { get; private set; } = string.Empty;
     public string MenuOptions { get; private set; } = string.Empty;
     public string MenuOptionsTreeSettings { get; private set; } = string.Empty;
     public string MenuLanguage { get; private set; } = string.Empty;
@@ -204,6 +273,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string SettingsFont { get; private set; } = string.Empty;
     public string SettingsApply { get; private set; } = string.Empty;
     public string MenuSearch { get; private set; } = string.Empty;
+    public string FilterByNamePlaceholder { get; private set; } = string.Empty;
+    public string FilterTooltip { get; private set; } = string.Empty;
 
     public void UpdateLocalization()
     {
@@ -222,7 +293,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuViewZoomIn = _localization["Menu.View.ZoomIn"];
         MenuViewZoomOut = _localization["Menu.View.ZoomOut"];
         MenuViewZoomReset = _localization["Menu.View.ZoomReset"];
-        MenuViewTheme = _localization["Menu.View.DarkTheme"];
+        MenuViewThemeTitle = _localization["Menu.View.Theme"];
+        MenuViewLightTheme = _localization["Menu.View.LightTheme"];
+        MenuViewDarkTheme = _localization["Menu.View.DarkTheme"];
+        MenuViewMica = _localization["Menu.View.Mica"];
+        MenuViewAcrylic = _localization["Menu.View.Acrylic"];
+        MenuViewCompactMode = _localization["Menu.View.CompactMode"];
         MenuOptions = _localization["Menu.Options"];
         MenuOptionsTreeSettings = _localization["Menu.Options.TreeSettings"];
         MenuLanguage = _localization["Menu.Language"];
@@ -235,6 +311,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         SettingsFont = _localization["Settings.Font"];
         SettingsApply = _localization["Settings.Apply"];
         MenuSearch = _localization["Menu.Search"];
+        FilterByNamePlaceholder = _localization["Filter.ByName"];
+        FilterTooltip = _localization["Filter.Tooltip"];
 
         RaisePropertyChanged(nameof(MenuFile));
         RaisePropertyChanged(nameof(MenuFileOpen));
@@ -251,7 +329,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuViewZoomIn));
         RaisePropertyChanged(nameof(MenuViewZoomOut));
         RaisePropertyChanged(nameof(MenuViewZoomReset));
-        RaisePropertyChanged(nameof(MenuViewTheme));
+        RaisePropertyChanged(nameof(MenuViewThemeTitle));
+        RaisePropertyChanged(nameof(MenuViewLightTheme));
+        RaisePropertyChanged(nameof(MenuViewDarkTheme));
+        RaisePropertyChanged(nameof(MenuViewMica));
+        RaisePropertyChanged(nameof(MenuViewAcrylic));
+        RaisePropertyChanged(nameof(MenuViewCompactMode));
         RaisePropertyChanged(nameof(MenuOptions));
         RaisePropertyChanged(nameof(MenuOptionsTreeSettings));
         RaisePropertyChanged(nameof(MenuLanguage));
@@ -264,5 +347,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(SettingsFont));
         RaisePropertyChanged(nameof(SettingsApply));
         RaisePropertyChanged(nameof(MenuSearch));
+        RaisePropertyChanged(nameof(FilterByNamePlaceholder));
+        RaisePropertyChanged(nameof(FilterTooltip));
     }
 }
