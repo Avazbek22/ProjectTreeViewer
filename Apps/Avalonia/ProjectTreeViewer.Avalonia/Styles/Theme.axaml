@@ -3,54 +3,56 @@
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <!-- Colors - more transparent for better Mica effect -->
-                    <Color x:Key="AppBackgroundColor">#D0FFFFFF</Color>
-                    <Color x:Key="AppPanelColor">#E0F3F3F3</Color>
-                    <Color x:Key="AppBorderColor">#C7C7C7</Color>
-                    <Color x:Key="AppAccentColor">#0078D4</Color>
-                    <Color x:Key="AppTextColor">#1A1A1A</Color>
-                    <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
-                    <Color x:Key="TreeSelectionColor">#DCEEFF</Color>
-                    <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
+  <ResourceDictionary x:Key="Light">
+    <!-- Win11 Settings-like (Light) -->
+    <Color x:Key="AppBackgroundColor">#E6F3F3F3</Color>   <!-- мягкий светлый фон с Mica -->
+    <Color x:Key="AppPanelColor">#F2FFFFFF</Color>        <!-- карточки -->
+    <Color x:Key="AppBorderColor">#26000000</Color>       <!-- тонкая “hairline” граница -->
+    <Color x:Key="AppAccentColor">#0078D4</Color>         <!-- Win11 blue -->
+    <Color x:Key="AppTextColor">#1F1F1F</Color>
+    <Color x:Key="AppMutedTextColor">#616161</Color>
+    <Color x:Key="TreeSelectionColor">#140078D4</Color>   <!-- очень мягкое выделение -->
+    <Color x:Key="TreeSearchHighlightColor">#FFF59D</Color>
 
-                    <!-- Brushes -->
-                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
-                    <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
-                    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
-                    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
-                    <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
-                    <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
-                    <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
-                    <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
-                    <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
-                    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
-                </ResourceDictionary>
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+    <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
+    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+    <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
+    <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
+    <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
+    <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
+    <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
+    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
+  </ResourceDictionary>
 
-                <ResourceDictionary x:Key="Dark">
-                    <!-- Colors - more transparent for better Mica effect -->
-                    <Color x:Key="AppBackgroundColor">#C0121214</Color>
-                    <Color x:Key="AppPanelColor">#D017171A</Color>
-                    <Color x:Key="AppBorderColor">#2B2F36</Color>
-                    <Color x:Key="AppAccentColor">#4CC2FF</Color>
-                    <Color x:Key="AppTextColor">#E7E9EF</Color>
-                    <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
-                    <Color x:Key="TreeSelectionColor">#254861</Color>
-                    <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
+  <ResourceDictionary x:Key="Dark">
+    <!-- Win11 Settings-like (Dark) -->
+    <Color x:Key="AppBackgroundColor">#CC0F0F10</Color>   <!-- тёмный Mica фон -->
+    <Color x:Key="AppPanelColor">#E619191B</Color>        <!-- карточки -->
+    <Color x:Key="AppBorderColor">#30FFFFFF</Color>       <!-- тонкая светлая граница -->
+    <Color x:Key="AppAccentColor">#4CC2FF</Color>         <!-- Win11-ish cyan accent -->
+    <Color x:Key="AppTextColor">#F3F3F3</Color>
+    <Color x:Key="AppMutedTextColor">#AFAFAF</Color>
+    <Color x:Key="TreeSelectionColor">#1A4CC2FF</Color>   <!-- мягкое выделение -->
+    <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
 
-                    <!-- Brushes -->
-                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
-                    <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
-                    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
-                    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
-                    <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
-                    <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
-                    <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
-                    <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
-                    <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
-                    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+    <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
+    <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+    <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
+    <SolidColorBrush x:Key="AppMutedTextBrush" Color="{StaticResource AppMutedTextColor}" />
+    <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
+    <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
+    <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
+    <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
+  </ResourceDictionary>
+</ResourceDictionary.ThemeDictionaries>
+
+
 
         </ResourceDictionary>
     </Styles.Resources>
@@ -63,7 +65,9 @@
     <Style Selector="Menu">
         <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
-        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style Selector="TextBox">
@@ -180,13 +184,15 @@
     <Style Selector="Border.search-panel">
         <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
-        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style Selector="Border.filter-panel">
         <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
-        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style Selector="Button.menu-icon-button">
@@ -230,6 +236,71 @@
     <Style Selector="TreeView TextBlock">
         <Setter Property="FontFamily" Value="{Binding $parent[TreeView].FontFamily}" />
         <Setter Property="FontSize" Value="{Binding $parent[TreeView].FontSize}" />
+    </Style>
+
+    <!-- Theme Popover Styles (Win11 Settings-like card) -->
+    <Style Selector="Border.theme-popover">
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BoxShadow" Value="0 4 16 0 #40000000" />
+    </Style>
+
+    <Style Selector="TextBlock.popover-section-title">
+        <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+
+    <!-- Popup Separator -->
+    <Style Selector="Popup Separator">
+        <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="Margin" Value="0,4" />
+        <Setter Property="Height" Value="1" />
+    </Style>
+
+    <!-- Compact Slider in popover -->
+    <Style Selector="Border.theme-popover Slider">
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="MinHeight" Value="16" />
+    </Style>
+
+    <!-- Slider styling -->
+    <Style Selector="Slider">
+        <Setter Property="Foreground" Value="{DynamicResource AppAccentBrush}" />
+    </Style>
+
+    <!-- Menu dropdown styling -->
+    <Style Selector="MenuItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+    </Style>
+
+    <Style Selector="MenuItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
+    </Style>
+
+    <Style Selector="MenuItem > MenuItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+    </Style>
+
+    <!-- ContextMenu / MenuFlyout styling -->
+    <Style Selector="MenuFlyoutPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style Selector="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
     </Style>
 
 </Styles>

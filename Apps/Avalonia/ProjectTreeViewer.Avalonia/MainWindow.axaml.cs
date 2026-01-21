@@ -110,6 +110,16 @@ public partial class MainWindow : Window
                 UpdateSearchMatches();
             else if (args.PropertyName == nameof(MainWindowViewModel.NameFilter))
                 OnNameFilterChanged();
+            else if (args.PropertyName is nameof(MainWindowViewModel.TransparencyIntensity)
+                     or nameof(MainWindowViewModel.PanelContrast)
+                     or nameof(MainWindowViewModel.BorderStrength)
+                     or nameof(MainWindowViewModel.AccentStrength)
+                     or nameof(MainWindowViewModel.SelectionStrength)
+                     or nameof(MainWindowViewModel.TreeAreaIntensity)
+                     or nameof(MainWindowViewModel.MenuBarIntensity)
+                     or nameof(MainWindowViewModel.SettingsPanelIntensity)
+                     or nameof(MainWindowViewModel.MenuDropdownIntensity))
+                UpdateDynamicThemeBrushes();
         };
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
@@ -127,10 +137,24 @@ public partial class MainWindow : Window
 
     private async void OnOpened(object? sender, EventArgs e)
     {
-        SyncThemeWithSystem();
+        // Set default to Dark theme + Transparent mode
+        SetDefaultTheme();
 
         if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
             TryOpenFolder(_startupOptions.Path!, fromDialog: false);
+    }
+
+    private void SetDefaultTheme()
+    {
+        var app = global::Avalonia.Application.Current;
+        if (app is null) return;
+
+        // Set dark theme by default
+        app.RequestedThemeVariant = ThemeVariant.Dark;
+        _viewModel.IsDarkTheme = true;
+
+        // Set transparent mode by default (already set in ViewModel, ensure transparency hint)
+        UpdateTransparencyEffect();
     }
 
     private void InitializeFonts()
@@ -317,6 +341,7 @@ public partial class MainWindow : Window
         _viewModel.IsDarkTheme = false;
         UpdateSearchHighlights(_viewModel.SearchQuery);
         UpdateFilterHighlights(_viewModel.NameFilter);
+        UpdateDynamicThemeBrushes();
     }
 
     private void OnSetDarkTheme(object? sender, RoutedEventArgs e)
@@ -328,6 +353,7 @@ public partial class MainWindow : Window
         _viewModel.IsDarkTheme = true;
         UpdateSearchHighlights(_viewModel.SearchQuery);
         UpdateFilterHighlights(_viewModel.NameFilter);
+        UpdateDynamicThemeBrushes();
     }
 
     private void OnToggleMica(object? sender, RoutedEventArgs e)
@@ -344,12 +370,91 @@ public partial class MainWindow : Window
 
     private void UpdateTransparencyEffect()
     {
-        if (_viewModel.IsMicaEnabled)
+        if (_viewModel.IsTransparentEnabled)
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
+        else if (_viewModel.IsMicaEnabled)
             TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
         else if (_viewModel.IsAcrylicEnabled)
             TransparencyLevelHint = new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
         else
             TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+
+        UpdateDynamicThemeBrushes();
+    }
+
+    private void UpdateDynamicThemeBrushes()
+    {
+        // Update brushes based on slider values (real-time theme customization)
+        var app = global::Avalonia.Application.Current;
+        if (app is null) return;
+
+        var theme = app.ActualThemeVariant ?? ThemeVariant.Dark;
+        var isDark = theme == ThemeVariant.Dark;
+
+        // Only apply transparency effects if any effect is enabled
+        if (!_viewModel.HasAnyEffect)
+        {
+            // No effect mode - use solid backgrounds
+            var solidBgAlpha = (byte)255;
+            var bgBase = isDark ? Color.Parse("#1E1E1E") : Color.Parse("#F5F5F5");
+            var bgColor = Color.FromArgb(solidBgAlpha, bgBase.R, bgBase.G, bgBase.B);
+            UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
+
+            var panelBase = isDark ? Color.Parse("#2D2D2D") : Color.Parse("#FFFFFF");
+            UpdateResource("AppPanelBrush", new SolidColorBrush(panelBase));
+        }
+        else
+        {
+            // Calculate alpha values from intensity sliders
+            // TransparencyIntensity: 0 = fully opaque, 100 = fully transparent
+            var transparencyAlpha = (byte)(255 * (1 - _viewModel.TransparencyIntensity / 100.0));
+
+            // PanelContrast: 0 = transparent panels, 100 = opaque panels
+            var panelAlpha = (byte)(50 + 205 * _viewModel.PanelContrast / 100.0);
+
+            // Background with transparency
+            var bgBase = isDark ? Color.Parse("#0F0F10") : Color.Parse("#F3F3F3");
+            var bgColor = Color.FromArgb(transparencyAlpha, bgBase.R, bgBase.G, bgBase.B);
+            UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
+
+            // Panel with contrast
+            var panelBase = isDark ? Color.Parse("#19191B") : Color.Parse("#FFFFFF");
+            var panelColor = Color.FromArgb(panelAlpha, panelBase.R, panelBase.G, panelBase.B);
+            UpdateResource("AppPanelBrush", new SolidColorBrush(panelColor));
+        }
+
+        // BorderStrength: 0 = invisible, 100 = fully visible
+        var borderAlpha = (byte)(255 * _viewModel.BorderStrength / 100.0);
+        var borderBase = isDark ? Color.Parse("#FFFFFF") : Color.Parse("#000000");
+        var borderColor = Color.FromArgb(borderAlpha, borderBase.R, borderBase.G, borderBase.B);
+        UpdateResource("AppBorderBrush", new SolidColorBrush(borderColor));
+
+        // SelectionStrength: affects tree selection visibility
+        var selectionAlpha = (byte)(10 + 40 * _viewModel.SelectionStrength / 100.0);
+        var selectionBase = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
+        var selectionColor = Color.FromArgb(selectionAlpha, selectionBase.R, selectionBase.G, selectionBase.B);
+        UpdateResource("TreeSelectionBrush", new SolidColorBrush(selectionColor));
+
+        // AccentStrength: affects accent color intensity
+        var accentAlpha = (byte)(128 + 127 * _viewModel.AccentStrength / 100.0);
+        var accentBase = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
+        var accentColor = Color.FromArgb(accentAlpha, accentBase.R, accentBase.G, accentBase.B);
+        UpdateResource("AppAccentBrush", new SolidColorBrush(accentColor));
+    }
+
+    private void UpdateResource(string key, object value)
+    {
+        var app = global::Avalonia.Application.Current;
+        if (app?.Resources is null) return;
+
+        try
+        {
+            app.Resources[key] = value;
+        }
+        catch
+        {
+            // Ignore errors - resource might not exist
+        }
     }
 
     private void OnToggleCompactMode(object? sender, RoutedEventArgs e)
@@ -360,6 +465,51 @@ public partial class MainWindow : Window
             Classes.Add("compact-mode");
         else
             Classes.Remove("compact-mode");
+    }
+
+    private void OnThemeMenuClick(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.ThemePopoverOpen = !_viewModel.ThemePopoverOpen;
+        e.Handled = true;
+    }
+
+    private void OnSetLightThemeCheckbox(object? sender, RoutedEventArgs e)
+    {
+        if (_viewModel.IsDarkTheme)
+        {
+            OnSetLightTheme(sender, e);
+        }
+        e.Handled = true;
+    }
+
+    private void OnSetDarkThemeCheckbox(object? sender, RoutedEventArgs e)
+    {
+        if (!_viewModel.IsDarkTheme)
+        {
+            OnSetDarkTheme(sender, e);
+        }
+        e.Handled = true;
+    }
+
+    private void OnSetTransparentMode(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.ToggleTransparent();
+        UpdateTransparencyEffect();
+        e.Handled = true;
+    }
+
+    private void OnSetMicaMode(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.ToggleMica();
+        UpdateTransparencyEffect();
+        e.Handled = true;
+    }
+
+    private void OnSetAcrylicMode(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.ToggleAcrylic();
+        UpdateTransparencyEffect();
+        e.Handled = true;
     }
 
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
