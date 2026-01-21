@@ -74,69 +74,69 @@
              IsLightDismissEnabled="True"
              PlacementMode="Bottom"
              PlacementTarget="{Binding #ThemeMenuItem}">
-        <Border Classes="theme-popover" Padding="12" MinWidth="280">
-          <StackPanel Spacing="10">
+        <Border Classes="theme-popover" Padding="14" MinWidth="300">
+          <StackPanel Spacing="12">
             <!-- Theme selection row -->
-            <StackPanel Spacing="2">
+            <StackPanel Spacing="4">
               <TextBlock Classes="popover-section-title" Text="{Binding ThemeModeLabel}" />
-              <StackPanel Orientation="Horizontal" Spacing="12">
+              <StackPanel Orientation="Horizontal" Spacing="16">
                 <CheckBox Content="{Binding ThemeLightLabel}"
-                          IsChecked="{Binding !IsDarkTheme}"
+                          IsChecked="{Binding IsLightTheme, Mode=OneWay}"
                           Click="OnSetLightThemeCheckbox" />
                 <CheckBox Content="{Binding ThemeDarkLabel}"
-                          IsChecked="{Binding IsDarkTheme}"
+                          IsChecked="{Binding IsDarkTheme, Mode=OneWay}"
                           Click="OnSetDarkThemeCheckbox" />
               </StackPanel>
             </StackPanel>
 
             <!-- Effects mode row -->
-            <StackPanel Spacing="2">
+            <StackPanel Spacing="4">
               <TextBlock Classes="popover-section-title" Text="{Binding ThemeEffectsLabel}" />
-              <StackPanel Orientation="Horizontal" Spacing="12">
+              <StackPanel Orientation="Horizontal" Spacing="16">
                 <CheckBox Content="{Binding ThemeTransparentLabel}"
-                          IsChecked="{Binding IsTransparentEnabled}"
+                          IsChecked="{Binding IsTransparentEnabled, Mode=OneWay}"
                           Click="OnSetTransparentMode" />
                 <CheckBox Content="{Binding ThemeMicaLabel}"
-                          IsChecked="{Binding IsMicaEnabled}"
+                          IsChecked="{Binding IsMicaEnabled, Mode=OneWay}"
                           Click="OnSetMicaMode" />
                 <CheckBox Content="{Binding ThemeAcrylicLabel}"
-                          IsChecked="{Binding IsAcrylicEnabled}"
+                          IsChecked="{Binding IsAcrylicEnabled, Mode=OneWay}"
                           Click="OnSetAcrylicMode" />
               </StackPanel>
             </StackPanel>
 
             <!-- Transparency sliders - only visible when any effect is active -->
-            <StackPanel Spacing="4" IsVisible="{Binding ShowTransparencySliders}">
-              <Separator Margin="0,4" />
-              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,2">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ThemeTransparencyIntensity}"
-                           FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <Slider Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="100"
-                        Value="{Binding TransparencyIntensity}" Height="20" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding ThemePanelContrast}"
-                           FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="100"
-                        Value="{Binding PanelContrast}" Height="20" />
-              </Grid>
+            <StackPanel Spacing="6" IsVisible="{Binding ShowTransparencySliders}">
+              <Separator Margin="0,2" />
+              <StackPanel Spacing="6">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding ThemeTransparencyIntensity}" FontSize="12" />
+                  <Slider Minimum="0" Maximum="100" Value="{Binding TransparencyIntensity}" />
+                </StackPanel>
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding ThemePanelContrast}" FontSize="12" />
+                  <Slider Minimum="0" Maximum="100" Value="{Binding PanelContrast}" />
+                </StackPanel>
+              </StackPanel>
             </StackPanel>
 
             <!-- Base style sliders - always visible -->
-            <StackPanel Spacing="4">
-              <Separator Margin="0,4" IsVisible="{Binding !ShowTransparencySliders}" />
-              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,2">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ThemeBorderStrength}"
-                           FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <Slider Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="100"
-                        Value="{Binding BorderStrength}" Height="20" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding ThemeAccentStrength}"
-                           FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="100"
-                        Value="{Binding AccentStrength}" Height="20" />
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding ThemeSelectionStrength}"
-                           FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="100"
-                        Value="{Binding SelectionStrength}" Height="20" />
-              </Grid>
+            <StackPanel Spacing="6">
+              <Separator Margin="0,2" IsVisible="{Binding !ShowTransparencySliders}" />
+              <StackPanel Spacing="6">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding ThemeBorderStrength}" FontSize="12" />
+                  <Slider Minimum="0" Maximum="100" Value="{Binding BorderStrength}" />
+                </StackPanel>
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding ThemeAccentStrength}" FontSize="12" />
+                  <Slider Minimum="0" Maximum="100" Value="{Binding AccentStrength}" />
+                </StackPanel>
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding ThemeSelectionStrength}" FontSize="12" />
+                  <Slider Minimum="0" Maximum="100" Value="{Binding SelectionStrength}" />
+                </StackPanel>
+              </StackPanel>
             </StackPanel>
           </StackPanel>
         </Border>

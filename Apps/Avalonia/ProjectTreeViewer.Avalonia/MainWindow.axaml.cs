@@ -395,48 +395,60 @@ public partial class MainWindow : Window
         if (!_viewModel.HasAnyEffect)
         {
             // No effect mode - use solid backgrounds
-            var solidBgAlpha = (byte)255;
             var bgBase = isDark ? Color.Parse("#1E1E1E") : Color.Parse("#F5F5F5");
-            var bgColor = Color.FromArgb(solidBgAlpha, bgBase.R, bgBase.G, bgBase.B);
-            UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
+            UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgBase));
 
             var panelBase = isDark ? Color.Parse("#2D2D2D") : Color.Parse("#FFFFFF");
             UpdateResource("AppPanelBrush", new SolidColorBrush(panelBase));
         }
         else
         {
-            // Calculate alpha values from intensity sliders
-            // TransparencyIntensity: 0 = fully opaque, 100 = fully transparent
-            var transparencyAlpha = (byte)(255 * (1 - _viewModel.TransparencyIntensity / 100.0));
+            // TransparencyIntensity: 0 = opaque overlay, 100 = fully see-through
+            // Map to alpha: 100% intensity = low alpha (more transparent)
+            var intensity = _viewModel.TransparencyIntensity / 100.0;
+            var bgAlpha = (byte)(255 * (1 - intensity * 0.9)); // 255 to ~25
 
-            // PanelContrast: 0 = transparent panels, 100 = opaque panels
-            var panelAlpha = (byte)(50 + 205 * _viewModel.PanelContrast / 100.0);
+            // PanelContrast: 0 = very transparent panels, 100 = solid panels
+            var contrast = _viewModel.PanelContrast / 100.0;
+            var panelAlpha = (byte)(20 + 235 * contrast); // 20 to 255
 
-            // Background with transparency
-            var bgBase = isDark ? Color.Parse("#0F0F10") : Color.Parse("#F3F3F3");
-            var bgColor = Color.FromArgb(transparencyAlpha, bgBase.R, bgBase.G, bgBase.B);
+            // Different base colors for different modes
+            Color bgBase, panelBase;
+            if (_viewModel.IsAcrylicEnabled || _viewModel.IsMicaEnabled)
+            {
+                // For Mica/Acrylic - use more subtle colors that work with system blur
+                bgBase = isDark ? Color.Parse("#202020") : Color.Parse("#F0F0F0");
+                panelBase = isDark ? Color.Parse("#2A2A2A") : Color.Parse("#FAFAFA");
+            }
+            else
+            {
+                // For Transparent - darker/lighter for better contrast
+                bgBase = isDark ? Color.Parse("#0A0A0A") : Color.Parse("#FAFAFA");
+                panelBase = isDark ? Color.Parse("#151515") : Color.Parse("#FFFFFF");
+            }
+
+            var bgColor = Color.FromArgb(bgAlpha, bgBase.R, bgBase.G, bgBase.B);
             UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
 
-            // Panel with contrast
-            var panelBase = isDark ? Color.Parse("#19191B") : Color.Parse("#FFFFFF");
             var panelColor = Color.FromArgb(panelAlpha, panelBase.R, panelBase.G, panelBase.B);
             UpdateResource("AppPanelBrush", new SolidColorBrush(panelColor));
         }
 
         // BorderStrength: 0 = invisible, 100 = fully visible
-        var borderAlpha = (byte)(255 * _viewModel.BorderStrength / 100.0);
-        var borderBase = isDark ? Color.Parse("#FFFFFF") : Color.Parse("#000000");
+        // Wider range for more noticeable effect
+        var borderAlpha = (byte)(10 + 245 * _viewModel.BorderStrength / 100.0);
+        var borderBase = isDark ? Color.Parse("#808080") : Color.Parse("#404040");
         var borderColor = Color.FromArgb(borderAlpha, borderBase.R, borderBase.G, borderBase.B);
         UpdateResource("AppBorderBrush", new SolidColorBrush(borderColor));
 
-        // SelectionStrength: affects tree selection visibility
-        var selectionAlpha = (byte)(10 + 40 * _viewModel.SelectionStrength / 100.0);
+        // SelectionStrength: affects tree selection visibility (bigger range)
+        var selectionAlpha = (byte)(15 + 100 * _viewModel.SelectionStrength / 100.0);
         var selectionBase = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
         var selectionColor = Color.FromArgb(selectionAlpha, selectionBase.R, selectionBase.G, selectionBase.B);
         UpdateResource("TreeSelectionBrush", new SolidColorBrush(selectionColor));
 
         // AccentStrength: affects accent color intensity
-        var accentAlpha = (byte)(128 + 127 * _viewModel.AccentStrength / 100.0);
+        var accentAlpha = (byte)(80 + 175 * _viewModel.AccentStrength / 100.0);
         var accentBase = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
         var accentColor = Color.FromArgb(accentAlpha, accentBase.R, accentBase.G, accentBase.B);
         UpdateResource("AppAccentBrush", new SolidColorBrush(accentColor));
@@ -475,39 +487,59 @@ public partial class MainWindow : Window
 
     private void OnSetLightThemeCheckbox(object? sender, RoutedEventArgs e)
     {
-        if (_viewModel.IsDarkTheme)
-        {
-            OnSetLightTheme(sender, e);
-        }
+        // Always set light theme when clicked (even if already light - just refresh)
+        OnSetLightTheme(sender, e);
         e.Handled = true;
     }
 
     private void OnSetDarkThemeCheckbox(object? sender, RoutedEventArgs e)
     {
-        if (!_viewModel.IsDarkTheme)
-        {
-            OnSetDarkTheme(sender, e);
-        }
+        // Always set dark theme when clicked
+        OnSetDarkTheme(sender, e);
         e.Handled = true;
     }
 
     private void OnSetTransparentMode(object? sender, RoutedEventArgs e)
     {
-        _viewModel.ToggleTransparent();
+        // Toggle: if already on - turn off, if off - turn on (and disable others)
+        if (_viewModel.IsTransparentEnabled)
+        {
+            // Turn off all effects
+            _viewModel.IsTransparentEnabled = false;
+        }
+        else
+        {
+            // Turn on transparent, turn off others
+            _viewModel.IsTransparentEnabled = true;
+        }
         UpdateTransparencyEffect();
         e.Handled = true;
     }
 
     private void OnSetMicaMode(object? sender, RoutedEventArgs e)
     {
-        _viewModel.ToggleMica();
+        if (_viewModel.IsMicaEnabled)
+        {
+            _viewModel.IsMicaEnabled = false;
+        }
+        else
+        {
+            _viewModel.IsMicaEnabled = true;
+        }
         UpdateTransparencyEffect();
         e.Handled = true;
     }
 
     private void OnSetAcrylicMode(object? sender, RoutedEventArgs e)
     {
-        _viewModel.ToggleAcrylic();
+        if (_viewModel.IsAcrylicEnabled)
+        {
+            _viewModel.IsAcrylicEnabled = false;
+        }
+        else
+        {
+            _viewModel.IsAcrylicEnabled = true;
+        }
         UpdateTransparencyEffect();
         e.Handled = true;
     }

@@ -134,8 +134,11 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (_isDarkTheme == value) return;
             _isDarkTheme = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsLightTheme));
         }
     }
+
+    public bool IsLightTheme => !_isDarkTheme;
 
     public bool IsCompactMode
     {
