@@ -30,6 +30,7 @@
   "Theme.MaterialIntensity": "Overall effect",
   "Theme.BlurRadius": "Blur",
   "Theme.PanelContrast": "Panel contrast",
+  "Theme.MenuChildIntensity": "Submenu contrast",
   "Theme.BorderStrength": "Border strength",
   "Menu.Search": "Search",
   "Filter.ByName": "Filter by name",

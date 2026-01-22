@@ -66,7 +66,8 @@
               FontSize="14"
               Click="OnToggleFilter"
               IsEnabled="{Binding IsProjectLoaded}"
-              ToolTip.Tip="{Binding FilterTooltip}" />
+              ToolTip.Tip="{Binding FilterTooltip}"
+              ToolTip.Placement="Left" />
 
       <!-- Theme Popover -->
       <Popup Name="ThemePopup"
@@ -122,6 +123,11 @@
               <StackPanel Spacing="2">
                 <TextBlock Text="{Binding ThemePanelContrast}" FontSize="12" />
                 <Slider Minimum="0" Maximum="100" Value="{Binding PanelContrast}" />
+              </StackPanel>
+              <!-- Menu Child Intensity -->
+              <StackPanel Spacing="2">
+                <TextBlock Text="{Binding ThemeMenuChildIntensity}" FontSize="12" />
+                <Slider Minimum="0" Maximum="100" Value="{Binding MenuChildIntensity}" />
               </StackPanel>
             </StackPanel>
 

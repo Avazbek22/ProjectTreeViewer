@@ -114,7 +114,8 @@ public partial class MainWindow : Window
                 OnNameFilterChanged();
             else if (args.PropertyName is nameof(MainWindowViewModel.MaterialIntensity)
                      or nameof(MainWindowViewModel.PanelContrast)
-                     or nameof(MainWindowViewModel.BorderStrength))
+                     or nameof(MainWindowViewModel.BorderStrength)
+                     or nameof(MainWindowViewModel.MenuChildIntensity))
                 UpdateDynamicThemeBrushes();
             else if (args.PropertyName == nameof(MainWindowViewModel.BlurRadius))
                 UpdateTransparencyEffect();
@@ -133,22 +134,26 @@ public partial class MainWindow : Window
         // When any submenu opens, apply current brushes directly to its popup
         if (e.Source is MenuItem menuItem)
         {
+            // Check if this is a child menu (has a parent MenuItem) or top-level menu
+            var isChildMenu = menuItem.Parent is MenuItem;
+
             // Delay slightly to let popup render
             global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                ApplyBrushesToMenuItemPopup(menuItem);
+                ApplyBrushesToMenuItemPopup(menuItem, isChildMenu);
             }, global::Avalonia.Threading.DispatcherPriority.Loaded);
         }
     }
 
-    private void ApplyBrushesToMenuItemPopup(MenuItem menuItem)
+    private void ApplyBrushesToMenuItemPopup(MenuItem menuItem, bool isChildMenu = false)
     {
         // Find popup in visual tree
         foreach (var popup in menuItem.GetVisualDescendants().OfType<Popup>())
         {
             if (popup.Child is Border border)
             {
-                border.Background = _currentMenuBrush;
+                // Use child brush for nested menus, main brush for top-level
+                border.Background = isChildMenu ? _currentMenuChildBrush : _currentMenuBrush;
                 border.BorderBrush = _currentBorderBrush;
                 border.BorderThickness = new Thickness(1);
                 border.CornerRadius = new CornerRadius(8);
@@ -400,18 +405,29 @@ public partial class MainWindow : Window
 
     // Current menu brush for direct application
     private SolidColorBrush _currentMenuBrush = new SolidColorBrush(Colors.Black);
+    private SolidColorBrush _currentMenuChildBrush = new SolidColorBrush(Colors.Black);
     private SolidColorBrush _currentBorderBrush = new SolidColorBrush(Colors.Gray);
 
     private void UpdateTransparencyEffect()
     {
         if (_viewModel.IsTransparentEnabled)
         {
-            // TRANSPARENT: Real transparency - see through to desktop
-            // BlurRadius controls whether to add system blur on top
-            if (_viewModel.BlurRadius > 50)
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent };
-            else
+            // TRANSPARENT: Real transparency with controllable blur
+            // BlurRadius controls the blur intensity:
+            // 0-30: Pure transparency (see-through to desktop)
+            // 30-70: Gradual blur transition using AcrylicBlur
+            // 70-100: Maximum blur effect
+            var blur = _viewModel.BlurRadius;
+            if (blur < 30)
+            {
+                // Pure transparency - see desktop clearly
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
+            }
+            else
+            {
+                // Use AcrylicBlur for frosted glass effect with controllable intensity
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent };
+            }
         }
         else if (_viewModel.IsMicaEnabled)
         {
@@ -458,21 +474,38 @@ public partial class MainWindow : Window
         }
         else if (_viewModel.IsTransparentEnabled)
         {
-            // TRANSPARENT MODE - real see-through transparency
+            // TRANSPARENT MODE - real see-through transparency with controllable blur
             // Warm neutral colors (no gray/blue tint)
             bgBase = isDark ? Color.Parse("#1A1A1A") : Color.Parse("#FAFAFA");
             panelBase = isDark ? Color.Parse("#262626") : Color.Parse("#FFFFFF");
 
             // MaterialIntensity: 0=opaque, 100=fully transparent
             // This is REAL transparency - you see the desktop
-            bgAlpha = (byte)(255 - material * 240);
+            var baseAlpha = (byte)(255 - material * 240);
 
-            // BlurRadius: adds slight tint when blur is applied
-            // When blur > 50, system blur kicks in
-            if (blur > 0.5)
+            // BlurRadius controls the blur effect intensity:
+            // 0-30: Pure transparency (minimal tint)
+            // 30-70: Gradual frosted glass effect (increasing tint for blur visibility)
+            // 70-100: Maximum frosted blur effect
+            if (blur < 0.3)
             {
-                // Add slight opacity when blur is active for frosted effect
-                bgAlpha = (byte)Math.Max(bgAlpha, 20 + (blur - 0.5) * 60);
+                // Pure transparency - minimal background tint
+                bgAlpha = baseAlpha;
+            }
+            else if (blur < 0.7)
+            {
+                // Transition zone - gradually add tint for frosted effect
+                // Map 0.3-0.7 to tint increase
+                var blurFactor = (blur - 0.3) / 0.4; // 0 to 1
+                var tintBoost = (byte)(blurFactor * 120); // Up to 120 alpha boost
+                bgAlpha = (byte)Math.Min(255, Math.Max(baseAlpha, 30 + tintBoost));
+            }
+            else
+            {
+                // Maximum blur - strong frosted glass effect
+                var blurFactor = (blur - 0.7) / 0.3; // 0 to 1 for 70-100 range
+                var tintBoost = (byte)(120 + blurFactor * 80); // 120 to 200 alpha
+                bgAlpha = (byte)Math.Min(255, Math.Max(baseAlpha, 30 + tintBoost));
             }
 
             // Panels: contrast controls opacity
@@ -500,12 +533,16 @@ public partial class MainWindow : Window
             bgBase = isDark ? Color.Parse("#1F1F1F") : Color.Parse("#FAFAFA");
             panelBase = isDark ? Color.Parse("#2D2D2D") : Color.Parse("#FFFFFF");
 
-            // Very transparent to let Mica show
-            bgAlpha = (byte)(15 + (1 - material) * 50);
+            // MaterialIntensity: expanded range for more dramatic effect
+            // 0 = fully opaque (255), 100 = very transparent (15)
+            // Range: 15-255 (was 15-65, now full range like other effects)
+            bgAlpha = (byte)(255 - material * 240);
 
-            // Panels need more opacity for readability on Mica
-            panelAlpha = (byte)(140 + contrast * 100);
-            menuAlpha = (byte)Math.Min(255, panelAlpha + 20);
+            // Panel Contrast: same influence as main slider
+            // Range matches other effects: 60-240 (was 140-240, limiting to ~40% range)
+            // Now: 0 = more transparent (60), 100 = fully opaque (240)
+            panelAlpha = (byte)(60 + contrast * 180);
+            menuAlpha = (byte)Math.Min(255, panelAlpha + 30);
         }
 
         // Apply colors
@@ -518,6 +555,23 @@ public partial class MainWindow : Window
         var menuColor = Color.FromArgb(menuAlpha, panelBase.R, panelBase.G, panelBase.B);
         _currentMenuBrush = new SolidColorBrush(menuColor);
         UpdateResource("MenuPopupBrush", _currentMenuBrush);
+
+        // Menu child intensity - separate control for dropdown/submenu elements
+        var menuChildIntensity = _viewModel.MenuChildIntensity / 100.0;
+        byte menuChildAlpha;
+        if (!_viewModel.HasAnyEffect)
+        {
+            menuChildAlpha = 255;
+        }
+        else
+        {
+            // MenuChildIntensity works like PanelContrast but specifically for submenus
+            // 0 = more transparent (effect shows through), 100 = more opaque
+            menuChildAlpha = (byte)(60 + menuChildIntensity * 190);
+        }
+        var menuChildColor = Color.FromArgb(menuChildAlpha, panelBase.R, panelBase.G, panelBase.B);
+        _currentMenuChildBrush = new SolidColorBrush(menuChildColor);
+        UpdateResource("MenuChildPopupBrush", _currentMenuChildBrush);
 
         // Border
         var borderAlpha = (byte)(15 + 235 * _viewModel.BorderStrength / 100.0);
@@ -549,21 +603,24 @@ public partial class MainWindow : Window
 
     private void UpdateMenuItemPopup(MenuItem menuItem)
     {
+        // Check if this is a child menu (has a parent MenuItem) or top-level menu
+        var isChildMenu = menuItem.Parent is MenuItem;
+
         // Find the popup template part
         var popup = menuItem.GetVisualDescendants().OfType<Popup>().FirstOrDefault();
         if (popup?.Child is Border border)
         {
-            border.Background = _currentMenuBrush;
+            border.Background = isChildMenu ? _currentMenuChildBrush : _currentMenuBrush;
             border.BorderBrush = _currentBorderBrush;
         }
 
-        // Also check logical descendants for nested items
+        // Also check logical descendants for nested items - these are always child menus
         foreach (var subItem in menuItem.GetLogicalDescendants().OfType<MenuItem>())
         {
             var subPopup = subItem.GetVisualDescendants().OfType<Popup>().FirstOrDefault();
             if (subPopup?.Child is Border subBorder)
             {
-                subBorder.Background = _currentMenuBrush;
+                subBorder.Background = _currentMenuChildBrush;
                 subBorder.BorderBrush = _currentBorderBrush;
             }
         }

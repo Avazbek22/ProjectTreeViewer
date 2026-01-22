@@ -35,6 +35,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private double _blurRadius = 30;
     private double _panelContrast = 50;
     private double _borderStrength = 50;
+    private double _menuChildIntensity = 50;
 
     private bool _themePopoverOpen;
 
@@ -332,6 +333,18 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    // MenuChildIntensity: controls the effect intensity for dropdown/child menu elements
+    public double MenuChildIntensity
+    {
+        get => _menuChildIntensity;
+        set
+        {
+            if (Math.Abs(_menuChildIntensity - value) < 0.1) return;
+            _menuChildIntensity = value;
+            RaisePropertyChanged();
+        }
+    }
+
     // Применённый шрифт (TreeView берет отсюда)
     public string? SelectedFontFamily
     {
@@ -441,6 +454,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string ThemeBlurRadius { get; private set; } = string.Empty;
     public string ThemePanelContrast { get; private set; } = string.Empty;
     public string ThemeBorderStrength { get; private set; } = string.Empty;
+    public string ThemeMenuChildIntensity { get; private set; } = string.Empty;
     public string SettingsIgnoreTitle { get; private set; } = string.Empty;
     public string SettingsAll { get; private set; } = string.Empty;
     public string SettingsExtensions { get; private set; } = string.Empty;
@@ -502,6 +516,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         ThemeBlurRadius = _localization["Theme.BlurRadius"];
         ThemePanelContrast = _localization["Theme.PanelContrast"];
         ThemeBorderStrength = _localization["Theme.BorderStrength"];
+        ThemeMenuChildIntensity = _localization["Theme.MenuChildIntensity"];
 
         RaisePropertyChanged(nameof(MenuFile));
         RaisePropertyChanged(nameof(MenuFileOpen));
@@ -552,5 +567,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(ThemeBlurRadius));
         RaisePropertyChanged(nameof(ThemePanelContrast));
         RaisePropertyChanged(nameof(ThemeBorderStrength));
+        RaisePropertyChanged(nameof(ThemeMenuChildIntensity));
     }
 }

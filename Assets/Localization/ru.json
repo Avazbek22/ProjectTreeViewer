@@ -33,6 +33,7 @@
   "Theme.MaterialIntensity": "Общий эффект",
   "Theme.BlurRadius": "Размытость",
   "Theme.PanelContrast": "Контраст панелей",
+  "Theme.MenuChildIntensity": "Контраст подменю",
   "Theme.BorderStrength": "Толщина границ",
   "Menu.Search": "Поиск",
   "Filter.ByName": "Фильтр по названию",
