@@ -10,8 +10,10 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using Avalonia.Controls.Primitives;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.Services;
@@ -110,21 +112,49 @@ public partial class MainWindow : Window
                 UpdateSearchMatches();
             else if (args.PropertyName == nameof(MainWindowViewModel.NameFilter))
                 OnNameFilterChanged();
-            else if (args.PropertyName is nameof(MainWindowViewModel.TransparencyIntensity)
+            else if (args.PropertyName is nameof(MainWindowViewModel.MaterialIntensity)
                      or nameof(MainWindowViewModel.PanelContrast)
-                     or nameof(MainWindowViewModel.BorderStrength)
-                     or nameof(MainWindowViewModel.AccentStrength)
-                     or nameof(MainWindowViewModel.SelectionStrength)
-                     or nameof(MainWindowViewModel.TreeAreaIntensity)
-                     or nameof(MainWindowViewModel.MenuBarIntensity)
-                     or nameof(MainWindowViewModel.SettingsPanelIntensity)
-                     or nameof(MainWindowViewModel.MenuDropdownIntensity))
+                     or nameof(MainWindowViewModel.BorderStrength))
                 UpdateDynamicThemeBrushes();
+            else if (args.PropertyName == nameof(MainWindowViewModel.BlurRadius))
+                UpdateTransparencyEffect();
         };
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
         Opened += OnOpened;
+
+        // Hook menu item submenu opening to apply brushes directly
+        AddHandler(MenuItem.SubmenuOpenedEvent, OnSubmenuOpened, RoutingStrategies.Bubble);
+    }
+
+    private void OnSubmenuOpened(object? sender, RoutedEventArgs e)
+    {
+        // When any submenu opens, apply current brushes directly to its popup
+        if (e.Source is MenuItem menuItem)
+        {
+            // Delay slightly to let popup render
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                ApplyBrushesToMenuItemPopup(menuItem);
+            }, global::Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+    }
+
+    private void ApplyBrushesToMenuItemPopup(MenuItem menuItem)
+    {
+        // Find popup in visual tree
+        foreach (var popup in menuItem.GetVisualDescendants().OfType<Popup>())
+        {
+            if (popup.Child is Border border)
+            {
+                border.Background = _currentMenuBrush;
+                border.BorderBrush = _currentBorderBrush;
+                border.BorderThickness = new Thickness(1);
+                border.CornerRadius = new CornerRadius(8);
+                border.Padding = new Thickness(4);
+            }
+        }
     }
 
     private void OnThemeChanged(object? sender, EventArgs e)
@@ -368,104 +398,202 @@ public partial class MainWindow : Window
         UpdateTransparencyEffect();
     }
 
+    // Current menu brush for direct application
+    private SolidColorBrush _currentMenuBrush = new SolidColorBrush(Colors.Black);
+    private SolidColorBrush _currentBorderBrush = new SolidColorBrush(Colors.Gray);
+
     private void UpdateTransparencyEffect()
     {
         if (_viewModel.IsTransparentEnabled)
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
+        {
+            // TRANSPARENT: Real transparency - see through to desktop
+            // BlurRadius controls whether to add system blur on top
+            if (_viewModel.BlurRadius > 50)
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent };
+            else
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
+        }
         else if (_viewModel.IsMicaEnabled)
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
+        {
+            // MICA: System Mica effect
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica };
+        }
         else if (_viewModel.IsAcrylicEnabled)
+        {
+            // ACRYLIC: Frosted glass blur effect (like current "good" transparent)
             TransparencyLevelHint = new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
+        }
         else
+        {
+            // No effects - solid window
             TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+        }
 
         UpdateDynamicThemeBrushes();
     }
 
     private void UpdateDynamicThemeBrushes()
     {
-        // Update brushes based on slider values (real-time theme customization)
         var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
         var theme = app.ActualThemeVariant ?? ThemeVariant.Dark;
         var isDark = theme == ThemeVariant.Dark;
 
-        // Only apply transparency effects if any effect is enabled
+        var material = _viewModel.MaterialIntensity / 100.0;
+        var blur = _viewModel.BlurRadius / 100.0;
+        var contrast = _viewModel.PanelContrast / 100.0;
+
+        Color bgBase, panelBase;
+        byte bgAlpha, panelAlpha, menuAlpha;
+
         if (!_viewModel.HasAnyEffect)
         {
-            // No effect mode - use solid backgrounds
-            var bgBase = isDark ? Color.Parse("#1E1E1E") : Color.Parse("#F5F5F5");
-            UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgBase));
-
-            var panelBase = isDark ? Color.Parse("#2D2D2D") : Color.Parse("#FFFFFF");
-            UpdateResource("AppPanelBrush", new SolidColorBrush(panelBase));
+            // NO EFFECT - solid colors
+            bgBase = isDark ? Color.Parse("#1E1E1E") : Color.Parse("#FFFFFF");
+            panelBase = isDark ? Color.Parse("#252526") : Color.Parse("#F3F3F3");
+            bgAlpha = 255;
+            panelAlpha = 255;
+            menuAlpha = 255;
         }
-        else
+        else if (_viewModel.IsTransparentEnabled)
         {
-            // TransparencyIntensity: 0 = opaque overlay, 100 = fully see-through
-            // Map to alpha: 100% intensity = low alpha (more transparent)
-            var intensity = _viewModel.TransparencyIntensity / 100.0;
-            var bgAlpha = (byte)(255 * (1 - intensity * 0.9)); // 255 to ~25
+            // TRANSPARENT MODE - real see-through transparency
+            // Warm neutral colors (no gray/blue tint)
+            bgBase = isDark ? Color.Parse("#1A1A1A") : Color.Parse("#FAFAFA");
+            panelBase = isDark ? Color.Parse("#262626") : Color.Parse("#FFFFFF");
 
-            // PanelContrast: 0 = very transparent panels, 100 = solid panels
-            var contrast = _viewModel.PanelContrast / 100.0;
-            var panelAlpha = (byte)(20 + 235 * contrast); // 20 to 255
+            // MaterialIntensity: 0=opaque, 100=fully transparent
+            // This is REAL transparency - you see the desktop
+            bgAlpha = (byte)(255 - material * 240);
 
-            // Different base colors for different modes
-            Color bgBase, panelBase;
-            if (_viewModel.IsAcrylicEnabled || _viewModel.IsMicaEnabled)
+            // BlurRadius: adds slight tint when blur is applied
+            // When blur > 50, system blur kicks in
+            if (blur > 0.5)
             {
-                // For Mica/Acrylic - use more subtle colors that work with system blur
-                bgBase = isDark ? Color.Parse("#202020") : Color.Parse("#F0F0F0");
-                panelBase = isDark ? Color.Parse("#2A2A2A") : Color.Parse("#FAFAFA");
-            }
-            else
-            {
-                // For Transparent - darker/lighter for better contrast
-                bgBase = isDark ? Color.Parse("#0A0A0A") : Color.Parse("#FAFAFA");
-                panelBase = isDark ? Color.Parse("#151515") : Color.Parse("#FFFFFF");
+                // Add slight opacity when blur is active for frosted effect
+                bgAlpha = (byte)Math.Max(bgAlpha, 20 + (blur - 0.5) * 60);
             }
 
-            var bgColor = Color.FromArgb(bgAlpha, bgBase.R, bgBase.G, bgBase.B);
-            UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
+            // Panels: contrast controls opacity
+            panelAlpha = (byte)(60 + contrast * 180);
+            menuAlpha = (byte)Math.Min(255, panelAlpha + 40);
+        }
+        else if (_viewModel.IsAcrylicEnabled)
+        {
+            // ACRYLIC MODE - frosted glass blur (the "good" effect)
+            bgBase = isDark ? Color.Parse("#1C1C1C") : Color.Parse("#F5F5F5");
+            panelBase = isDark ? Color.Parse("#282828") : Color.Parse("#FFFFFF");
 
-            var panelColor = Color.FromArgb(panelAlpha, panelBase.R, panelBase.G, panelBase.B);
-            UpdateResource("AppPanelBrush", new SolidColorBrush(panelColor));
+            // MaterialIntensity controls blur visibility
+            // More transparent = more blur shows through
+            bgAlpha = (byte)(30 + (1 - material) * 200);
+
+            // Panels with contrast control
+            panelAlpha = (byte)(80 + contrast * 160);
+            menuAlpha = (byte)Math.Min(255, panelAlpha + 30);
+        }
+        else // Mica
+        {
+            // MICA MODE - clean, warm colors (no gray tint!)
+            // Use warm tones to counter the cool Mica effect
+            bgBase = isDark ? Color.Parse("#1F1F1F") : Color.Parse("#FAFAFA");
+            panelBase = isDark ? Color.Parse("#2D2D2D") : Color.Parse("#FFFFFF");
+
+            // Very transparent to let Mica show
+            bgAlpha = (byte)(15 + (1 - material) * 50);
+
+            // Panels need more opacity for readability on Mica
+            panelAlpha = (byte)(140 + contrast * 100);
+            menuAlpha = (byte)Math.Min(255, panelAlpha + 20);
         }
 
-        // BorderStrength: 0 = invisible, 100 = fully visible
-        // Wider range for more noticeable effect
-        var borderAlpha = (byte)(10 + 245 * _viewModel.BorderStrength / 100.0);
-        var borderBase = isDark ? Color.Parse("#808080") : Color.Parse("#404040");
+        // Apply colors
+        var bgColor = Color.FromArgb(bgAlpha, bgBase.R, bgBase.G, bgBase.B);
+        UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
+
+        var panelColor = Color.FromArgb(panelAlpha, panelBase.R, panelBase.G, panelBase.B);
+        UpdateResource("AppPanelBrush", new SolidColorBrush(panelColor));
+
+        var menuColor = Color.FromArgb(menuAlpha, panelBase.R, panelBase.G, panelBase.B);
+        _currentMenuBrush = new SolidColorBrush(menuColor);
+        UpdateResource("MenuPopupBrush", _currentMenuBrush);
+
+        // Border
+        var borderAlpha = (byte)(15 + 235 * _viewModel.BorderStrength / 100.0);
+        var borderBase = isDark ? Color.Parse("#505050") : Color.Parse("#C0C0C0");
         var borderColor = Color.FromArgb(borderAlpha, borderBase.R, borderBase.G, borderBase.B);
-        UpdateResource("AppBorderBrush", new SolidColorBrush(borderColor));
+        _currentBorderBrush = new SolidColorBrush(borderColor);
+        UpdateResource("AppBorderBrush", _currentBorderBrush);
 
-        // SelectionStrength: affects tree selection visibility (bigger range)
-        var selectionAlpha = (byte)(15 + 100 * _viewModel.SelectionStrength / 100.0);
-        var selectionBase = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
-        var selectionColor = Color.FromArgb(selectionAlpha, selectionBase.R, selectionBase.G, selectionBase.B);
-        UpdateResource("TreeSelectionBrush", new SolidColorBrush(selectionColor));
-
-        // AccentStrength: affects accent color intensity
-        var accentAlpha = (byte)(80 + 175 * _viewModel.AccentStrength / 100.0);
-        var accentBase = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
-        var accentColor = Color.FromArgb(accentAlpha, accentBase.R, accentBase.G, accentBase.B);
+        // Accent
+        var accentColor = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
         UpdateResource("AppAccentBrush", new SolidColorBrush(accentColor));
+
+        // CRITICAL: Force update all menu popups with direct brush assignment
+        ApplyMenuBrushesDirect();
+    }
+
+    private void ApplyMenuBrushesDirect()
+    {
+        // Find all MenuItems and hook their popup opening
+        var mainMenu = this.FindControl<Menu>("MainMenu");
+        if (mainMenu is null) return;
+
+        foreach (var menuItem in mainMenu.GetLogicalDescendants().OfType<MenuItem>())
+        {
+            // Update any currently open popup
+            UpdateMenuItemPopup(menuItem);
+        }
+    }
+
+    private void UpdateMenuItemPopup(MenuItem menuItem)
+    {
+        // Find the popup template part
+        var popup = menuItem.GetVisualDescendants().OfType<Popup>().FirstOrDefault();
+        if (popup?.Child is Border border)
+        {
+            border.Background = _currentMenuBrush;
+            border.BorderBrush = _currentBorderBrush;
+        }
+
+        // Also check logical descendants for nested items
+        foreach (var subItem in menuItem.GetLogicalDescendants().OfType<MenuItem>())
+        {
+            var subPopup = subItem.GetVisualDescendants().OfType<Popup>().FirstOrDefault();
+            if (subPopup?.Child is Border subBorder)
+            {
+                subBorder.Background = _currentMenuBrush;
+                subBorder.BorderBrush = _currentBorderBrush;
+            }
+        }
     }
 
     private void UpdateResource(string key, object value)
     {
         var app = global::Avalonia.Application.Current;
-        if (app?.Resources is null) return;
 
+        // Update in Application resources
+        if (app?.Resources is not null)
+        {
+            try
+            {
+                app.Resources[key] = value;
+            }
+            catch
+            {
+                // Ignore errors
+            }
+        }
+
+        // Also update in Window resources for immediate effect on all elements
         try
         {
-            app.Resources[key] = value;
+            Resources[key] = value;
         }
         catch
         {
-            // Ignore errors - resource might not exist
+            // Ignore errors
         }
     }
 

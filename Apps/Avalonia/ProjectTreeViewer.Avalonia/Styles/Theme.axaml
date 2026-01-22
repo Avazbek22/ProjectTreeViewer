@@ -4,14 +4,14 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
   <ResourceDictionary x:Key="Light">
-    <!-- Win11 Settings-like (Light) -->
-    <Color x:Key="AppBackgroundColor">#E6F3F3F3</Color>   <!-- мягкий светлый фон с Mica -->
-    <Color x:Key="AppPanelColor">#F2FFFFFF</Color>        <!-- карточки -->
-    <Color x:Key="AppBorderColor">#26000000</Color>       <!-- тонкая “hairline” граница -->
-    <Color x:Key="AppAccentColor">#0078D4</Color>         <!-- Win11 blue -->
-    <Color x:Key="AppTextColor">#1F1F1F</Color>
-    <Color x:Key="AppMutedTextColor">#616161</Color>
-    <Color x:Key="TreeSelectionColor">#140078D4</Color>   <!-- очень мягкое выделение -->
+    <!-- Base Light theme (no effects) - clean neutral white -->
+    <Color x:Key="AppBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="AppPanelColor">#F3F3F3</Color>
+    <Color x:Key="AppBorderColor">#C7C7C7</Color>
+    <Color x:Key="AppAccentColor">#0078D4</Color>
+    <Color x:Key="AppTextColor">#1A1A1A</Color>
+    <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
+    <Color x:Key="TreeSelectionColor">#DCEEFF</Color>
     <Color x:Key="TreeSearchHighlightColor">#FFF59D</Color>
 
     <!-- Brushes -->
@@ -25,17 +25,18 @@
     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
+    <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}" />
   </ResourceDictionary>
 
   <ResourceDictionary x:Key="Dark">
-    <!-- Win11 Settings-like (Dark) -->
-    <Color x:Key="AppBackgroundColor">#CC0F0F10</Color>   <!-- тёмный Mica фон -->
-    <Color x:Key="AppPanelColor">#E619191B</Color>        <!-- карточки -->
-    <Color x:Key="AppBorderColor">#30FFFFFF</Color>       <!-- тонкая светлая граница -->
-    <Color x:Key="AppAccentColor">#4CC2FF</Color>         <!-- Win11-ish cyan accent -->
-    <Color x:Key="AppTextColor">#F3F3F3</Color>
-    <Color x:Key="AppMutedTextColor">#AFAFAF</Color>
-    <Color x:Key="TreeSelectionColor">#1A4CC2FF</Color>   <!-- мягкое выделение -->
+    <!-- Base Dark theme (no effects) - deep dark, not gray -->
+    <Color x:Key="AppBackgroundColor">#121214</Color>
+    <Color x:Key="AppPanelColor">#17171A</Color>
+    <Color x:Key="AppBorderColor">#2B2F36</Color>
+    <Color x:Key="AppAccentColor">#4CC2FF</Color>
+    <Color x:Key="AppTextColor">#E7E9EF</Color>
+    <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
+    <Color x:Key="TreeSelectionColor">#254861</Color>
     <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
 
     <!-- Brushes -->
@@ -49,6 +50,7 @@
     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
+    <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}" />
   </ResourceDictionary>
 </ResourceDictionary.ThemeDictionaries>
 
@@ -121,7 +123,7 @@
         <Setter Property="Padding" Value="4" />
     </Style>
 
-    <!-- Disable all hover and selection highlighting -->
+    <!-- Disable all hover and selection highlighting on TreeViewItem -->
     <Style Selector="TreeViewItem:pointerover">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
@@ -145,6 +147,56 @@
     <Style Selector="TreeViewItem:pressed">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+    </Style>
+
+    <!-- Override PART_LayoutRoot border inside TreeViewItem template (Fluent theme) -->
+    <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:selected:focus /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:pressed /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:focus /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:selected:focus:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Also override ContentPresenter background in TreeViewItem header -->
+    <Style Selector="TreeViewItem /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:pointerover /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TreeViewItem:pressed /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="Transparent" />
     </Style>
 
     <Style Selector="Button">
@@ -272,7 +324,7 @@
         <Setter Property="Foreground" Value="{DynamicResource AppAccentBrush}" />
     </Style>
 
-    <!-- Menu dropdown styling -->
+    <!-- Menu and MenuItem styling -->
     <Style Selector="MenuItem">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
@@ -282,25 +334,47 @@
         <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
     </Style>
 
-    <Style Selector="MenuItem > MenuItem /template/ Border#PART_LayoutRoot">
-        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
-    </Style>
-
-    <!-- ContextMenu / MenuFlyout styling -->
-    <Style Selector="MenuFlyoutPresenter">
-        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="4" />
-    </Style>
-
+    <!-- ContextMenu styling -->
     <Style Selector="ContextMenu">
-        <Setter Property="Background" Value="{DynamicResource AppPanelBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style Selector="MenuFlyoutPresenter">
+        <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <!-- Menu popup styling - multiple selectors for complete coverage -->
+    <Style Selector="Menu > MenuItem /template/ Popup > Border">
+        <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style Selector="MenuItem /template/ Popup > Border">
+        <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <!-- Submenu item backgrounds -->
+    <Style Selector="MenuItem MenuItem">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="MenuItem MenuItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
     </Style>
 
 </Styles>

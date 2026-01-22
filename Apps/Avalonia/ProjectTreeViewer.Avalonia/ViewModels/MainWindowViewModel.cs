@@ -30,17 +30,11 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _isTransparentEnabled = true;
 
     // Theme intensity sliders (0-100)
-    private double _transparencyIntensity = 70;
+    // MaterialIntensity: single slider controlling overall effect (transparency, depth, material feel)
+    private double _materialIntensity = 65;
+    private double _blurRadius = 30;
     private double _panelContrast = 50;
     private double _borderStrength = 50;
-    private double _accentStrength = 50;
-    private double _selectionStrength = 50;
-
-    // Area-specific intensity sliders
-    private double _treeAreaIntensity = 50;
-    private double _menuBarIntensity = 50;
-    private double _settingsPanelIntensity = 50;
-    private double _menuDropdownIntensity = 50;
 
     private bool _themePopoverOpen;
 
@@ -216,8 +210,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     // Computed: show transparency-related sliders (only when any effect is active)
     public bool ShowTransparencySliders => HasAnyEffect;
 
-    // Computed: show area-specific sliders (most useful for Transparent mode)
-    public bool ShowAreaSliders => _isTransparentEnabled;
+    // Computed: show blur slider only in Transparent mode (Mica/Acrylic have built-in blur)
+    public bool ShowBlurSlider => _isTransparentEnabled;
 
     private void RaiseEffectPropertiesChanged()
     {
@@ -226,7 +220,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(IsTransparentEnabled));
         RaisePropertyChanged(nameof(HasAnyEffect));
         RaisePropertyChanged(nameof(ShowTransparencySliders));
-        RaisePropertyChanged(nameof(ShowAreaSliders));
+        RaisePropertyChanged(nameof(ShowBlurSlider));
     }
 
     // Methods for toggle behavior (click on active = disable)
@@ -292,14 +286,26 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
-    // Theme intensity sliders
-    public double TransparencyIntensity
+    // Material intensity: single slider for overall effect strength (transparency, depth, material feel)
+    public double MaterialIntensity
     {
-        get => _transparencyIntensity;
+        get => _materialIntensity;
         set
         {
-            if (Math.Abs(_transparencyIntensity - value) < 0.1) return;
-            _transparencyIntensity = value;
+            if (Math.Abs(_materialIntensity - value) < 0.1) return;
+            _materialIntensity = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    // BlurRadius: controls blur intensity in Transparent mode (0=no blur, 100=max blur ~64px)
+    public double BlurRadius
+    {
+        get => _blurRadius;
+        set
+        {
+            if (Math.Abs(_blurRadius - value) < 0.1) return;
+            _blurRadius = value;
             RaisePropertyChanged();
         }
     }
@@ -322,73 +328,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             if (Math.Abs(_borderStrength - value) < 0.1) return;
             _borderStrength = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public double AccentStrength
-    {
-        get => _accentStrength;
-        set
-        {
-            if (Math.Abs(_accentStrength - value) < 0.1) return;
-            _accentStrength = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public double SelectionStrength
-    {
-        get => _selectionStrength;
-        set
-        {
-            if (Math.Abs(_selectionStrength - value) < 0.1) return;
-            _selectionStrength = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    // Area-specific intensity sliders
-    public double TreeAreaIntensity
-    {
-        get => _treeAreaIntensity;
-        set
-        {
-            if (Math.Abs(_treeAreaIntensity - value) < 0.1) return;
-            _treeAreaIntensity = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public double MenuBarIntensity
-    {
-        get => _menuBarIntensity;
-        set
-        {
-            if (Math.Abs(_menuBarIntensity - value) < 0.1) return;
-            _menuBarIntensity = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public double SettingsPanelIntensity
-    {
-        get => _settingsPanelIntensity;
-        set
-        {
-            if (Math.Abs(_settingsPanelIntensity - value) < 0.1) return;
-            _settingsPanelIntensity = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public double MenuDropdownIntensity
-    {
-        get => _menuDropdownIntensity;
-        set
-        {
-            if (Math.Abs(_menuDropdownIntensity - value) < 0.1) return;
-            _menuDropdownIntensity = value;
             RaisePropertyChanged();
         }
     }
@@ -498,15 +437,10 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string ThemeTransparentLabel { get; private set; } = string.Empty;
     public string ThemeMicaLabel { get; private set; } = string.Empty;
     public string ThemeAcrylicLabel { get; private set; } = string.Empty;
-    public string ThemeTransparencyIntensity { get; private set; } = string.Empty;
+    public string ThemeMaterialIntensity { get; private set; } = string.Empty;
+    public string ThemeBlurRadius { get; private set; } = string.Empty;
     public string ThemePanelContrast { get; private set; } = string.Empty;
     public string ThemeBorderStrength { get; private set; } = string.Empty;
-    public string ThemeAccentStrength { get; private set; } = string.Empty;
-    public string ThemeSelectionStrength { get; private set; } = string.Empty;
-    public string ThemeTreeAreaIntensity { get; private set; } = string.Empty;
-    public string ThemeMenuBarIntensity { get; private set; } = string.Empty;
-    public string ThemeSettingsPanelIntensity { get; private set; } = string.Empty;
-    public string ThemeMenuDropdownIntensity { get; private set; } = string.Empty;
     public string SettingsIgnoreTitle { get; private set; } = string.Empty;
     public string SettingsAll { get; private set; } = string.Empty;
     public string SettingsExtensions { get; private set; } = string.Empty;
@@ -564,15 +498,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         ThemeTransparentLabel = _localization["Theme.Transparent"];
         ThemeMicaLabel = _localization["Theme.Mica"];
         ThemeAcrylicLabel = _localization["Theme.Acrylic"];
-        ThemeTransparencyIntensity = _localization["Theme.TransparencyIntensity"];
+        ThemeMaterialIntensity = _localization["Theme.MaterialIntensity"];
+        ThemeBlurRadius = _localization["Theme.BlurRadius"];
         ThemePanelContrast = _localization["Theme.PanelContrast"];
         ThemeBorderStrength = _localization["Theme.BorderStrength"];
-        ThemeAccentStrength = _localization["Theme.AccentStrength"];
-        ThemeSelectionStrength = _localization["Theme.SelectionStrength"];
-        ThemeTreeAreaIntensity = _localization["Theme.TreeAreaIntensity"];
-        ThemeMenuBarIntensity = _localization["Theme.MenuBarIntensity"];
-        ThemeSettingsPanelIntensity = _localization["Theme.SettingsPanelIntensity"];
-        ThemeMenuDropdownIntensity = _localization["Theme.MenuDropdownIntensity"];
 
         RaisePropertyChanged(nameof(MenuFile));
         RaisePropertyChanged(nameof(MenuFileOpen));
@@ -619,14 +548,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(ThemeTransparentLabel));
         RaisePropertyChanged(nameof(ThemeMicaLabel));
         RaisePropertyChanged(nameof(ThemeAcrylicLabel));
-        RaisePropertyChanged(nameof(ThemeTransparencyIntensity));
+        RaisePropertyChanged(nameof(ThemeMaterialIntensity));
+        RaisePropertyChanged(nameof(ThemeBlurRadius));
         RaisePropertyChanged(nameof(ThemePanelContrast));
         RaisePropertyChanged(nameof(ThemeBorderStrength));
-        RaisePropertyChanged(nameof(ThemeAccentStrength));
-        RaisePropertyChanged(nameof(ThemeSelectionStrength));
-        RaisePropertyChanged(nameof(ThemeTreeAreaIntensity));
-        RaisePropertyChanged(nameof(ThemeMenuBarIntensity));
-        RaisePropertyChanged(nameof(ThemeSettingsPanelIntensity));
-        RaisePropertyChanged(nameof(ThemeMenuDropdownIntensity));
     }
 }

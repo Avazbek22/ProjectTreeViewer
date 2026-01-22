@@ -16,7 +16,7 @@
 
   <DockPanel LastChildFill="True">
     <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0">
-      <Menu Grid.Column="0" Margin="0">
+      <Menu Name="MainMenu" Grid.Column="0" Margin="0">
         <MenuItem Header="{Binding MenuFile}">
           <MenuItem Header="{Binding MenuFileOpen}" Click="OnOpenFolder" />
           <MenuItem Header="{Binding MenuFileRefresh}" Click="OnRefresh" IsEnabled="{Binding IsProjectLoaded}" />
@@ -105,37 +105,32 @@
               </StackPanel>
             </StackPanel>
 
-            <!-- Transparency sliders - only visible when any effect is active -->
+            <!-- Effect sliders - only visible when any effect is active -->
             <StackPanel Spacing="6" IsVisible="{Binding ShowTransparencySliders}">
               <Separator Margin="0,2" />
-              <StackPanel Spacing="6">
-                <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding ThemeTransparencyIntensity}" FontSize="12" />
-                  <Slider Minimum="0" Maximum="100" Value="{Binding TransparencyIntensity}" />
-                </StackPanel>
-                <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding ThemePanelContrast}" FontSize="12" />
-                  <Slider Minimum="0" Maximum="100" Value="{Binding PanelContrast}" />
-                </StackPanel>
+              <!-- Material Intensity - single slider controlling overall effect strength -->
+              <StackPanel Spacing="2">
+                <TextBlock Text="{Binding ThemeMaterialIntensity}" FontSize="12" FontWeight="SemiBold" />
+                <Slider Minimum="0" Maximum="100" Value="{Binding MaterialIntensity}" />
+              </StackPanel>
+              <!-- Blur slider - only visible in Transparent mode -->
+              <StackPanel Spacing="2" IsVisible="{Binding ShowBlurSlider}">
+                <TextBlock Text="{Binding ThemeBlurRadius}" FontSize="12" />
+                <Slider Minimum="0" Maximum="100" Value="{Binding BlurRadius}" />
+              </StackPanel>
+              <!-- Panel Contrast -->
+              <StackPanel Spacing="2">
+                <TextBlock Text="{Binding ThemePanelContrast}" FontSize="12" />
+                <Slider Minimum="0" Maximum="100" Value="{Binding PanelContrast}" />
               </StackPanel>
             </StackPanel>
 
-            <!-- Base style sliders - always visible -->
+            <!-- Border slider - always visible -->
             <StackPanel Spacing="6">
               <Separator Margin="0,2" IsVisible="{Binding !ShowTransparencySliders}" />
-              <StackPanel Spacing="6">
-                <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding ThemeBorderStrength}" FontSize="12" />
-                  <Slider Minimum="0" Maximum="100" Value="{Binding BorderStrength}" />
-                </StackPanel>
-                <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding ThemeAccentStrength}" FontSize="12" />
-                  <Slider Minimum="0" Maximum="100" Value="{Binding AccentStrength}" />
-                </StackPanel>
-                <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding ThemeSelectionStrength}" FontSize="12" />
-                  <Slider Minimum="0" Maximum="100" Value="{Binding SelectionStrength}" />
-                </StackPanel>
+              <StackPanel Spacing="2">
+                <TextBlock Text="{Binding ThemeBorderStrength}" FontSize="12" />
+                <Slider Minimum="0" Maximum="100" Value="{Binding BorderStrength}" />
               </StackPanel>
             </StackPanel>
           </StackPanel>
