@@ -249,11 +249,15 @@ PRs and issues are welcome.
 
 Suggested contributions:
 
-* new icon mappings
-* new localization packs
-* performance improvements in scanning/tree building
-* UI/UX improvements (search, settings)
+* Bug fixes
+* Documentation improvements (README, screenshots, store descriptions)
+* Performance improvements
+* Tests (unit and integration)
+* UI/UX improvements
+* Icon mappings
+* Localization
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and contribution guidelines.
 ---
 
 ## License 📄
