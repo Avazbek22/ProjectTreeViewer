@@ -42,4 +42,26 @@ public sealed class SmartIgnoreRulesTests
 		Assert.Contains("dist", result.FolderNames);
 		Assert.Contains("build", result.FolderNames);
 	}
+
+	// Verifies frontend ignore rule returns empty sets when the root does not exist.
+	[Fact]
+	public void FrontendArtifactsIgnoreRule_ReturnsEmptyWhenRootMissing()
+	{
+		var rule = new FrontendArtifactsIgnoreRule();
+
+		var result = rule.Evaluate("/path/does/not/exist");
+
+		Assert.Empty(result.FolderNames);
+		Assert.Empty(result.FileNames);
+	}
+
+	// Verifies common smart-ignore folder set is case-insensitive.
+	[Fact]
+	public void CommonSmartIgnoreRule_UsesCaseInsensitiveFolders()
+	{
+		var rule = new CommonSmartIgnoreRule();
+		var result = rule.Evaluate("/root");
+
+		Assert.Contains(".GIT", result.FolderNames);
+	}
 }

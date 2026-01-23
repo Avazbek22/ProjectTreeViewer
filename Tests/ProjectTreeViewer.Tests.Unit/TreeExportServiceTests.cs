@@ -111,4 +111,107 @@ public sealed class TreeExportServiceTests
 
 		Assert.False(TreeExportService.HasSelectedDescendantOrSelf(node, selected));
 	}
+
+	// Verifies the full tree export renders nested folder structure.
+	[Fact]
+	public void BuildFullTree_RendersNestedDirectories()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor(
+					"src",
+					"/root/src",
+					true,
+					false,
+					"folder",
+					new List<TreeNodeDescriptor>
+					{
+						new TreeNodeDescriptor("main.cs", "/root/src/main.cs", false, false, "csharp", new List<TreeNodeDescriptor>())
+					})
+			});
+
+		var service = new TreeExportService();
+		var result = service.BuildFullTree("/root", root);
+
+		Assert.Contains("└── src", result);
+		Assert.Contains("│       └── main.cs", result);
+	}
+
+	// Verifies selected tree includes ancestor directories for selected descendants.
+	[Fact]
+	public void BuildSelectedTree_IncludesAncestorDirectories()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor(
+					"src",
+					"/root/src",
+					true,
+					false,
+					"folder",
+					new List<TreeNodeDescriptor>
+					{
+						new TreeNodeDescriptor("main.cs", "/root/src/main.cs", false, false, "csharp", new List<TreeNodeDescriptor>())
+					})
+			});
+
+		var service = new TreeExportService();
+		var selected = new HashSet<string> { "/root/src/main.cs" };
+		var result = service.BuildSelectedTree("/root", root, selected);
+
+		Assert.Contains("src", result);
+		Assert.Contains("main.cs", result);
+	}
+
+	// Verifies selecting the root includes the root node only.
+	[Fact]
+	public void BuildSelectedTree_ReturnsRootOnlyWhenRootSelected()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor("child", "/root/child", false, false, "text", new List<TreeNodeDescriptor>())
+			});
+
+		var service = new TreeExportService();
+		var selected = new HashSet<string> { "/root" };
+		var result = service.BuildSelectedTree("/root", root, selected);
+
+		Assert.Contains("root", result);
+		Assert.DoesNotContain("child", result);
+	}
+
+	// Verifies selection matching returns true when the node itself is selected.
+	[Fact]
+	public void HasSelectedDescendantOrSelf_ReturnsTrueWhenSelfSelected()
+	{
+		var node = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>());
+
+		var selected = new HashSet<string> { "/root" };
+
+		Assert.True(TreeExportService.HasSelectedDescendantOrSelf(node, selected));
+	}
 }

@@ -57,4 +57,82 @@ public sealed class TreeBuilderTests
 		Assert.Equal("folder", result.Root.Children.First().Name);
 		Assert.False(result.Root.Children.Last().IsDirectory);
 	}
+
+	// Verifies no files are included when no extensions are allowed.
+	[Fact]
+	public void Build_SkipsFilesWhenAllowedExtensionsEmpty()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("root.txt", "root");
+		temp.CreateFile("src/app.cs", "class A {}");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(),
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()));
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.DoesNotContain(result.Root.Children, child => !child.IsDirectory);
+	}
+
+	// Verifies dot folders are excluded when the ignore rule is set.
+	[Fact]
+	public void Build_RespectsDotFolderIgnoreRule()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile(".cache/hidden.txt", "hidden");
+		temp.CreateFile("visible.txt", "visible");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+			IgnoreRules: new IgnoreRules(false, false, false, false, true, false, new HashSet<string>(), new HashSet<string>()));
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.DoesNotContain(result.Root.Children, child => child.Name == ".cache");
+	}
+
+	// Verifies smart-ignored folders are excluded.
+	[Fact]
+	public void Build_RespectsSmartIgnoredFolders()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("ignored/skip.txt", "skip");
+		temp.CreateFile("keep/ok.txt", "ok");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ignored", "keep" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false,
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ignored" },
+				new HashSet<string>()));
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.DoesNotContain(result.Root.Children, child => child.Name == "ignored");
+		Assert.Contains(result.Root.Children, child => child.Name == "keep");
+	}
+
+	// Verifies allowed extensions matching is case-insensitive.
+	[Fact]
+	public void Build_RespectsAllowedExtensionsCaseInsensitive()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("note.txt", "note");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".TXT" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()));
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.Contains(result.Root.Children, child => child.Name == "note.txt");
+	}
 }

@@ -79,4 +79,70 @@ public sealed class SelectedContentExportServiceTests
 
 		Assert.Equal(1, result.Split("dup.txt:").Length - 1);
 	}
+
+	// Verifies whitespace-only paths yield empty output.
+	[Fact]
+	public void Build_ReturnsEmptyForWhitespacePaths()
+	{
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { " ", "\t", string.Empty });
+
+		Assert.Equal(string.Empty, result);
+	}
+
+	// Verifies trailing newlines are trimmed from file content.
+	[Fact]
+	public void Build_TrimsTrailingNewlinesFromContent()
+	{
+		using var temp = new TemporaryDirectory();
+		var file = temp.CreateFile("trim.txt", "line\n\n");
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { file });
+
+		Assert.EndsWith("line", result, StringComparison.Ordinal);
+	}
+
+	// Verifies separator lines are inserted between multiple files.
+	[Fact]
+	public void Build_IncludesBlankLinesBetweenFiles()
+	{
+		using var temp = new TemporaryDirectory();
+		var fileA = temp.CreateFile("a.txt", "A");
+		var fileB = temp.CreateFile("b.txt", "B");
+
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { fileA, fileB });
+
+
+		var nl = Environment.NewLine;
+		Assert.Contains($"\u00A0{nl}\u00A0{nl}", result);
+	}
+
+	// Verifies files with embedded null bytes in the first bytes are skipped.
+	[Fact]
+	public void Build_SkipsFilesWithNullBytes()
+	{
+		using var temp = new TemporaryDirectory();
+		var file = temp.CreateBinaryFile("mixed.txt", new byte[] { 1, 2, 0, 3 });
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { file });
+
+		Assert.Equal(string.Empty, result);
+	}
+
+	// Verifies content entries include the file path heading.
+	[Fact]
+	public void Build_IncludesFilePathHeading()
+	{
+		using var temp = new TemporaryDirectory();
+		var file = temp.CreateFile("header.txt", "Header");
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { file });
+
+		Assert.Contains("header.txt:", result);
+	}
 }

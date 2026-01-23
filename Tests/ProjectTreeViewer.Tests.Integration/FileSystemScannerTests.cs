@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ProjectTreeViewer.Infrastructure.FileSystem;
 using ProjectTreeViewer.Kernel.Models;
@@ -103,5 +104,89 @@ public sealed class FileSystemScannerTests
 		Assert.Empty(result.Value);
 		Assert.False(result.RootAccessDenied);
 		Assert.False(result.HadAccessDenied);
+	}
+
+	// Verifies smart-ignore folders are excluded from extension scans.
+	[Fact]
+	public void GetExtensions_RespectsSmartIgnoredFolders()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("ignored/file.txt", "skip");
+		temp.CreateFile("kept/file.md", "keep");
+
+		var scanner = new FileSystemScanner();
+		var rules = new IgnoreRules(
+			IgnoreBinFolders: false,
+			IgnoreObjFolders: false,
+			IgnoreHiddenFolders: false,
+			IgnoreHiddenFiles: false,
+			IgnoreDotFolders: false,
+			IgnoreDotFiles: false,
+			SmartIgnoredFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ignored" },
+			SmartIgnoredFiles: new HashSet<string>());
+
+		var result = scanner.GetExtensions(temp.Path, rules);
+
+		Assert.DoesNotContain(".txt", result.Value);
+		Assert.Contains(".md", result.Value);
+	}
+
+	// Verifies dot folders are excluded when the rule is enabled.
+	[Fact]
+	public void GetExtensions_RespectsDotFolderIgnoreRule()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile(".cache/hidden.txt", "hidden");
+		temp.CreateFile("visible.txt", "visible");
+
+		var scanner = new FileSystemScanner();
+		var rules = new IgnoreRules(
+			IgnoreBinFolders: false,
+			IgnoreObjFolders: false,
+			IgnoreHiddenFolders: false,
+			IgnoreHiddenFiles: false,
+			IgnoreDotFolders: true,
+			IgnoreDotFiles: false,
+			SmartIgnoredFolders: new HashSet<string>(),
+			SmartIgnoredFiles: new HashSet<string>());
+
+		var result = scanner.GetExtensions(temp.Path, rules);
+
+		Assert.Contains(".txt", result.Value);
+		Assert.Single(result.Value);
+	}
+
+	// Verifies root folder names are sorted case-insensitively.
+	[Fact]
+	public void GetRootFolderNames_SortsCaseInsensitive()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateDirectory("b");
+		temp.CreateDirectory("A");
+
+		var scanner = new FileSystemScanner();
+		var rules = new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>());
+
+		var result = scanner.GetRootFolderNames(temp.Path, rules);
+
+		Assert.Equal("A", result.Value[0]);
+		Assert.Equal("b", result.Value[1]);
+	}
+
+	// Verifies dot files are excluded from root extension scans when configured.
+	[Fact]
+	public void GetRootFileExtensions_RespectsDotFiles()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile(".hidden.cs", "class Hidden {}");
+		temp.CreateFile("visible.txt", "visible");
+
+		var scanner = new FileSystemScanner();
+		var rules = new IgnoreRules(false, false, false, false, false, true, new HashSet<string>(), new HashSet<string>());
+
+		var result = scanner.GetRootFileExtensions(temp.Path, rules);
+
+		Assert.Contains(".txt", result.Value);
+		Assert.DoesNotContain(".cs", result.Value);
 	}
 }
