@@ -193,6 +193,8 @@
                        VerticalAlignment="Center" />
                 <TextBlock Inlines="{Binding DisplayInlines}"
                            VerticalAlignment="Center"
+                           FontFamily="{Binding DataContext.SelectedFontFamily, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                           FontSize="{Binding DataContext.TreeFontSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
                            Foreground="{DynamicResource AppTextBrush}" />
               </StackPanel>
             </Grid>

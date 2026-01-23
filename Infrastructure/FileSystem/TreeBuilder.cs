@@ -40,7 +40,7 @@ public sealed class TreeBuilder : ITreeBuilder
 		{
 			entries = new DirectoryInfo(path)
 				.GetFileSystemInfos()
-				.OrderBy(fi => !fi.Attributes.HasFlag(FileAttributes.Directory))
+				.OrderBy(fi => !IsDirectory(fi))
 				.ThenBy(fi => fi.Name, StringComparer.OrdinalIgnoreCase)
 				.ToArray();
 		}
@@ -62,7 +62,7 @@ public sealed class TreeBuilder : ITreeBuilder
 		foreach (var entry in entries)
 		{
 			var name = entry.Name;
-			bool isDir = entry.Attributes.HasFlag(FileAttributes.Directory);
+			bool isDir = IsDirectory(entry);
 
 			if (isDir && isRoot && !options.AllowedRootFolders.Contains(name))
 				continue;
@@ -123,6 +123,24 @@ public sealed class TreeBuilder : ITreeBuilder
 		}
 	}
 
+	private static bool IsDirectory(FileSystemInfo entry)
+	{
+		try
+		{
+			return entry.Attributes.HasFlag(FileAttributes.Directory);
+		}
+		catch (IOException)
+		{
+			// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+			// Treat them as files (non-directories)
+			return false;
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return false;
+		}
+	}
+
 	private static bool ShouldSkipDirectory(FileSystemInfo entry, IgnoreRules rules)
 	{
 		if (rules.SmartIgnoredFolders.Contains(entry.Name))
@@ -137,8 +155,23 @@ public sealed class TreeBuilder : ITreeBuilder
 		if (rules.IgnoreDotFolders && entry.Name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
-		if (rules.IgnoreHiddenFolders && entry.Attributes.HasFlag(FileAttributes.Hidden))
-			return true;
+		if (rules.IgnoreHiddenFolders)
+		{
+			try
+			{
+				if (entry.Attributes.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			catch (IOException)
+			{
+				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}
@@ -151,8 +184,23 @@ public sealed class TreeBuilder : ITreeBuilder
 		if (rules.IgnoreDotFiles && entry.Name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
-		if (rules.IgnoreHiddenFiles && entry.Attributes.HasFlag(FileAttributes.Hidden))
-			return true;
+		if (rules.IgnoreHiddenFiles)
+		{
+			try
+			{
+				if (entry.Attributes.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			catch (IOException)
+			{
+				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}
