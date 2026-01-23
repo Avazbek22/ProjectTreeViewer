@@ -513,10 +513,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         ThemeMicaLabel = _localization["Theme.Mica"];
         ThemeAcrylicLabel = _localization["Theme.Acrylic"];
         ThemeMaterialIntensity = _localization["Theme.MaterialIntensity"];
-        ThemeBlurRadius = _localization["Theme.BlurRadius"];
+        ThemeBlurRadius = _localization["Theme.BlurRadius"] + " [Beta]";
         ThemePanelContrast = _localization["Theme.PanelContrast"];
         ThemeBorderStrength = _localization["Theme.BorderStrength"];
-        ThemeMenuChildIntensity = _localization["Theme.MenuChildIntensity"];
+        ThemeMenuChildIntensity = _localization["Theme.MenuChildIntensity"] + " [Beta]";
 
         RaisePropertyChanged(nameof(MenuFile));
         RaisePropertyChanged(nameof(MenuFileOpen));
