@@ -14,6 +14,7 @@ using Avalonia.VisualTree;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using Avalonia.Controls.Primitives;
+using Avalonia.Threading;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.Services;
@@ -131,34 +132,108 @@ public partial class MainWindow : Window
 
     private void OnSubmenuOpened(object? sender, RoutedEventArgs e)
     {
-        // When any submenu opens, apply current brushes directly to its popup
-        if (e.Source is MenuItem menuItem)
-        {
-            // Check if this is a child menu (has a parent MenuItem) or top-level menu
-            var isChildMenu = menuItem.Parent is MenuItem;
+        if (e.Source is not MenuItem menuItem)
+            return;
 
-            // Delay slightly to let popup render
-            global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+
+        Dispatcher.UIThread.Post(() =>
+        {
+// Защита: если элемент уже отцеплен от дерева (закрыли меню/окно) — ничего не делаем.
+            if (menuItem.GetVisualRoot() is null)
+                return;
+
+
+            ApplyBrushesToMenuItemPopup(menuItem);
+
+
+// Вложенные меню: применяем, но фактически отработает только для IsOpen попапов (см. ниже).
+            foreach (var child in menuItem.GetVisualDescendants().OfType<MenuItem>())
             {
-                ApplyBrushesToMenuItemPopup(menuItem, isChildMenu);
-            }, global::Avalonia.Threading.DispatcherPriority.Loaded);
+                ApplyBrushesToMenuItemPopup(child);
+            }
+        }, DispatcherPriority.Loaded);
+    }
+
+
+
+    private void ApplyBrushesToMenuItemPopup(MenuItem menuItem)
+    {
+        var isChildMenu = menuItem.Parent is MenuItem;
+
+
+// ВАЖНО: трогаем только ОТКРЫТЫЕ Popup. Закрытые/ещё не созданные попапы приводят к гонкам/крашам.
+        foreach (var popup in menuItem.GetVisualDescendants().OfType<Popup>().Where(p => p.IsOpen))
+        {
+// Принудительное размытие для попап-хоста, чтобы текст дерева "сзади" не мешал.
+            ApplyPopupHostEffect(popup);
+
+
+            if (popup.Child is not Border border)
+                continue;
+
+
+            border.Background = isChildMenu ? _currentMenuChildBrush : _currentMenuBrush;
+            border.BorderBrush = _currentBorderBrush;
+            border.BorderThickness = new Thickness(1);
+            border.CornerRadius = new CornerRadius(8);
+            border.Padding = new Thickness(4);
         }
     }
 
-    private void ApplyBrushesToMenuItemPopup(MenuItem menuItem, bool isChildMenu = false)
+    private void ApplyPopupHostEffect(Popup popup)
     {
-        // Find popup in visual tree
-        foreach (var popup in menuItem.GetVisualDescendants().OfType<Popup>())
+// Ключевая защита: если попап уже закрылся — не трогаем ничего.
+        if (!popup.IsOpen)
+            return;
+
+
+// Попап создаёт отдельный TopLevel (PopupRoot). Достаём его через Child.
+        if (popup.Child is null)
+            return;
+
+
+// Если child ещё не прикреплён к визуальному дереву — рано.
+        if (popup.Child.GetVisualRoot() is null)
+            return;
+
+
+        if (TopLevel.GetTopLevel(popup.Child) is not TopLevel topLevel)
+            return;
+
+
+// На всякий случай: не лезем в главное окно (должны менять именно PopupRoot).
+        if (ReferenceEquals(topLevel, this))
+            return;
+
+
+// В Avalonia возможна гонка: между Post(...) и выполнением popup успевает уничтожиться.
+// Поэтому любые установки свойств TopLevel делаем безопасно.
+        try
         {
-            if (popup.Child is Border border)
+            if (_viewModel.HasAnyEffect)
             {
-                // Use child brush for nested menus, main brush for top-level
-                border.Background = isChildMenu ? _currentMenuChildBrush : _currentMenuBrush;
-                border.BorderBrush = _currentBorderBrush;
-                border.BorderThickness = new Thickness(1);
-                border.CornerRadius = new CornerRadius(8);
-                border.Padding = new Thickness(4);
+                topLevel.TransparencyLevelHint = new[]
+                {
+                    WindowTransparencyLevel.AcrylicBlur,
+                    WindowTransparencyLevel.Blur,
+                    WindowTransparencyLevel.Transparent,
+                    WindowTransparencyLevel.None
+                };
+
+
+                topLevel.Background = Brushes.Transparent;
             }
+            else
+            {
+                topLevel.TransparencyLevelHint = new[]
+                {
+                    WindowTransparencyLevel.None
+                };
+            }
+        }
+        catch
+        {
+// Игнорируем: попап мог закрыться/уничтожиться прямо в этот момент.
         }
     }
 
@@ -195,9 +270,12 @@ public partial class MainWindow : Window
     private void InitializeFonts()
     {
         // Only use predefined fonts like WinForms
-        var predefinedFonts = new[] { "Consolas", "Courier New", "Fira Code", "Lucida Console", "Cascadia Code", "JetBrains Mono" };
+        var predefinedFonts = new[]
+            { "Consolas", "Courier New", "Fira Code", "Lucida Console", "Cascadia Code", "JetBrains Mono" };
 
-        var systemFonts = FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var systemFonts =
+            FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // Add only predefined fonts that exist on system
         foreach (var font in predefinedFonts)
@@ -410,182 +488,241 @@ public partial class MainWindow : Window
 
     private void UpdateTransparencyEffect()
     {
-        if (_viewModel.IsTransparentEnabled)
+        if (!_viewModel.HasAnyEffect)
         {
-            // TRANSPARENT: Real transparency with controllable blur
-            // BlurRadius controls the blur intensity:
-            // 0-30: Pure transparency (see-through to desktop)
-            // 30-70: Gradual blur transition using AcrylicBlur
-            // 70-100: Maximum blur effect
-            var blur = _viewModel.BlurRadius;
-            if (blur < 30)
+            TransparencyLevelHint = new[]
             {
-                // Pure transparency - see desktop clearly
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
-            }
-            else
+                WindowTransparencyLevel.None
+            };
+
+
+            UpdateDynamicThemeBrushes();
+            return;
+        }
+
+
+        // Mica
+        if (_viewModel.IsMicaEnabled)
+        {
+            TransparencyLevelHint = new[]
             {
-                // Use AcrylicBlur for frosted glass effect with controllable intensity
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent };
-            }
+                WindowTransparencyLevel.Mica,
+                WindowTransparencyLevel.Blur,
+                WindowTransparencyLevel.None
+            };
+
+
+            UpdateDynamicThemeBrushes();
+            return;
         }
-        else if (_viewModel.IsMicaEnabled)
+
+
+        // Acrylic
+        if (_viewModel.IsAcrylicEnabled)
         {
-            // MICA: System Mica effect
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica };
+            TransparencyLevelHint = new[]
+            {
+                WindowTransparencyLevel.AcrylicBlur,
+                WindowTransparencyLevel.Blur,
+                WindowTransparencyLevel.Transparent,
+                WindowTransparencyLevel.None
+            };
+
+
+            UpdateDynamicThemeBrushes();
+            return;
         }
-        else if (_viewModel.IsAcrylicEnabled)
+
+
+        // Transparent mode
+        // В Avalonia нельзя реально менять радиус размытия окна. Поэтому делаем плавность так:
+        // - BlurRadius == 0 -> чистая прозрачность (без blur)
+        // - BlurRadius > 0 -> включаем AcrylicBlur (есть размытие) и "проявляем" его кистями.
+        var blur = Math.Clamp(_viewModel.BlurRadius / 100.0, 0.0, 1.0);
+
+
+        if (blur <= 0.0001)
         {
-            // ACRYLIC: Frosted glass blur effect (like current "good" transparent)
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur };
+            TransparencyLevelHint = new[]
+            {
+                WindowTransparencyLevel.Transparent,
+                WindowTransparencyLevel.None
+            };
         }
         else
         {
-            // No effects - solid window
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+            TransparencyLevelHint = new[]
+            {
+                WindowTransparencyLevel.AcrylicBlur,
+                WindowTransparencyLevel.Blur,
+                WindowTransparencyLevel.Transparent,
+                WindowTransparencyLevel.None
+            };
         }
+
 
         UpdateDynamicThemeBrushes();
     }
 
     private void UpdateDynamicThemeBrushes()
     {
-        var app = global::Avalonia.Application.Current;
-        if (app is null) return;
+        if (global::Avalonia.Application.Current is not { } app)
+            return;
+
 
         var theme = app.ActualThemeVariant ?? ThemeVariant.Dark;
         var isDark = theme == ThemeVariant.Dark;
 
-        var material = _viewModel.MaterialIntensity / 100.0;
-        var blur = _viewModel.BlurRadius / 100.0;
-        var contrast = _viewModel.PanelContrast / 100.0;
 
-        Color bgBase, panelBase;
-        byte bgAlpha, panelAlpha, menuAlpha;
+        // Базовые цвета из Ваших ThemeDictionaries (важно: без эффектов должен быть именно этот фон).
+        var baseBg = isDark ? Color.Parse("#121214") : Color.Parse("#FFFFFF");
+        var basePanel = isDark ? Color.Parse("#17171A") : Color.Parse("#F3F3F3");
 
+
+        var material = Math.Clamp(_viewModel.MaterialIntensity / 100.0, 0.0, 1.0);
+        var contrast = Math.Clamp(_viewModel.PanelContrast / 100.0, 0.0, 1.0);
+        var borderStrength = Math.Clamp(_viewModel.BorderStrength / 100.0, 0.0, 1.0);
+        var menuChild = Math.Clamp(_viewModel.MenuChildIntensity / 100.0, 0.0, 1.0);
+        var blur = Math.Clamp(_viewModel.BlurRadius / 100.0, 0.0, 1.0);
+
+
+        // Итоговые значения
+        Color bgBase = baseBg;
+        Color panelBase = basePanel;
+
+
+        byte bgAlpha;
+        byte panelAlpha;
+        byte borderAlpha;
+        byte menuAlpha;
+        byte menuChildAlpha = 255;
         if (!_viewModel.HasAnyEffect)
         {
-            // NO EFFECT - solid colors
-            bgBase = isDark ? Color.Parse("#1E1E1E") : Color.Parse("#FFFFFF");
-            panelBase = isDark ? Color.Parse("#252526") : Color.Parse("#F3F3F3");
+            // Без эффектов: полностью непрозрачно
             bgAlpha = 255;
             panelAlpha = 255;
             menuAlpha = 255;
+            menuChildAlpha = 255;
         }
-        else if (_viewModel.IsTransparentEnabled)
+        else if (_viewModel.IsMicaEnabled)
         {
-            // TRANSPARENT MODE - real see-through transparency with controllable blur
-            // Warm neutral colors (no gray/blue tint)
-            bgBase = isDark ? Color.Parse("#1A1A1A") : Color.Parse("#FAFAFA");
-            panelBase = isDark ? Color.Parse("#262626") : Color.Parse("#FFFFFF");
+            // Mica: усиливаем воспринимаемую "силу" (попросили +500%) через кривую.
+            // 0 остаётся 0, но середина/верх становятся заметно сильнее.
+            var micaOpen = Math.Pow(material, 0.2); // ~x5 по субъективной силе
 
-            // MaterialIntensity: 0=opaque, 100=fully transparent
-            // This is REAL transparency - you see the desktop
-            var baseAlpha = (byte)(255 - material * 240);
 
-            // BlurRadius controls the blur effect intensity:
-            // 0-30: Pure transparency (minimal tint)
-            // 30-70: Gradual frosted glass effect (increasing tint for blur visibility)
-            // 70-100: Maximum frosted blur effect
-            if (blur < 0.3)
-            {
-                // Pure transparency - minimal background tint
-                bgAlpha = baseAlpha;
-            }
-            else if (blur < 0.7)
-            {
-                // Transition zone - gradually add tint for frosted effect
-                // Map 0.3-0.7 to tint increase
-                var blurFactor = (blur - 0.3) / 0.4; // 0 to 1
-                var tintBoost = (byte)(blurFactor * 120); // Up to 120 alpha boost
-                bgAlpha = (byte)Math.Min(255, Math.Max(baseAlpha, 30 + tintBoost));
-            }
-            else
-            {
-                // Maximum blur - strong frosted glass effect
-                var blurFactor = (blur - 0.7) / 0.3; // 0 to 1 for 70-100 range
-                var tintBoost = (byte)(120 + blurFactor * 80); // 120 to 200 alpha
-                bgAlpha = (byte)Math.Min(255, Math.Max(baseAlpha, 30 + tintBoost));
-            }
+            bgAlpha = (byte)Math.Round(255 * (1.0 - micaOpen));
 
-            // Panels: contrast controls opacity
-            panelAlpha = (byte)(60 + contrast * 180);
-            menuAlpha = (byte)Math.Min(255, panelAlpha + 40);
+
+            // Панели держим более читаемыми
+            var panelBaseAlpha = 110 + (contrast * 120); // 110..230
+            panelAlpha = (byte)Math.Clamp(panelBaseAlpha - (micaOpen * 50), 80, 255);
+
+
+            // Меню делаем плотнее (плюс размываем попап-хостом)
+            menuAlpha = (byte)Math.Clamp(panelAlpha + 35, 160, 255);
+            menuChildAlpha = (byte)Math.Clamp(menuAlpha - (menuChild * 40), 140, 255);
+
+
+            // Чуть более "чёрный" тон в Mica, чтобы не уходить в серо-синий
+            if (isDark)
+            {
+                bgBase = Color.Parse("#101012");
+                panelBase = Color.Parse("#151518");
+            }
         }
         else if (_viewModel.IsAcrylicEnabled)
         {
-            // ACRYLIC MODE - frosted glass blur (the "good" effect)
-            bgBase = isDark ? Color.Parse("#1C1C1C") : Color.Parse("#F5F5F5");
-            panelBase = isDark ? Color.Parse("#282828") : Color.Parse("#FFFFFF");
+            // Acrylic
+            // material: 0 -> почти непрозрачно, 1 -> максимально прозрачно
+            bgAlpha = (byte)Math.Round(240 - (material * 200)); // 240..40
+            panelAlpha = (byte)Math.Round(235 - (material * 150)); // 235..85
 
-            // MaterialIntensity controls blur visibility
-            // More transparent = more blur shows through
-            bgAlpha = (byte)(30 + (1 - material) * 200);
 
-            // Panels with contrast control
-            panelAlpha = (byte)(80 + contrast * 160);
-            menuAlpha = (byte)Math.Min(255, panelAlpha + 30);
+            // contrast усиливает панель (делает менее прозрачной)
+            panelAlpha = (byte)Math.Clamp(panelAlpha + (contrast * 40), 70, 255);
+
+
+            menuAlpha = (byte)Math.Clamp(panelAlpha + 30, 150, 255);
+            menuChildAlpha = (byte)Math.Clamp(menuAlpha - (menuChild * 40), 130, 255);
         }
-        else // Mica
+        else
         {
-            // MICA MODE - clean, warm colors (no gray tint!)
-            // Use warm tones to counter the cool Mica effect
-            bgBase = isDark ? Color.Parse("#1F1F1F") : Color.Parse("#FAFAFA");
-            panelBase = isDark ? Color.Parse("#2D2D2D") : Color.Parse("#FFFFFF");
+            // Transparent
+            // material отвечает за прозрачность окна/панелей.
+            bgAlpha = (byte)Math.Round(255 * (1.0 - material));
 
-            // MaterialIntensity: expanded range for more dramatic effect
-            // 0 = fully opaque (255), 100 = very transparent (15)
-            // Range: 15-255 (was 15-65, now full range like other effects)
-            bgAlpha = (byte)(255 - material * 240);
 
-            // Panel Contrast: same influence as main slider
-            // Range matches other effects: 60-240 (was 140-240, limiting to ~40% range)
-            // Now: 0 = more transparent (60), 100 = fully opaque (240)
-            panelAlpha = (byte)(60 + contrast * 180);
-            menuAlpha = (byte)Math.Min(255, panelAlpha + 30);
+            // "плавность" blur: blur==0 -> прозрачность без blur;
+            // blur>0 -> включён AcrylicBlur, и мы мягко повышаем читаемость через панели/меню.
+            // (реальный радиус blur у окна в Avalonia не параметризуется)
+            var blurVisibility = Math.Pow(blur, 2.2); // 1% почти незаметно, 100% максимально
+
+
+            var panelBaseAlpha = 90 + (contrast * 130); // 90..220
+            panelAlpha = (byte)Math.Clamp(panelBaseAlpha + (blurVisibility * 25), 70, 255);
+
+
+            // Меню всегда более плотное + попапы будут принудительно с blur-хостом
+            menuAlpha = (byte)Math.Clamp(panelAlpha + 45, 170, 255);
+            menuChildAlpha = (byte)Math.Clamp(menuAlpha - (menuChild * 40), 150, 255);
         }
 
-        // Apply colors
+
+        borderAlpha = (byte)Math.Round(255 * borderStrength);
+
+
+        // Background
         var bgColor = Color.FromArgb(bgAlpha, bgBase.R, bgBase.G, bgBase.B);
-        UpdateResource("AppBackgroundBrush", new SolidColorBrush(bgColor));
+        var backgroundBrush = new SolidColorBrush(bgColor);
+        UpdateResource("AppBackgroundBrush", backgroundBrush);
 
+        // Panel
         var panelColor = Color.FromArgb(panelAlpha, panelBase.R, panelBase.G, panelBase.B);
-        UpdateResource("AppPanelBrush", new SolidColorBrush(panelColor));
+        var panelBrush = new SolidColorBrush(panelColor);
+        UpdateResource("AppPanelBrush", panelBrush);
 
+        // Menu popup (top-level)
         var menuColor = Color.FromArgb(menuAlpha, panelBase.R, panelBase.G, panelBase.B);
         _currentMenuBrush = new SolidColorBrush(menuColor);
         UpdateResource("MenuPopupBrush", _currentMenuBrush);
 
-        // Menu child intensity - separate control for dropdown/submenu elements
-        var menuChildIntensity = _viewModel.MenuChildIntensity / 100.0;
-        byte menuChildAlpha;
-        if (!_viewModel.HasAnyEffect)
-        {
-            menuChildAlpha = 255;
-        }
-        else
-        {
-            // MenuChildIntensity works like PanelContrast but specifically for submenus
-            // 0 = more transparent (effect shows through), 100 = more opaque
-            menuChildAlpha = (byte)(60 + menuChildIntensity * 190);
-        }
+        // Menu popup (child/submenu)
         var menuChildColor = Color.FromArgb(menuChildAlpha, panelBase.R, panelBase.G, panelBase.B);
         _currentMenuChildBrush = new SolidColorBrush(menuChildColor);
         UpdateResource("MenuChildPopupBrush", _currentMenuChildBrush);
 
         // Border
-        var borderAlpha = (byte)(15 + 235 * _viewModel.BorderStrength / 100.0);
         var borderBase = isDark ? Color.Parse("#505050") : Color.Parse("#C0C0C0");
         var borderColor = Color.FromArgb(borderAlpha, borderBase.R, borderBase.G, borderBase.B);
         _currentBorderBrush = new SolidColorBrush(borderColor);
         UpdateResource("AppBorderBrush", _currentBorderBrush);
 
-        // Accent
+        // Accent (если нужно — оставьте как было)
         var accentColor = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
         UpdateResource("AppAccentBrush", new SolidColorBrush(accentColor));
 
-        // CRITICAL: Force update all menu popups with direct brush assignment
+        // Принудительно подтолкнуть открытые попапы меню
         ApplyMenuBrushesDirect();
+    }
+
+    private void UpdateResourceForCurrentTheme(global::Avalonia.Application app, ThemeVariant theme, string key,
+        object value)
+    {
+// 1) Локально в окне (самый высокий приоритет)
+        Resources[key] = value;
+
+
+// 2) В Application (на всякий случай, если где-то берут напрямую оттуда)
+        app.Resources[key] = value;
+
+
+// 3) И в ThemeDictionaries (если ресурс там определён и перекрывает lookup)
+        if (app.Resources.ThemeDictionaries is { } dict && dict.TryGetValue(theme, out var themed) &&
+            themed is ResourceDictionary rd)
+        {
+            rd[key] = value;
+        }
     }
 
     private void ApplyMenuBrushesDirect()
@@ -686,48 +823,25 @@ public partial class MainWindow : Window
 
     private void OnSetTransparentMode(object? sender, RoutedEventArgs e)
     {
-        // Toggle: if already on - turn off, if off - turn on (and disable others)
-        if (_viewModel.IsTransparentEnabled)
-        {
-            // Turn off all effects
-            _viewModel.IsTransparentEnabled = false;
-        }
-        else
-        {
-            // Turn on transparent, turn off others
-            _viewModel.IsTransparentEnabled = true;
-        }
+        _viewModel.ToggleTransparent();
         UpdateTransparencyEffect();
         e.Handled = true;
     }
 
     private void OnSetMicaMode(object? sender, RoutedEventArgs e)
     {
-        if (_viewModel.IsMicaEnabled)
-        {
-            _viewModel.IsMicaEnabled = false;
-        }
-        else
-        {
-            _viewModel.IsMicaEnabled = true;
-        }
+        _viewModel.ToggleMica();
         UpdateTransparencyEffect();
         e.Handled = true;
     }
 
     private void OnSetAcrylicMode(object? sender, RoutedEventArgs e)
     {
-        if (_viewModel.IsAcrylicEnabled)
-        {
-            _viewModel.IsAcrylicEnabled = false;
-        }
-        else
-        {
-            _viewModel.IsAcrylicEnabled = true;
-        }
+        _viewModel.ToggleAcrylic();
         UpdateTransparencyEffect();
         e.Handled = true;
     }
+
 
     private void OnLangRu(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.Ru);
     private void OnLangEn(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.En);
@@ -1078,6 +1192,7 @@ public partial class MainWindow : Window
             {
                 CollapseAllExceptRoot(node);
             }
+
             return;
         }
 
@@ -1143,7 +1258,8 @@ public partial class MainWindow : Window
             node.UpdateSearchHighlight(query, highlightBackground, highlightForeground, normalForeground);
     }
 
-    private (IBrush highlightBackground, IBrush highlightForeground, IBrush normalForeground) GetSearchHighlightBrushes()
+    private (IBrush highlightBackground, IBrush highlightForeground, IBrush normalForeground)
+        GetSearchHighlightBrushes()
     {
         var app = global::Avalonia.Application.Current;
         var theme = app?.ActualThemeVariant ?? ThemeVariant.Light;
@@ -1156,10 +1272,12 @@ public partial class MainWindow : Window
             : new SolidColorBrush(Color.Parse("#1A1A1A"));
 
         // Override with resources only if they're valid IBrush (pattern matching)
-        if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true && bg is IBrush bgBrush)
+        if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true &&
+            bg is IBrush bgBrush)
             highlightBackground = bgBrush;
 
-        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true && fg is IBrush fgBrush)
+        if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true &&
+            fg is IBrush fgBrush)
             highlightForeground = fgBrush;
 
         if (app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true && textFg is IBrush textBrush)
@@ -1449,7 +1567,8 @@ public partial class MainWindow : Window
 
         var prev = _extensionsSelectionCache.Count > 0
             ? new HashSet<string>(_extensionsSelectionCache, StringComparer.OrdinalIgnoreCase)
-            : new HashSet<string>(_viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name), StringComparer.OrdinalIgnoreCase);
+            : new HashSet<string>(_viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
+                StringComparer.OrdinalIgnoreCase);
 
         if (rootFolders.Count == 0)
         {
@@ -1457,7 +1576,8 @@ public partial class MainWindow : Window
             _suppressExtensionAllCheck = true;
             _viewModel.AllExtensionsChecked = false;
             _suppressExtensionAllCheck = false;
-            SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
+            SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
+                value => _viewModel.AllExtensionsChecked = value);
             return;
         }
 
@@ -1477,7 +1597,8 @@ public partial class MainWindow : Window
         if (_viewModel.AllExtensionsChecked)
             SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
 
-        SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck, value => _viewModel.AllExtensionsChecked = value);
+        SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
+            value => _viewModel.AllExtensionsChecked = value);
         UpdateExtensionsSelectionCache();
     }
 
@@ -1504,7 +1625,8 @@ public partial class MainWindow : Window
         if (_viewModel.AllRootFoldersChecked)
             SetAllChecked(_viewModel.RootFolders, true, ref _suppressRootItemCheck);
 
-        SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck, value => _viewModel.AllRootFoldersChecked = value);
+        SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck,
+            value => _viewModel.AllRootFoldersChecked = value);
     }
 
     private void PopulateIgnoreOptionsForRootSelection(IReadOnlyCollection<string> rootFolders)
@@ -1531,7 +1653,7 @@ public partial class MainWindow : Window
             foreach (var option in _ignoreOptions)
             {
                 bool isChecked = previousSelections.Contains(option.Id) ||
-                    (!hasPrevious && option.DefaultChecked);
+                                 (!hasPrevious && option.DefaultChecked);
                 _viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(option.Id, option.Label, isChecked));
             }
         }
@@ -1639,7 +1761,8 @@ public partial class MainWindow : Window
 
     private void SyncIgnoreAllCheckbox()
     {
-        SyncAllCheckbox(_viewModel.IgnoreOptions, ref _suppressIgnoreAllCheck, value => _viewModel.AllIgnoreChecked = value);
+        SyncAllCheckbox(_viewModel.IgnoreOptions, ref _suppressIgnoreAllCheck,
+            value => _viewModel.AllIgnoreChecked = value);
     }
 
     private static void SyncAllCheckbox<T>(

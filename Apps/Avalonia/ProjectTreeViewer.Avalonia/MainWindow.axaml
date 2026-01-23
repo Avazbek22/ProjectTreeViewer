@@ -1,12 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:ProjectTreeViewer.Avalonia.ViewModels"
+        xmlns:vm="using:ProjectTreeViewer.Avalonia.ViewModels"
+        xmlns:local="using:ProjectTreeViewer.Avalonia"
         x:Class="ProjectTreeViewer.Avalonia.MainWindow"
-        Title="{Binding Title}"
-        Width="1200" Height="820"
-        MinWidth="900" MinHeight="600"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Project Tree Viewer"
+        Width="1200" Height="800"
+        MinWidth="800" MinHeight="600"
         TransparencyLevelHint="Mica, AcrylicBlur, Blur"
-        Background="Transparent">
+        Background="{DynamicResource AppBackgroundBrush}">
   <Window.Styles>
     <Style Selector="TreeViewItem">
       <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />

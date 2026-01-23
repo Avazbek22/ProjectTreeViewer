@@ -25,7 +25,8 @@
     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
-    <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}" />
+    <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}"/>
+    <SolidColorBrush x:Key="MenuChildPopupBrush" Color="{StaticResource AppPanelColor}"/>
   </ResourceDictionary>
 
   <ResourceDictionary x:Key="Dark">
@@ -51,6 +52,7 @@
     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
     <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}" />
+    <SolidColorBrush x:Key="MenuChildPopupBrush" Color="{StaticResource AppPanelColor}"/>
   </ResourceDictionary>
 </ResourceDictionary.ThemeDictionaries>
 
@@ -334,6 +336,30 @@
         <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
     </Style>
 
+    <!-- Hard-disable TreeViewItem hover/selection background in Fluent template -->
+    <Style Selector="TreeViewItem:pointerover /template/ Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+
+    <Style Selector="TreeViewItem:selected /template/ Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+
+    <Style Selector="TreeViewItem:pressed /template/ Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+
+    <Style Selector="TreeViewItem:selected:pointerover /template/ Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
     <!-- ContextMenu styling -->
     <Style Selector="ContextMenu">
         <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
@@ -351,8 +377,8 @@
         <Setter Property="Padding" Value="4" />
     </Style>
 
-    <!-- Menu popup styling - multiple selectors for complete coverage -->
-    <Style Selector="Menu > MenuItem /template/ Popup > Border">
+    <!-- Menu popup backgrounds -->
+    <Style Selector="MenuItem /template/ Popup > Border">
         <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -360,8 +386,10 @@
         <Setter Property="Padding" Value="4" />
     </Style>
 
-    <Style Selector="MenuItem /template/ Popup > Border">
-        <Setter Property="Background" Value="{DynamicResource MenuPopupBrush}" />
+
+    <!-- Submenu popup backgrounds -->
+    <Style Selector="MenuItem MenuItem /template/ Popup > Border">
+        <Setter Property="Background" Value="{DynamicResource MenuChildPopupBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
