@@ -40,7 +40,7 @@ public sealed class TreeBuilder : ITreeBuilder
 		{
 			entries = new DirectoryInfo(path)
 				.GetFileSystemInfos()
-				.OrderBy(fi => !fi.Attributes.HasFlag(FileAttributes.Directory))
+				.OrderBy(fi => !IsDirectory(fi))
 				.ThenBy(fi => fi.Name, StringComparer.OrdinalIgnoreCase)
 				.ToArray();
 		}
@@ -57,11 +57,12 @@ public sealed class TreeBuilder : ITreeBuilder
 		}
 
 		var children = (List<FileSystemNode>)parent.Children;
+		var hasNameFilter = !string.IsNullOrWhiteSpace(options.NameFilter);
 
 		foreach (var entry in entries)
 		{
 			var name = entry.Name;
-			bool isDir = entry.Attributes.HasFlag(FileAttributes.Directory);
+			bool isDir = IsDirectory(entry);
 
 			if (isDir && isRoot && !options.AllowedRootFolders.Contains(name))
 				continue;
@@ -80,9 +81,21 @@ public sealed class TreeBuilder : ITreeBuilder
 					isAccessDenied: false,
 					children: new List<FileSystemNode>());
 
-				children.Add(dirNode);
-
 				BuildChildren(dirNode, entry.FullName, options, isRoot: false, state);
+
+				// If name filter is active, only include directories that have matching children or match themselves
+				if (hasNameFilter)
+				{
+					bool hasMatchingChildren = dirNode.Children.Count > 0;
+					bool matchesName = name.Contains(options.NameFilter!, StringComparison.OrdinalIgnoreCase);
+
+					if (hasMatchingChildren || matchesName)
+						children.Add(dirNode);
+				}
+				else
+				{
+					children.Add(dirNode);
+				}
 			}
 			else
 			{
@@ -96,6 +109,10 @@ public sealed class TreeBuilder : ITreeBuilder
 				if (!options.AllowedExtensions.Contains(ext))
 					continue;
 
+				// Apply name filter for files
+				if (hasNameFilter && !name.Contains(options.NameFilter!, StringComparison.OrdinalIgnoreCase))
+					continue;
+
 				children.Add(new FileSystemNode(
 					name: name,
 					fullPath: entry.FullName,
@@ -103,6 +120,24 @@ public sealed class TreeBuilder : ITreeBuilder
 					isAccessDenied: false,
 					children: new List<FileSystemNode>()));
 			}
+		}
+	}
+
+	private static bool IsDirectory(FileSystemInfo entry)
+	{
+		try
+		{
+			return entry.Attributes.HasFlag(FileAttributes.Directory);
+		}
+		catch (IOException)
+		{
+			// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+			// Treat them as files (non-directories)
+			return false;
+		}
+		catch (UnauthorizedAccessException)
+		{
+			return false;
 		}
 	}
 
@@ -120,8 +155,23 @@ public sealed class TreeBuilder : ITreeBuilder
 		if (rules.IgnoreDotFolders && entry.Name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
-		if (rules.IgnoreHiddenFolders && entry.Attributes.HasFlag(FileAttributes.Hidden))
-			return true;
+		if (rules.IgnoreHiddenFolders)
+		{
+			try
+			{
+				if (entry.Attributes.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			catch (IOException)
+			{
+				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}
@@ -134,8 +184,23 @@ public sealed class TreeBuilder : ITreeBuilder
 		if (rules.IgnoreDotFiles && entry.Name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
-		if (rules.IgnoreHiddenFiles && entry.Attributes.HasFlag(FileAttributes.Hidden))
-			return true;
+		if (rules.IgnoreHiddenFiles)
+		{
+			try
+			{
+				if (entry.Attributes.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			catch (IOException)
+			{
+				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}

@@ -190,8 +190,23 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		if (rules.IgnoreDotFolders && name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
-		if (rules.IgnoreHiddenFolders && dirInfo.Attributes.HasFlag(FileAttributes.Hidden))
-			return true;
+		if (rules.IgnoreHiddenFolders)
+		{
+			try
+			{
+				if (dirInfo.Attributes.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			catch (IOException)
+			{
+				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}
@@ -206,8 +221,23 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		if (rules.IgnoreDotFiles && name.StartsWith(".", StringComparison.Ordinal))
 			return true;
 
-		if (rules.IgnoreHiddenFiles && fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
-			return true;
+		if (rules.IgnoreHiddenFiles)
+		{
+			try
+			{
+				if (fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
+					return true;
+			}
+			catch (IOException)
+			{
+				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}

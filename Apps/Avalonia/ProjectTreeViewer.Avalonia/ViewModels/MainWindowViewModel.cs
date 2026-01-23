@@ -12,6 +12,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _settingsVisible;
     private bool _searchVisible;
     private string _searchQuery = string.Empty;
+    private string _nameFilter = string.Empty;
 
     private string? _selectedFontFamily;
     private string? _pendingFontFamily;
@@ -21,7 +22,22 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;
     private bool _allIgnoreChecked;
-    private bool _isDarkTheme;
+    private bool _isDarkTheme = true;
+    private bool _isCompactMode;
+    private bool _filterVisible;
+    private bool _isMicaEnabled;
+    private bool _isAcrylicEnabled;
+    private bool _isTransparentEnabled = true;
+
+    // Theme intensity sliders (0-100)
+    // MaterialIntensity: single slider controlling overall effect (transparency, depth, material feel)
+    private double _materialIntensity = 65;
+    private double _blurRadius = 30;
+    private double _panelContrast = 50;
+    private double _borderStrength = 50;
+    private double _menuChildIntensity = 50;
+
+    private bool _themePopoverOpen;
 
     public MainWindowViewModel(LocalizationService localization)
     {
@@ -94,6 +110,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public string NameFilter
+    {
+        get => _nameFilter;
+        set
+        {
+            if (_nameFilter == value) return;
+            _nameFilter = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public bool IsDarkTheme
     {
         get => _isDarkTheme;
@@ -101,6 +128,219 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             if (_isDarkTheme == value) return;
             _isDarkTheme = value;
+            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsLightTheme));
+        }
+    }
+
+    public bool IsLightTheme => !_isDarkTheme;
+
+    public bool IsCompactMode
+    {
+        get => _isCompactMode;
+        set
+        {
+            if (_isCompactMode == value) return;
+            _isCompactMode = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool FilterVisible
+    {
+        get => _filterVisible;
+        set
+        {
+            if (_filterVisible == value) return;
+            _filterVisible = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool IsMicaEnabled
+    {
+        get => _isMicaEnabled;
+        set
+        {
+            if (_isMicaEnabled == value) return;
+            _isMicaEnabled = value;
+            if (value)
+            {
+                _isAcrylicEnabled = false;
+                _isTransparentEnabled = false;
+            }
+            RaiseEffectPropertiesChanged();
+        }
+    }
+
+    public bool IsAcrylicEnabled
+    {
+        get => _isAcrylicEnabled;
+        set
+        {
+            if (_isAcrylicEnabled == value) return;
+            _isAcrylicEnabled = value;
+            if (value)
+            {
+                _isMicaEnabled = false;
+                _isTransparentEnabled = false;
+            }
+            RaiseEffectPropertiesChanged();
+        }
+    }
+
+    public bool IsTransparentEnabled
+    {
+        get => _isTransparentEnabled;
+        set
+        {
+            if (_isTransparentEnabled == value) return;
+            _isTransparentEnabled = value;
+            if (value)
+            {
+                _isMicaEnabled = false;
+                _isAcrylicEnabled = false;
+            }
+            RaiseEffectPropertiesChanged();
+        }
+    }
+
+    // Computed: any effect is enabled
+    public bool HasAnyEffect => _isTransparentEnabled || _isMicaEnabled || _isAcrylicEnabled;
+
+    // Computed: show transparency-related sliders (only when any effect is active)
+    public bool ShowTransparencySliders => HasAnyEffect;
+
+    // Computed: show blur slider only in Transparent mode (Mica/Acrylic have built-in blur)
+    public bool ShowBlurSlider => _isTransparentEnabled;
+
+    private void RaiseEffectPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(IsMicaEnabled));
+        RaisePropertyChanged(nameof(IsAcrylicEnabled));
+        RaisePropertyChanged(nameof(IsTransparentEnabled));
+        RaisePropertyChanged(nameof(HasAnyEffect));
+        RaisePropertyChanged(nameof(ShowTransparencySliders));
+        RaisePropertyChanged(nameof(ShowBlurSlider));
+    }
+
+    // Methods for toggle behavior (click on active = disable)
+    public void ToggleTransparent()
+    {
+        if (_isTransparentEnabled)
+        {
+            // Disable all effects
+            _isTransparentEnabled = false;
+        }
+        else
+        {
+            // Enable transparent, disable others
+            _isTransparentEnabled = true;
+            _isMicaEnabled = false;
+            _isAcrylicEnabled = false;
+        }
+        RaiseEffectPropertiesChanged();
+    }
+
+    public void ToggleMica()
+    {
+        if (_isMicaEnabled)
+        {
+            // Disable all effects
+            _isMicaEnabled = false;
+        }
+        else
+        {
+            // Enable mica, disable others
+            _isMicaEnabled = true;
+            _isTransparentEnabled = false;
+            _isAcrylicEnabled = false;
+        }
+        RaiseEffectPropertiesChanged();
+    }
+
+    public void ToggleAcrylic()
+    {
+        if (_isAcrylicEnabled)
+        {
+            // Disable all effects
+            _isAcrylicEnabled = false;
+        }
+        else
+        {
+            // Enable acrylic, disable others
+            _isAcrylicEnabled = true;
+            _isTransparentEnabled = false;
+            _isMicaEnabled = false;
+        }
+        RaiseEffectPropertiesChanged();
+    }
+
+    public bool ThemePopoverOpen
+    {
+        get => _themePopoverOpen;
+        set
+        {
+            if (_themePopoverOpen == value) return;
+            _themePopoverOpen = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    // Material intensity: single slider for overall effect strength (transparency, depth, material feel)
+    public double MaterialIntensity
+    {
+        get => _materialIntensity;
+        set
+        {
+            if (Math.Abs(_materialIntensity - value) < 0.1) return;
+            _materialIntensity = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    // BlurRadius: controls blur intensity in Transparent mode (0=no blur, 100=max blur ~64px)
+    public double BlurRadius
+    {
+        get => _blurRadius;
+        set
+        {
+            if (Math.Abs(_blurRadius - value) < 0.1) return;
+            _blurRadius = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double PanelContrast
+    {
+        get => _panelContrast;
+        set
+        {
+            if (Math.Abs(_panelContrast - value) < 0.1) return;
+            _panelContrast = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double BorderStrength
+    {
+        get => _borderStrength;
+        set
+        {
+            if (Math.Abs(_borderStrength - value) < 0.1) return;
+            _borderStrength = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    // MenuChildIntensity: controls the effect intensity for dropdown/child menu elements
+    public double MenuChildIntensity
+    {
+        get => _menuChildIntensity;
+        set
+        {
+            if (Math.Abs(_menuChildIntensity - value) < 0.1) return;
+            _menuChildIntensity = value;
             RaisePropertyChanged();
         }
     }
@@ -191,12 +431,30 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuViewZoomIn { get; private set; } = string.Empty;
     public string MenuViewZoomOut { get; private set; } = string.Empty;
     public string MenuViewZoomReset { get; private set; } = string.Empty;
-    public string MenuViewTheme { get; private set; } = string.Empty;
+    public string MenuViewThemeTitle { get; private set; } = string.Empty;
+    public string MenuViewLightTheme { get; private set; } = string.Empty;
+    public string MenuViewDarkTheme { get; private set; } = string.Empty;
+    public string MenuViewMica { get; private set; } = string.Empty;
+    public string MenuViewAcrylic { get; private set; } = string.Empty;
+    public string MenuViewCompactMode { get; private set; } = string.Empty;
     public string MenuOptions { get; private set; } = string.Empty;
     public string MenuOptionsTreeSettings { get; private set; } = string.Empty;
     public string MenuLanguage { get; private set; } = string.Empty;
     public string MenuHelp { get; private set; } = string.Empty;
     public string MenuHelpAbout { get; private set; } = string.Empty;
+    public string MenuTheme { get; private set; } = string.Empty;
+    public string ThemeModeLabel { get; private set; } = string.Empty;
+    public string ThemeEffectsLabel { get; private set; } = string.Empty;
+    public string ThemeLightLabel { get; private set; } = string.Empty;
+    public string ThemeDarkLabel { get; private set; } = string.Empty;
+    public string ThemeTransparentLabel { get; private set; } = string.Empty;
+    public string ThemeMicaLabel { get; private set; } = string.Empty;
+    public string ThemeAcrylicLabel { get; private set; } = string.Empty;
+    public string ThemeMaterialIntensity { get; private set; } = string.Empty;
+    public string ThemeBlurRadius { get; private set; } = string.Empty;
+    public string ThemePanelContrast { get; private set; } = string.Empty;
+    public string ThemeBorderStrength { get; private set; } = string.Empty;
+    public string ThemeMenuChildIntensity { get; private set; } = string.Empty;
     public string SettingsIgnoreTitle { get; private set; } = string.Empty;
     public string SettingsAll { get; private set; } = string.Empty;
     public string SettingsExtensions { get; private set; } = string.Empty;
@@ -204,6 +462,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string SettingsFont { get; private set; } = string.Empty;
     public string SettingsApply { get; private set; } = string.Empty;
     public string MenuSearch { get; private set; } = string.Empty;
+    public string FilterByNamePlaceholder { get; private set; } = string.Empty;
+    public string FilterTooltip { get; private set; } = string.Empty;
 
     public void UpdateLocalization()
     {
@@ -222,7 +482,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuViewZoomIn = _localization["Menu.View.ZoomIn"];
         MenuViewZoomOut = _localization["Menu.View.ZoomOut"];
         MenuViewZoomReset = _localization["Menu.View.ZoomReset"];
-        MenuViewTheme = _localization["Menu.View.DarkTheme"];
+        MenuViewThemeTitle = _localization["Menu.View.Theme"];
+        MenuViewLightTheme = _localization["Menu.View.LightTheme"];
+        MenuViewDarkTheme = _localization["Menu.View.DarkTheme"];
+        MenuViewMica = _localization["Menu.View.Mica"];
+        MenuViewAcrylic = _localization["Menu.View.Acrylic"];
+        MenuViewCompactMode = _localization["Menu.View.CompactMode"];
         MenuOptions = _localization["Menu.Options"];
         MenuOptionsTreeSettings = _localization["Menu.Options.TreeSettings"];
         MenuLanguage = _localization["Menu.Language"];
@@ -235,6 +500,23 @@ public sealed class MainWindowViewModel : ViewModelBase
         SettingsFont = _localization["Settings.Font"];
         SettingsApply = _localization["Settings.Apply"];
         MenuSearch = _localization["Menu.Search"];
+        FilterByNamePlaceholder = _localization["Filter.ByName"];
+        FilterTooltip = _localization["Filter.Tooltip"];
+
+        // Theme popover localization
+        MenuTheme = _localization["Menu.Theme"];
+        ThemeModeLabel = _localization["Theme.ModeLabel"];
+        ThemeEffectsLabel = _localization["Theme.EffectsLabel"];
+        ThemeLightLabel = _localization["Theme.Light"];
+        ThemeDarkLabel = _localization["Theme.Dark"];
+        ThemeTransparentLabel = _localization["Theme.Transparent"];
+        ThemeMicaLabel = _localization["Theme.Mica"];
+        ThemeAcrylicLabel = _localization["Theme.Acrylic"];
+        ThemeMaterialIntensity = _localization["Theme.MaterialIntensity"];
+        ThemeBlurRadius = _localization["Theme.BlurRadius"] + " [Beta]";
+        ThemePanelContrast = _localization["Theme.PanelContrast"];
+        ThemeBorderStrength = _localization["Theme.BorderStrength"];
+        ThemeMenuChildIntensity = _localization["Theme.MenuChildIntensity"] + " [Beta]";
 
         RaisePropertyChanged(nameof(MenuFile));
         RaisePropertyChanged(nameof(MenuFileOpen));
@@ -251,7 +533,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuViewZoomIn));
         RaisePropertyChanged(nameof(MenuViewZoomOut));
         RaisePropertyChanged(nameof(MenuViewZoomReset));
-        RaisePropertyChanged(nameof(MenuViewTheme));
+        RaisePropertyChanged(nameof(MenuViewThemeTitle));
+        RaisePropertyChanged(nameof(MenuViewLightTheme));
+        RaisePropertyChanged(nameof(MenuViewDarkTheme));
+        RaisePropertyChanged(nameof(MenuViewMica));
+        RaisePropertyChanged(nameof(MenuViewAcrylic));
+        RaisePropertyChanged(nameof(MenuViewCompactMode));
         RaisePropertyChanged(nameof(MenuOptions));
         RaisePropertyChanged(nameof(MenuOptionsTreeSettings));
         RaisePropertyChanged(nameof(MenuLanguage));
@@ -264,5 +551,22 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(SettingsFont));
         RaisePropertyChanged(nameof(SettingsApply));
         RaisePropertyChanged(nameof(MenuSearch));
+        RaisePropertyChanged(nameof(FilterByNamePlaceholder));
+        RaisePropertyChanged(nameof(FilterTooltip));
+
+        // Theme popover localization
+        RaisePropertyChanged(nameof(MenuTheme));
+        RaisePropertyChanged(nameof(ThemeModeLabel));
+        RaisePropertyChanged(nameof(ThemeEffectsLabel));
+        RaisePropertyChanged(nameof(ThemeLightLabel));
+        RaisePropertyChanged(nameof(ThemeDarkLabel));
+        RaisePropertyChanged(nameof(ThemeTransparentLabel));
+        RaisePropertyChanged(nameof(ThemeMicaLabel));
+        RaisePropertyChanged(nameof(ThemeAcrylicLabel));
+        RaisePropertyChanged(nameof(ThemeMaterialIntensity));
+        RaisePropertyChanged(nameof(ThemeBlurRadius));
+        RaisePropertyChanged(nameof(ThemePanelContrast));
+        RaisePropertyChanged(nameof(ThemeBorderStrength));
+        RaisePropertyChanged(nameof(ThemeMenuChildIntensity));
     }
 }
