@@ -53,17 +53,17 @@ public sealed class OptionViewModelTests
     [Fact]
     public void IgnoreOptionViewModel_Constructor_SetsProperties()
     {
-        var option = new IgnoreOptionViewModel(IgnoreOptionId.IdeGenerated, "IDE", true);
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "Bin", true);
 
-        Assert.Equal(IgnoreOptionId.IdeGenerated, option.Id);
-        Assert.Equal("IDE", option.Label);
+        Assert.Equal(IgnoreOptionId.BinFolders, option.Id);
+        Assert.Equal("Bin", option.Label);
         Assert.True(option.IsChecked);
     }
 
     [Fact]
     public void IgnoreOptionViewModel_Label_Changes()
     {
-        var option = new IgnoreOptionViewModel(IgnoreOptionId.Binary, "bin", false);
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.HiddenFiles, "hidden", false);
 
         option.Label = "binary";
 
@@ -73,7 +73,7 @@ public sealed class OptionViewModelTests
     [Fact]
     public void IgnoreOptionViewModel_IsChecked_Changes()
     {
-        var option = new IgnoreOptionViewModel(IgnoreOptionId.Binary, "bin", false);
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.DotFolders, "dot", false);
 
         option.IsChecked = true;
 
@@ -83,7 +83,7 @@ public sealed class OptionViewModelTests
     [Fact]
     public void IgnoreOptionViewModel_IsChecked_RaisesCheckedChanged()
     {
-        var option = new IgnoreOptionViewModel(IgnoreOptionId.Binary, "bin", false);
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.DotFiles, "dot", false);
         var called = false;
         option.CheckedChanged += (_, _) => called = true;
 
@@ -95,13 +95,47 @@ public sealed class OptionViewModelTests
     [Fact]
     public void IgnoreOptionViewModel_IsChecked_SameValueDoesNotRaiseCheckedChanged()
     {
-        var option = new IgnoreOptionViewModel(IgnoreOptionId.Binary, "bin", false);
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.ObjFolders, "obj", false);
         var called = false;
         option.CheckedChanged += (_, _) => called = true;
 
         option.IsChecked = false;
 
         Assert.False(called);
+    }
+
+    [Fact]
+    public void IgnoreOptionViewModel_Id_RemainsStableAfterLabelChange()
+    {
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.HiddenFolders, "hidden", true);
+
+        option.Label = "hidden-updated";
+
+        Assert.Equal(IgnoreOptionId.HiddenFolders, option.Id);
+    }
+
+    [Fact]
+    public void SelectionOptionViewModel_CheckedChanged_FiresOncePerChange()
+    {
+        var option = new SelectionOptionViewModel("Option", false);
+        var count = 0;
+        option.CheckedChanged += (_, _) => count++;
+
+        option.IsChecked = true;
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public void IgnoreOptionViewModel_CheckedChanged_FiresOncePerChange()
+    {
+        var option = new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", false);
+        var count = 0;
+        option.CheckedChanged += (_, _) => count++;
+
+        option.IsChecked = true;
+
+        Assert.Equal(1, count);
     }
 
 }

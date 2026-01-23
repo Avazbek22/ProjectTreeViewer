@@ -33,6 +33,16 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void Constructor_Defaults_ShowTransparencyAndBlur()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.True(viewModel.HasAnyEffect);
+        Assert.True(viewModel.ShowTransparencySliders);
+        Assert.True(viewModel.ShowBlurSlider);
+    }
+
+    [Fact]
     public void Title_Changes()
     {
         var viewModel = CreateViewModel();
@@ -53,6 +63,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void IsProjectLoaded_CanToggleFalse()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsProjectLoaded = true;
+
+        viewModel.IsProjectLoaded = false;
+
+        Assert.False(viewModel.IsProjectLoaded);
+    }
+
+    [Fact]
     public void SettingsVisible_Changes()
     {
         var viewModel = CreateViewModel();
@@ -60,6 +81,17 @@ public sealed class MainWindowViewModelTests
         viewModel.SettingsVisible = true;
 
         Assert.True(viewModel.SettingsVisible);
+    }
+
+    [Fact]
+    public void SettingsVisible_CanToggleFalse()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SettingsVisible = true;
+
+        viewModel.SettingsVisible = false;
+
+        Assert.False(viewModel.SettingsVisible);
     }
 
     [Fact]
@@ -73,6 +105,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void SearchVisible_CanToggleFalse()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SearchVisible = true;
+
+        viewModel.SearchVisible = false;
+
+        Assert.False(viewModel.SearchVisible);
+    }
+
+    [Fact]
     public void SearchQuery_Changes()
     {
         var viewModel = CreateViewModel();
@@ -83,6 +126,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void SearchQuery_AllowsEmptyString()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SearchQuery = "query";
+
+        viewModel.SearchQuery = string.Empty;
+
+        Assert.Equal(string.Empty, viewModel.SearchQuery);
+    }
+
+    [Fact]
     public void NameFilter_Changes()
     {
         var viewModel = CreateViewModel();
@@ -90,6 +144,17 @@ public sealed class MainWindowViewModelTests
         viewModel.NameFilter = "filter";
 
         Assert.Equal("filter", viewModel.NameFilter);
+    }
+
+    [Fact]
+    public void NameFilter_AllowsEmptyString()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.NameFilter = "filter";
+
+        viewModel.NameFilter = string.Empty;
+
+        Assert.Equal(string.Empty, viewModel.NameFilter);
     }
 
     [Fact]
@@ -114,6 +179,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void IsCompactMode_CanToggleFalse()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsCompactMode = true;
+
+        viewModel.IsCompactMode = false;
+
+        Assert.False(viewModel.IsCompactMode);
+    }
+
+    [Fact]
     public void FilterVisible_Changes()
     {
         var viewModel = CreateViewModel();
@@ -121,6 +197,17 @@ public sealed class MainWindowViewModelTests
         viewModel.FilterVisible = true;
 
         Assert.True(viewModel.FilterVisible);
+    }
+
+    [Fact]
+    public void FilterVisible_CanToggleFalse()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.FilterVisible = true;
+
+        viewModel.FilterVisible = false;
+
+        Assert.False(viewModel.FilterVisible);
     }
 
     [Fact]
@@ -136,6 +223,18 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void IsMicaEnabled_SetFalse_LeavesAllEffectsOff()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+        viewModel.IsMicaEnabled = true;
+
+        viewModel.IsMicaEnabled = false;
+
+        Assert.False(viewModel.HasAnyEffect);
+    }
+
+    [Fact]
     public void IsAcrylicEnabled_SetTrue_DisablesOtherEffects()
     {
         var viewModel = CreateViewModel();
@@ -148,6 +247,18 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void IsAcrylicEnabled_SetFalse_LeavesAllEffectsOff()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+        viewModel.IsAcrylicEnabled = true;
+
+        viewModel.IsAcrylicEnabled = false;
+
+        Assert.False(viewModel.HasAnyEffect);
+    }
+
+    [Fact]
     public void IsTransparentEnabled_SetTrue_DisablesOtherEffects()
     {
         var viewModel = CreateViewModel();
@@ -157,6 +268,65 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsTransparentEnabled);
         Assert.False(viewModel.IsMicaEnabled);
         Assert.False(viewModel.IsAcrylicEnabled);
+    }
+
+    [Fact]
+    public void IsTransparentEnabled_SetFalse_LeavesAllEffectsOff()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = true;
+
+        viewModel.IsTransparentEnabled = false;
+
+        Assert.False(viewModel.HasAnyEffect);
+    }
+
+    [Fact]
+    public void IsTransparentEnabled_SetTrue_DisablesAcrylic()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsAcrylicEnabled = true;
+
+        viewModel.IsTransparentEnabled = true;
+
+        Assert.True(viewModel.IsTransparentEnabled);
+        Assert.False(viewModel.IsAcrylicEnabled);
+    }
+
+    [Fact]
+    public void IsTransparentEnabled_SetTrue_DisablesMica()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsMicaEnabled = true;
+
+        viewModel.IsTransparentEnabled = true;
+
+        Assert.True(viewModel.IsTransparentEnabled);
+        Assert.False(viewModel.IsMicaEnabled);
+    }
+
+    [Fact]
+    public void IsMicaEnabled_SetTrue_DisablesAcrylic()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsAcrylicEnabled = true;
+
+        viewModel.IsMicaEnabled = true;
+
+        Assert.True(viewModel.IsMicaEnabled);
+        Assert.False(viewModel.IsAcrylicEnabled);
+    }
+
+    [Fact]
+    public void IsAcrylicEnabled_SetTrue_DisablesMica()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsMicaEnabled = true;
+
+        viewModel.IsAcrylicEnabled = true;
+
+        Assert.True(viewModel.IsAcrylicEnabled);
+        Assert.False(viewModel.IsMicaEnabled);
     }
 
     [Fact]
@@ -185,6 +355,19 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void ToggleTransparent_FromAllOff_EnablesTransparentOnly()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+
+        viewModel.ToggleTransparent();
+
+        Assert.True(viewModel.IsTransparentEnabled);
+        Assert.False(viewModel.IsMicaEnabled);
+        Assert.False(viewModel.IsAcrylicEnabled);
+    }
+
+    [Fact]
     public void ToggleMica_EnablesMicaDisablesOthers()
     {
         var viewModel = CreateViewModel();
@@ -209,6 +392,19 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void ToggleMica_FromAllOff_EnablesMicaOnly()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+
+        viewModel.ToggleMica();
+
+        Assert.True(viewModel.IsMicaEnabled);
+        Assert.False(viewModel.IsAcrylicEnabled);
+        Assert.False(viewModel.IsTransparentEnabled);
+    }
+
+    [Fact]
     public void ToggleAcrylic_EnablesAcrylicDisablesOthers()
     {
         var viewModel = CreateViewModel();
@@ -230,6 +426,19 @@ public sealed class MainWindowViewModelTests
         viewModel.ToggleAcrylic();
 
         Assert.False(viewModel.HasAnyEffect);
+    }
+
+    [Fact]
+    public void ToggleAcrylic_FromAllOff_EnablesAcrylicOnly()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+
+        viewModel.ToggleAcrylic();
+
+        Assert.True(viewModel.IsAcrylicEnabled);
+        Assert.False(viewModel.IsMicaEnabled);
+        Assert.False(viewModel.IsTransparentEnabled);
     }
 
     [Fact]
@@ -281,6 +490,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void ShowBlurSlider_FalseWhenAcrylicEnabled()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+
+        viewModel.IsAcrylicEnabled = true;
+
+        Assert.False(viewModel.ShowBlurSlider);
+    }
+
+    [Fact]
     public void ThemePopoverOpen_Changes()
     {
         var viewModel = CreateViewModel();
@@ -288,6 +508,17 @@ public sealed class MainWindowViewModelTests
         viewModel.ThemePopoverOpen = true;
 
         Assert.True(viewModel.ThemePopoverOpen);
+    }
+
+    [Fact]
+    public void ThemePopoverOpen_CanToggleFalse()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ThemePopoverOpen = true;
+
+        viewModel.ThemePopoverOpen = false;
+
+        Assert.False(viewModel.ThemePopoverOpen);
     }
 
     [Fact]
@@ -301,6 +532,16 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void MaterialIntensity_AllowsNegativeValues()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.MaterialIntensity = -5;
+
+        Assert.Equal(-5, viewModel.MaterialIntensity);
+    }
+
+    [Fact]
     public void BlurRadius_ChangesBeyondThreshold()
     {
         var viewModel = CreateViewModel();
@@ -308,6 +549,16 @@ public sealed class MainWindowViewModelTests
         viewModel.BlurRadius = 40;
 
         Assert.Equal(40, viewModel.BlurRadius);
+    }
+
+    [Fact]
+    public void BlurRadius_AllowsNegativeValues()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.BlurRadius = -10;
+
+        Assert.Equal(-10, viewModel.BlurRadius);
     }
 
     [Fact]
@@ -321,6 +572,16 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void PanelContrast_AllowsNegativeValues()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.PanelContrast = -1;
+
+        Assert.Equal(-1, viewModel.PanelContrast);
+    }
+
+    [Fact]
     public void BorderStrength_ChangesBeyondThreshold()
     {
         var viewModel = CreateViewModel();
@@ -331,6 +592,16 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void BorderStrength_AllowsNegativeValues()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.BorderStrength = -2;
+
+        Assert.Equal(-2, viewModel.BorderStrength);
+    }
+
+    [Fact]
     public void MenuChildIntensity_ChangesBeyondThreshold()
     {
         var viewModel = CreateViewModel();
@@ -338,6 +609,16 @@ public sealed class MainWindowViewModelTests
         viewModel.MenuChildIntensity = 70;
 
         Assert.Equal(70, viewModel.MenuChildIntensity);
+    }
+
+    [Fact]
+    public void MenuChildIntensity_AllowsNegativeValues()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.MenuChildIntensity = -3;
+
+        Assert.Equal(-3, viewModel.MenuChildIntensity);
     }
 
     [Theory]
@@ -354,6 +635,26 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void TreeIconSize_RoundsToNearestWhole()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.TreeFontSize = 13;
+
+        Assert.Equal(16, viewModel.TreeIconSize);
+    }
+
+    [Fact]
+    public void TreeIconSize_RoundsDownForSmallFraction()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.TreeFontSize = 14.5;
+
+        Assert.Equal(18, viewModel.TreeIconSize);
+    }
+
+    [Fact]
     public void AllExtensionsChecked_Changes()
     {
         var viewModel = CreateViewModel();
@@ -361,6 +662,17 @@ public sealed class MainWindowViewModelTests
         viewModel.AllExtensionsChecked = false;
 
         Assert.False(viewModel.AllExtensionsChecked);
+    }
+
+    [Fact]
+    public void AllExtensionsChecked_CanToggleTrue()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.AllExtensionsChecked = false;
+
+        viewModel.AllExtensionsChecked = true;
+
+        Assert.True(viewModel.AllExtensionsChecked);
     }
 
     [Fact]
@@ -374,6 +686,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void AllRootFoldersChecked_CanToggleTrue()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.AllRootFoldersChecked = false;
+
+        viewModel.AllRootFoldersChecked = true;
+
+        Assert.True(viewModel.AllRootFoldersChecked);
+    }
+
+    [Fact]
     public void AllIgnoreChecked_Changes()
     {
         var viewModel = CreateViewModel();
@@ -381,6 +704,17 @@ public sealed class MainWindowViewModelTests
         viewModel.AllIgnoreChecked = false;
 
         Assert.False(viewModel.AllIgnoreChecked);
+    }
+
+    [Fact]
+    public void AllIgnoreChecked_CanToggleTrue()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.AllIgnoreChecked = false;
+
+        viewModel.AllIgnoreChecked = true;
+
+        Assert.True(viewModel.AllIgnoreChecked);
     }
 
     [Fact]
@@ -394,6 +728,17 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void SelectedFontFamily_CanBeCleared()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SelectedFontFamily = "Segoe UI";
+
+        viewModel.SelectedFontFamily = null;
+
+        Assert.Null(viewModel.SelectedFontFamily);
+    }
+
+    [Fact]
     public void PendingFontFamily_Changes()
     {
         var viewModel = CreateViewModel();
@@ -401,6 +746,17 @@ public sealed class MainWindowViewModelTests
         viewModel.PendingFontFamily = "Consolas";
 
         Assert.Equal("Consolas", viewModel.PendingFontFamily);
+    }
+
+    [Fact]
+    public void PendingFontFamily_CanBeCleared()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.PendingFontFamily = "Consolas";
+
+        viewModel.PendingFontFamily = null;
+
+        Assert.Null(viewModel.PendingFontFamily);
     }
 
     [Fact]
@@ -423,6 +779,18 @@ public sealed class MainWindowViewModelTests
         var viewModel = CreateViewModel();
 
         viewModel.IsTransparentEnabled = false;
+
+        Assert.False(viewModel.HasAnyEffect);
+    }
+
+    [Fact]
+    public void HasAnyEffect_FalseWhenAllEffectsDisabled()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.IsTransparentEnabled = false;
+
+        viewModel.IsMicaEnabled = false;
+        viewModel.IsAcrylicEnabled = false;
 
         Assert.False(viewModel.HasAnyEffect);
     }

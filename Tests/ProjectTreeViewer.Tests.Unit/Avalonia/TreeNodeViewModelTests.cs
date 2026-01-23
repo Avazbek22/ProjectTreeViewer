@@ -21,6 +21,48 @@ public sealed class TreeNodeViewModelTests
     }
 
     [Fact]
+    public void FullPath_ReturnsDescriptorPath()
+    {
+        var descriptor = CreateDescriptor("Root");
+        var node = new TreeNodeViewModel(descriptor, null, null);
+
+        Assert.Equal(descriptor.FullPath, node.FullPath);
+    }
+
+    [Fact]
+    public void Parent_IsNullForRoot()
+    {
+        var node = new TreeNodeViewModel(CreateDescriptor("Root"), null, null);
+
+        Assert.Null(node.Parent);
+    }
+
+    [Fact]
+    public void Parent_IsSetForChild()
+    {
+        var root = new TreeNodeViewModel(CreateDescriptor("Root"), null, null);
+        var child = new TreeNodeViewModel(CreateDescriptor("Child"), root, null);
+
+        Assert.Equal(root, child.Parent);
+    }
+
+    [Fact]
+    public void IsExpanded_DefaultsToFalse()
+    {
+        var node = CreateNode("Node");
+
+        Assert.False(node.IsExpanded);
+    }
+
+    [Fact]
+    public void IsSelected_DefaultsToFalse()
+    {
+        var node = CreateNode("Node");
+
+        Assert.False(node.IsSelected);
+    }
+
+    [Fact]
     public void DisplayName_Changes()
     {
         var node = CreateNode("Node");
@@ -61,6 +103,17 @@ public sealed class TreeNodeViewModelTests
     }
 
     [Fact]
+    public void SetExpandedRecursive_DoesNotChangeChildCount()
+    {
+        var root = CreateTree();
+        var countBefore = root.Children.Count;
+
+        root.SetExpandedRecursive(true);
+
+        Assert.Equal(countBefore, root.Children.Count);
+    }
+
+    [Fact]
     public void Flatten_ReturnsSelfAndDescendants()
     {
         var root = CreateTree();
@@ -69,6 +122,19 @@ public sealed class TreeNodeViewModelTests
 
         Assert.Equal(4, nodes.Count);
         Assert.Contains(root, nodes);
+    }
+
+    [Fact]
+    public void Flatten_ReturnsPreOrderTraversal()
+    {
+        var root = CreateTree();
+
+        var nodes = root.Flatten().ToList();
+
+        Assert.Equal("Root", nodes[0].DisplayName);
+        Assert.Equal("Child", nodes[1].DisplayName);
+        Assert.Equal("Leaf", nodes[2].DisplayName);
+        Assert.Equal("Child2", nodes[3].DisplayName);
     }
 
     [Fact]
@@ -84,6 +150,16 @@ public sealed class TreeNodeViewModelTests
     }
 
     [Fact]
+    public void EnsureParentsExpanded_OnRoot_DoesNotExpandRoot()
+    {
+        var root = CreateTree();
+
+        root.EnsureParentsExpanded();
+
+        Assert.False(root.IsExpanded);
+    }
+
+    [Fact]
     public void IsChecked_SetsChildrenChecked()
     {
         var root = CreateTree();
@@ -91,6 +167,27 @@ public sealed class TreeNodeViewModelTests
         root.IsChecked = true;
 
         Assert.All(root.Children, child => Assert.True(child.IsChecked));
+    }
+
+    [Fact]
+    public void IsChecked_OneChildChecked_ParentStaysUnchecked()
+    {
+        var root = CreateTree();
+
+        root.Children[0].IsChecked = true;
+
+        Assert.False(root.IsChecked);
+    }
+
+    [Fact]
+    public void IsChecked_LastChildChecked_SetsParentChecked()
+    {
+        var root = CreateTree();
+
+        root.Children[0].IsChecked = true;
+        root.Children[1].IsChecked = true;
+
+        Assert.True(root.IsChecked);
     }
 
     [Fact]
