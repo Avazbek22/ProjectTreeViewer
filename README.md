@@ -257,7 +257,9 @@ Suggested contributions:
 * Icon mappings
 * Localization
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and contribution guidelines.
+PRs and issues are welcome.  
+For details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
 ## License 📄
