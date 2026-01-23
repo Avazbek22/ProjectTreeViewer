@@ -18,5 +18,9 @@
     <ProjectReference Include="..\..\..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AvaloniaXaml Include="Views\**\*.axaml" />
+  </ItemGroup>
+
   <!-- ВАЖНО: НЕ добавляйте .axaml как AvaloniaResource -->
 </Project>
