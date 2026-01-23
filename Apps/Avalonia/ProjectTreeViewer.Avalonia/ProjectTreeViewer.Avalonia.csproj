@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaXaml Include="Views\**\*.axaml" />
+    <AvaloniaXaml Update="Views\FilterBarView.axaml" />
   </ItemGroup>
 
   <!-- ВАЖНО: НЕ добавляйте .axaml как AvaloniaResource -->
