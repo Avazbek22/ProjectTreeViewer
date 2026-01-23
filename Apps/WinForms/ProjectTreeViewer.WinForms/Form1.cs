@@ -931,6 +931,10 @@ namespace ProjectTreeViewer.WinForms
         {
             try
             {
+				var selectedFont = cboFont.SelectedItem as string;
+				if (!string.IsNullOrWhiteSpace(selectedFont))
+					_pendingFontName = selectedFont;
+
 				// Apply pending font changes and refresh tree rendering.
                 if (treeProject.Font.FontFamily.Name != _pendingFontName)
                     treeProject.Font = new Font(_pendingFontName, _treeFontSize);

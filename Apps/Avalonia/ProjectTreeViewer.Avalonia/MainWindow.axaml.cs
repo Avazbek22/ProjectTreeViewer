@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using ProjectTreeViewer.Application.Services;
@@ -166,25 +167,25 @@ public partial class MainWindow : Window
         var predefinedFonts = new[]
             { "Consolas", "Courier New", "Fira Code", "Lucida Console", "Cascadia Code", "JetBrains Mono" };
 
-        var systemFonts =
-            FontManager.Current?.SystemFonts?.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var systemFonts = FontManager.Current?.SystemFonts?
+            .GroupBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, FontFamily>(StringComparer.OrdinalIgnoreCase);
 
         // Add only predefined fonts that exist on system
-        foreach (var font in predefinedFonts)
+        foreach (var fontName in predefinedFonts)
         {
-            if (systemFonts.Contains(font))
+            if (systemFonts.TryGetValue(fontName, out var font))
                 _viewModel.FontFamilies.Add(font);
         }
 
-        // If no predefined fonts found, add Consolas and Courier New as fallbacks
         if (_viewModel.FontFamilies.Count == 0)
         {
-            _viewModel.FontFamilies.Add("Consolas");
-            _viewModel.FontFamilies.Add("Courier New");
+            foreach (var font in systemFonts.Values.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+                _viewModel.FontFamilies.Add(font);
         }
 
-        var selected = _viewModel.FontFamilies.FirstOrDefault() ?? "Consolas";
+        var selected = _viewModel.FontFamilies.FirstOrDefault();
         _viewModel.SelectedFontFamily = selected;
         _viewModel.PendingFontFamily = selected;
     }
@@ -730,10 +731,11 @@ public partial class MainWindow : Window
         try
         {
             // Font family — как WinForms: применяется только по Apply
-            if (!string.IsNullOrWhiteSpace(_viewModel.PendingFontFamily) &&
-                !string.Equals(_viewModel.SelectedFontFamily, _viewModel.PendingFontFamily, StringComparison.Ordinal))
+            var pending = _viewModel.PendingFontFamily;
+            if (pending is not null &&
+                !string.Equals(_viewModel.SelectedFontFamily?.Name, pending.Name, StringComparison.OrdinalIgnoreCase))
             {
-                _viewModel.SelectedFontFamily = _viewModel.PendingFontFamily;
+                _viewModel.SelectedFontFamily = pending;
             }
 
             RefreshTree();

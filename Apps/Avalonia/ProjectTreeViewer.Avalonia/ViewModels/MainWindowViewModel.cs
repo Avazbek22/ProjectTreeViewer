@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
@@ -14,8 +15,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _searchQuery = string.Empty;
     private string _nameFilter = string.Empty;
 
-    private string? _selectedFontFamily;
-    private string? _pendingFontFamily;
+    private FontFamily? _selectedFontFamily;
+    private FontFamily? _pendingFontFamily;
 
     private double _treeFontSize = 12;
 
@@ -53,7 +54,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ObservableCollection<SelectionOptionViewModel> RootFolders { get; } = new();
     public ObservableCollection<SelectionOptionViewModel> Extensions { get; } = new();
     public ObservableCollection<IgnoreOptionViewModel> IgnoreOptions { get; } = new();
-    public ObservableCollection<string> FontFamilies { get; } = new();
+    public ObservableCollection<FontFamily> FontFamilies { get; } = new();
 
     public string Title
     {
@@ -346,7 +347,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     // Применённый шрифт (TreeView берет отсюда)
-    public string? SelectedFontFamily
+    public FontFamily? SelectedFontFamily
     {
         get => _selectedFontFamily;
         set
@@ -358,7 +359,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     // Выбранный в ComboBox (как WinForms _pendingFontName)
-    public string? PendingFontFamily
+    public FontFamily? PendingFontFamily
     {
         get => _pendingFontFamily;
         set
