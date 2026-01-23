@@ -61,4 +61,45 @@ public sealed class IgnoreRulesServiceTests
 		Assert.Contains("cache", rules.SmartIgnoredFolders);
 		Assert.Contains("thumbs.db", rules.SmartIgnoredFiles);
 	}
+
+	// Verifies all selected options enable all ignore flags.
+	[Fact]
+	public void Build_SetsAllFlagsWhenAllOptionsSelected()
+	{
+		var smart = new SmartIgnoreService(new ISmartIgnoreRule[0]);
+		var service = new IgnoreRulesService(smart);
+
+		var rules = service.Build("/root", new[]
+		{
+			IgnoreOptionId.BinFolders,
+			IgnoreOptionId.ObjFolders,
+			IgnoreOptionId.HiddenFolders,
+			IgnoreOptionId.HiddenFiles,
+			IgnoreOptionId.DotFolders,
+			IgnoreOptionId.DotFiles
+		});
+
+		Assert.True(rules.IgnoreBinFolders);
+		Assert.True(rules.IgnoreObjFolders);
+		Assert.True(rules.IgnoreHiddenFolders);
+		Assert.True(rules.IgnoreHiddenFiles);
+		Assert.True(rules.IgnoreDotFolders);
+		Assert.True(rules.IgnoreDotFiles);
+	}
+
+	// Verifies smart-ignore results are merged even when no selections.
+	[Fact]
+	public void Build_UsesSmartIgnoreWhenNoSelections()
+	{
+		var smartResult = new SmartIgnoreResult(
+			new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "cache" },
+			new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "thumbs.db" });
+		var smart = new SmartIgnoreService(new[] { new StubSmartIgnoreRule(smartResult) });
+		var service = new IgnoreRulesService(smart);
+
+		var rules = service.Build("/root", Array.Empty<IgnoreOptionId>());
+
+		Assert.Contains("cache", rules.SmartIgnoredFolders);
+		Assert.Contains("thumbs.db", rules.SmartIgnoredFiles);
+	}
 }
