@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Models;
 using ProjectTreeViewer.Tests.Unit.Helpers;
 using Xunit;
@@ -24,6 +25,39 @@ public sealed class IgnoreRulesServiceTests
 		Assert.True(rules.IgnoreBinFolders);
 		Assert.True(rules.IgnoreDotFiles);
 		Assert.False(rules.IgnoreObjFolders);
+		Assert.Contains("cache", rules.SmartIgnoredFolders);
+		Assert.Contains("thumbs.db", rules.SmartIgnoredFiles);
+	}
+
+	// Verifies no selections keep ignore flags disabled.
+	[Fact]
+	public void Build_ReturnsAllFlagsFalseWhenNoSelections()
+	{
+		var smart = new SmartIgnoreService(new ISmartIgnoreRule[0]);
+		var service = new IgnoreRulesService(smart);
+
+		var rules = service.Build("/root", Array.Empty<IgnoreOptionId>());
+
+		Assert.False(rules.IgnoreBinFolders);
+		Assert.False(rules.IgnoreObjFolders);
+		Assert.False(rules.IgnoreHiddenFolders);
+		Assert.False(rules.IgnoreHiddenFiles);
+		Assert.False(rules.IgnoreDotFolders);
+		Assert.False(rules.IgnoreDotFiles);
+	}
+
+	// Verifies smart-ignore results are case-insensitive.
+	[Fact]
+	public void Build_MergesSmartIgnoreCaseInsensitive()
+	{
+		var smartResult = new SmartIgnoreResult(
+			new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Cache" },
+			new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Thumbs.DB" });
+		var smart = new SmartIgnoreService(new[] { new StubSmartIgnoreRule(smartResult) });
+		var service = new IgnoreRulesService(smart);
+
+		var rules = service.Build("/root", Array.Empty<IgnoreOptionId>());
+
 		Assert.Contains("cache", rules.SmartIgnoredFolders);
 		Assert.Contains("thumbs.db", rules.SmartIgnoredFiles);
 	}

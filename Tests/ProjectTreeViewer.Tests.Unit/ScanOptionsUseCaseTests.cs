@@ -119,4 +119,105 @@ public sealed class ScanOptionsUseCaseTests
 
 		Assert.False(useCase.CanReadRoot("/root"));
 	}
+
+	// Verifies execute returns empty lists when scanner results are empty.
+	[Fact]
+	public void Execute_ReturnsEmptyListsWhenScannerEmpty()
+	{
+		var scanner = new StubFileSystemScanner
+		{
+			GetExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
+				new HashSet<string>(),
+				RootAccessDenied: false,
+				HadAccessDenied: false),
+			GetRootFolderNamesHandler = (_, _) => new ScanResult<List<string>>(
+				new List<string>(),
+				RootAccessDenied: false,
+				HadAccessDenied: false)
+		};
+
+		var useCase = new ScanOptionsUseCase(scanner);
+		var result = useCase.Execute(new ScanOptionsRequest("/root", new IgnoreRules(
+			IgnoreBinFolders: false,
+			IgnoreObjFolders: false,
+			IgnoreHiddenFolders: false,
+			IgnoreHiddenFiles: false,
+			IgnoreDotFolders: false,
+			IgnoreDotFiles: false,
+			SmartIgnoredFolders: new HashSet<string>(),
+			SmartIgnoredFiles: new HashSet<string>())));
+
+		Assert.Empty(result.Extensions);
+		Assert.Empty(result.RootFolders);
+		Assert.False(result.RootAccessDenied);
+		Assert.False(result.HadAccessDenied);
+	}
+
+	// Verifies access-denied flags are aggregated across root files and folders.
+	[Fact]
+	public void GetExtensionsForRootFolders_CombinesAccessDeniedFlags()
+	{
+		var scanner = new StubFileSystemScanner
+		{
+			GetRootFileExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
+				new HashSet<string> { ".root" },
+				RootAccessDenied: true,
+				HadAccessDenied: false),
+			GetExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
+				new HashSet<string> { ".cs" },
+				RootAccessDenied: false,
+				HadAccessDenied: true)
+		};
+
+		var useCase = new ScanOptionsUseCase(scanner);
+		var result = useCase.GetExtensionsForRootFolders(
+			"/root",
+			new List<string> { "src" },
+			new IgnoreRules(
+				IgnoreBinFolders: false,
+				IgnoreObjFolders: false,
+				IgnoreHiddenFolders: false,
+				IgnoreHiddenFiles: false,
+				IgnoreDotFolders: false,
+				IgnoreDotFiles: false,
+				SmartIgnoredFolders: new HashSet<string>(),
+				SmartIgnoredFiles: new HashSet<string>()));
+
+		Assert.True(result.RootAccessDenied);
+		Assert.True(result.HadAccessDenied);
+	}
+
+	// Verifies extension aggregation de-duplicates case-insensitively.
+	[Fact]
+	public void GetExtensionsForRootFolders_DeduplicatesExtensions()
+	{
+		var scanner = new StubFileSystemScanner
+		{
+			GetRootFileExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".CS" },
+				RootAccessDenied: false,
+				HadAccessDenied: false),
+			GetExtensionsHandler = (_, _) => new ScanResult<HashSet<string>>(
+				new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".cs" },
+				RootAccessDenied: false,
+				HadAccessDenied: false)
+		};
+
+		var useCase = new ScanOptionsUseCase(scanner);
+		var result = useCase.GetExtensionsForRootFolders(
+			"/root",
+			new List<string> { "src" },
+			new IgnoreRules(
+				IgnoreBinFolders: false,
+				IgnoreObjFolders: false,
+				IgnoreHiddenFolders: false,
+				IgnoreHiddenFiles: false,
+				IgnoreDotFolders: false,
+				IgnoreDotFiles: false,
+				SmartIgnoredFolders: new HashSet<string>(),
+				SmartIgnoredFiles: new HashSet<string>()));
+
+		Assert.Single(result.Value);
+		Assert.Contains(".cs", result.Value);
+	}
 }

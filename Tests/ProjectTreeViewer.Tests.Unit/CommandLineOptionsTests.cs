@@ -94,4 +94,44 @@ public sealed class CommandLineOptionsTests
 			CultureInfo.CurrentUICulture = original;
 		}
 	}
+
+	// Verifies missing values for options do not throw or populate fields.
+	[Fact]
+	public void Parse_IgnoresFlagsWithoutValues()
+	{
+		var result = CommandLineOptions.Parse(new[] { "--path", "--lang" });
+
+		Assert.Null(result.Path);
+		Assert.Null(result.Language);
+	}
+
+	// Verifies empty options render to an empty argument string.
+	[Fact]
+	public void ToArguments_ReturnsEmptyWhenNoOptions()
+	{
+		var args = CommandLineOptions.Empty.ToArguments();
+
+		Assert.Equal(string.Empty, args);
+	}
+
+	// Verifies language parsing trims whitespace and ignores case.
+	[Fact]
+	public void ParseLanguage_TrimsWhitespaceAndCase()
+	{
+		var result = CommandLineOptions.ParseLanguage(" RU ");
+
+		Assert.Equal(AppLanguage.Ru, result);
+	}
+
+	// Verifies quotes inside the path are escaped.
+	[Fact]
+	public void ToArguments_EscapesQuotesInPath()
+	{
+		var options = new CommandLineOptions("C:\\My \"Project\"", AppLanguage.En, false);
+
+		var args = options.ToArguments();
+
+		Assert.Contains("--path", args);
+		Assert.Contains("\\\"", args);
+	}
 }

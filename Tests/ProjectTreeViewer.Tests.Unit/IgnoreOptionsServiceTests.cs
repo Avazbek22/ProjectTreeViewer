@@ -34,4 +34,57 @@ public sealed class IgnoreOptionsServiceTests
 		Assert.Contains(options, option => option.Id == IgnoreOptionId.BinFolders && option.Label == "Bin");
 		Assert.Contains(options, option => option.Id == IgnoreOptionId.DotFiles && option.Label == "DotFiles");
 	}
+
+	// Verifies options preserve the expected ordering.
+	[Fact]
+	public void GetOptions_ReturnsExpectedOrder()
+	{
+		var catalog = new StubLocalizationCatalog(new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
+		{
+			[AppLanguage.En] = new Dictionary<string, string>
+			{
+				["Settings.Ignore.BinFolders"] = "Bin",
+				["Settings.Ignore.ObjFolders"] = "Obj",
+				["Settings.Ignore.HiddenFolders"] = "HiddenFolders",
+				["Settings.Ignore.HiddenFiles"] = "HiddenFiles",
+				["Settings.Ignore.DotFolders"] = "DotFolders",
+				["Settings.Ignore.DotFiles"] = "DotFiles"
+			}
+		});
+		var localization = new LocalizationService(catalog, AppLanguage.En);
+		var service = new IgnoreOptionsService(localization);
+
+		var options = service.GetOptions();
+
+		Assert.Equal(IgnoreOptionId.BinFolders, options[0].Id);
+		Assert.Equal(IgnoreOptionId.ObjFolders, options[1].Id);
+		Assert.Equal(IgnoreOptionId.HiddenFolders, options[2].Id);
+		Assert.Equal(IgnoreOptionId.HiddenFiles, options[3].Id);
+		Assert.Equal(IgnoreOptionId.DotFolders, options[4].Id);
+		Assert.Equal(IgnoreOptionId.DotFiles, options[5].Id);
+	}
+
+	// Verifies localized labels are populated for all options.
+	[Fact]
+	public void GetOptions_UsesLocalizationForEveryLabel()
+	{
+		var catalog = new StubLocalizationCatalog(new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
+		{
+			[AppLanguage.En] = new Dictionary<string, string>
+			{
+				["Settings.Ignore.BinFolders"] = "Bin",
+				["Settings.Ignore.ObjFolders"] = "Obj",
+				["Settings.Ignore.HiddenFolders"] = "HiddenFolders",
+				["Settings.Ignore.HiddenFiles"] = "HiddenFiles",
+				["Settings.Ignore.DotFolders"] = "DotFolders",
+				["Settings.Ignore.DotFiles"] = "DotFiles"
+			}
+		});
+		var localization = new LocalizationService(catalog, AppLanguage.En);
+		var service = new IgnoreOptionsService(localization);
+
+		var options = service.GetOptions();
+
+		Assert.All(options, option => Assert.False(string.IsNullOrWhiteSpace(option.Label)));
+	}
 }
