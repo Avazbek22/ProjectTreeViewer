@@ -239,6 +239,7 @@ public sealed class SelectionSyncCoordinator
 
     public IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()
     {
+        EnsureIgnoreSelectionCache();
         if (_ignoreOptions.Count == 0 || _viewModel.IgnoreOptions.Count == 0)
             return _ignoreSelectionCache;
 
@@ -249,6 +250,16 @@ public sealed class SelectionSyncCoordinator
 
         _ignoreSelectionCache = selected;
         return selected;
+    }
+
+    private void EnsureIgnoreSelectionCache()
+    {
+        if (_ignoreSelectionInitialized || _ignoreSelectionCache.Count > 0)
+            return;
+
+        _ignoreOptions = _ignoreOptionsService.GetOptions();
+        _ignoreSelectionCache = new HashSet<IgnoreOptionId>(
+            _ignoreOptions.Where(option => option.DefaultChecked).Select(option => option.Id));
     }
 
     public void UpdateExtensionsSelectionCache()
