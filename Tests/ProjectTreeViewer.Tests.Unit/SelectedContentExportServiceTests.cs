@@ -111,10 +111,13 @@ public sealed class SelectedContentExportServiceTests
 		var fileA = temp.CreateFile("a.txt", "A");
 		var fileB = temp.CreateFile("b.txt", "B");
 
+
 		var service = new SelectedContentExportService();
 		var result = service.Build(new[] { fileA, fileB });
 
-		Assert.Contains("\u00A0\n\u00A0\n", result);
+
+		var nl = Environment.NewLine;
+		Assert.Contains($"\u00A0{nl}\u00A0{nl}", result);
 	}
 
 	// Verifies files with embedded null bytes in the first bytes are skipped.

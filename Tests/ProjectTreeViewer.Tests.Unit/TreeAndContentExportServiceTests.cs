@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Kernel.Contracts;
@@ -132,6 +133,7 @@ public sealed class TreeAndContentExportServiceTests
 		using var temp = new TemporaryDirectory();
 		var file = temp.CreateFile("file.txt", "Hello");
 
+
 		var root = new TreeNodeDescriptor(
 			DisplayName: "root",
 			FullPath: temp.Path,
@@ -143,9 +145,12 @@ public sealed class TreeAndContentExportServiceTests
 				new TreeNodeDescriptor("file.txt", file, false, false, "text", new List<TreeNodeDescriptor>())
 			});
 
+
 		var service = new TreeAndContentExportService(new TreeExportService(), new SelectedContentExportService());
 		var result = service.Build(temp.Path, root, new HashSet<string>());
 
-		Assert.Contains("\u00A0\n\u00A0\n", result);
+
+		var nl = Environment.NewLine;
+		Assert.Contains($"\u00A0{nl}\u00A0{nl}", result);
 	}
 }
