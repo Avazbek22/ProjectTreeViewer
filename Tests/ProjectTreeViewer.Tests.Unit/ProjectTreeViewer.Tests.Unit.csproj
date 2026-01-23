@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Application\Application.csproj" />
+    <ProjectReference Include="..\..\Apps\Avalonia\ProjectTreeViewer.Avalonia\ProjectTreeViewer.Avalonia.csproj" />
     <ProjectReference Include="..\..\Kernel\Kernel.csproj" />
   </ItemGroup>
 </Project>
