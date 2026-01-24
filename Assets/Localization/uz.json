@@ -44,9 +44,9 @@
   "Menu.Help": "Yordam",
   "Menu.Help.About": "Dastur haqida",
   "Help.About.Title": "Dastur haqida",
-  "Help.About.Body": "ProjectTreeViewer helps you quickly prepare project context: visualize the structure, select the needed files, and copy the tree or content to the clipboard.\n\nDevelopment is ongoing; architectural and functional improvements are introduced gradually, with a focus on usability and predictable behavior.\n\nThe application runs in read-only mode.\n\nStack: .NET 10 · Avalonia UI\nDeveloper: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
-  "Help.About.OpenLink": "Open link",
-  "Help.About.CopyLink": "Copy link",
+  "Help.About.Body": "ProjectTreeViewer loyiha kontekstini tez tayyorlashga yordam beradi: tuzilmani vizuallashtirish, kerakli fayllarni tanlash va daraxt yoki kontentni buferga nusxalash.\n\nLoyiha rivoji davom etmoqda; arxitektura va funksional yaxshilanishlar bosqichma-bosqich joriy etiladi, qulaylik va prognoz qilinadigan xulq-atvorga urg‘u beriladi.\n\nIlova faqat o‘qish rejimida ishlaydi.\n\nStack: .NET 10 · Avalonia UI\nDasturchi: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "GitHub havolasini ochish",
+  "Help.About.CopyLink": "Havolani nusxalash",
 
   "Title.Default": "Project Tree Viewer by Avazbek",
   "Title.WithPath": "Project Tree Viewer - {0}",

@@ -70,7 +70,7 @@
     <!-- Help Popover -->
     <Popup Name="HelpPopup"
            IsOpen="{Binding HelpPopoverOpen, Mode=TwoWay}"
-           IsLightDismissEnabled="False"
+           IsLightDismissEnabled="True"
            PlacementMode="Bottom"
            PlacementTarget="{Binding #HelpMenuItem}">
       <views:AboutPopoverView Name="HelpPopover" />

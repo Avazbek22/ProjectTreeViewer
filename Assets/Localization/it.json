@@ -44,9 +44,9 @@
   "Menu.Help": "Aiuto",
   "Menu.Help.About": "Informazioni",
   "Help.About.Title": "Informazioni",
-  "Help.About.Body": "ProjectTreeViewer helps you quickly prepare project context: visualize the structure, select the needed files, and copy the tree or content to the clipboard.\n\nDevelopment is ongoing; architectural and functional improvements are introduced gradually, with a focus on usability and predictable behavior.\n\nThe application runs in read-only mode.\n\nStack: .NET 10 · Avalonia UI\nDeveloper: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
-  "Help.About.OpenLink": "Open link",
-  "Help.About.CopyLink": "Copy link",
+  "Help.About.Body": "ProjectTreeViewer aiuta a preparare rapidamente il contesto del progetto: visualizzare la struttura, selezionare i file necessari e copiare l’albero o i contenuti negli appunti.\n\nLo sviluppo è in corso; i miglioramenti architetturali e funzionali vengono introdotti gradualmente, con attenzione all’usabilità e a un comportamento prevedibile.\n\nL’applicazione funziona in modalità sola lettura.\n\nStack: .NET 10 · Avalonia UI\nSviluppatore: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "Apri il link GitHub",
+  "Help.About.CopyLink": "Copia link",
 
   "Title.Default": "Project Tree Viewer by Avazbek",
   "Title.WithPath": "Project Tree Viewer - {0}",
