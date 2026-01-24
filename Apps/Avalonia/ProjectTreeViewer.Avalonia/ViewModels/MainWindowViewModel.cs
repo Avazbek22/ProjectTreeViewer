@@ -149,6 +149,9 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (_isCompactMode == value) return;
             _isCompactMode = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(TreeItemSpacing));
+            RaisePropertyChanged(nameof(TreeItemPadding));
+            RaisePropertyChanged(nameof(SettingsListSpacing));
         }
     }
 
@@ -409,6 +412,15 @@ public sealed class MainWindowViewModel : ViewModelBase
         string.Equals(_selectedFontFamily?.Name, "Consolas", StringComparison.OrdinalIgnoreCase)
             ? new Thickness(0, 9, 0, 0)
             : new Thickness(0);
+
+    // Tree row spacing is controlled in VM so compact mode is a single switch.
+    public double TreeItemSpacing => _isCompactMode ? 2 : 6;
+
+    // TreeViewItem padding follows the same compact flag to keep row height tight.
+    public Thickness TreeItemPadding => _isCompactMode ? new Thickness(0, 0) : new Thickness(4, 1);
+
+    // Settings lists use an ItemsPanel with explicit Spacing (can go negative to tighten).
+    public double SettingsListSpacing => _isCompactMode ? -7 : -3;
 
     public bool AllExtensionsChecked
     {
