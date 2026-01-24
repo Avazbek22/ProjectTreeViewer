@@ -48,8 +48,6 @@
   "Help.About.OpenLink": "Apri il link GitHub",
   "Help.About.CopyLink": "Copia link",
 
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
 
   "Dialog.SelectRoot": "Seleziona la cartella radice del progetto",
 

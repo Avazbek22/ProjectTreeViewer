@@ -7,6 +7,9 @@ namespace ProjectTreeViewer.Avalonia.ViewModels;
 
 public sealed class MainWindowViewModel : ViewModelBase
 {
+    public const string BaseTitle = "Project Tree Viewer v4.1";
+    public const string BaseTitleWithAuthor = "Project Tree Viewer by Olimoff v4.1";
+
     private readonly LocalizationService _localization;
 
     private string _title;
@@ -45,7 +48,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(LocalizationService localization)
     {
         _localization = localization;
-        _title = localization["Title.Default"];
+        _title = BaseTitleWithAuthor;
         _allExtensionsChecked = true;
         _allRootFoldersChecked = true;
         _allIgnoreChecked = true;

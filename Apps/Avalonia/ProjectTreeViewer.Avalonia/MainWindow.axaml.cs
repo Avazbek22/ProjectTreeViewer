@@ -25,6 +25,11 @@ namespace ProjectTreeViewer.Avalonia;
 
 public partial class MainWindow : Window
 {
+    public MainWindow()
+        : this(CommandLineOptions.Empty, AvaloniaCompositionRoot.CreateDefault(CommandLineOptions.Empty))
+    {
+    }
+
     private readonly CommandLineOptions _startupOptions;
     private readonly LocalizationService _localization;
     private readonly ScanOptionsUseCase _scanOptions;
@@ -913,8 +918,8 @@ public partial class MainWindow : Window
     private void UpdateTitle()
     {
         _viewModel.Title = string.IsNullOrWhiteSpace(_currentPath)
-            ? _localization["Title.Default"]
-            : _localization.Format("Title.WithPath", _currentPath);
+            ? MainWindowViewModel.BaseTitleWithAuthor
+            : $"{MainWindowViewModel.BaseTitle} - {_currentPath}";
     }
 
     private IgnoreRules BuildIgnoreRules(string rootPath)
