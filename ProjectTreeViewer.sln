@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36221.1 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectTreeViewer.WinForms", "Apps\WinForms\ProjectTreeViewer.WinForms\ProjectTreeViewer.WinForms.csproj", "{A7B3F8EE-530A-4B82-8467-08FA6DD7995A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectTreeViewer.Avalonia", "Apps\Avalonia\ProjectTreeViewer.Avalonia\ProjectTreeViewer.Avalonia.csproj", "{D8060EC3-3C79-4D2A-9595-682196B08E72}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kernel", "Kernel\Kernel.csproj", "{E1083E0F-A004-428F-92B3-6BBB2B9A207F}"
@@ -26,10 +24,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A7B3F8EE-530A-4B82-8467-08FA6DD7995A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A7B3F8EE-530A-4B82-8467-08FA6DD7995A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A7B3F8EE-530A-4B82-8467-08FA6DD7995A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7B3F8EE-530A-4B82-8467-08FA6DD7995A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8060EC3-3C79-4D2A-9595-682196B08E72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D8060EC3-3C79-4D2A-9595-682196B08E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8060EC3-3C79-4D2A-9595-682196B08E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
