@@ -49,6 +49,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _helpDocsPopoverOpen;
     private double _helpPopoverMaxWidth = 720;
     private double _helpPopoverMaxHeight = 650;
+    private double _aboutPopoverMaxWidth = 520;
+    private double _aboutPopoverMaxHeight = 420;
 
     public MainWindowViewModel(LocalizationService localization, HelpContentProvider helpContentProvider)
     {
@@ -346,14 +348,43 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public double AboutPopoverMaxWidth
+    {
+        get => _aboutPopoverMaxWidth;
+        set
+        {
+            if (Math.Abs(_aboutPopoverMaxWidth - value) < 0.1) return;
+            _aboutPopoverMaxWidth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double AboutPopoverMaxHeight
+    {
+        get => _aboutPopoverMaxHeight;
+        set
+        {
+            if (Math.Abs(_aboutPopoverMaxHeight - value) < 0.1) return;
+            _aboutPopoverMaxHeight = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public void UpdateHelpPopoverMaxSize(Size bounds)
     {
         if (bounds.Width <= 0 || bounds.Height <= 0)
             return;
 
-        const double padding = 40;
-        HelpPopoverMaxWidth = Math.Max(0, bounds.Width - padding);
-        HelpPopoverMaxHeight = Math.Max(0, bounds.Height - padding);
+        const double padding = 16;
+        var maxHelpWidth = Math.Max(280, (bounds.Width - padding) * 0.9);
+        var maxHelpHeight = Math.Max(220, (bounds.Height - padding) * 0.9);
+        var maxAboutWidth = Math.Min(520, (bounds.Width - padding) * 0.7);
+        var maxAboutHeight = Math.Min(420, (bounds.Height - padding) * 0.7);
+
+        HelpPopoverMaxWidth = maxHelpWidth;
+        HelpPopoverMaxHeight = maxHelpHeight;
+        AboutPopoverMaxWidth = maxAboutWidth;
+        AboutPopoverMaxHeight = maxAboutHeight;
     }
 
     // Material intensity: single slider for overall effect strength (transparency, depth, material feel)

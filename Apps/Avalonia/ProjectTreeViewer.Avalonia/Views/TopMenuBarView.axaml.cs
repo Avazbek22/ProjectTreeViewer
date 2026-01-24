@@ -156,6 +156,7 @@ public partial class TopMenuBarView : UserControl
     private void OnHelpPopupOpened(object? sender, EventArgs e)
     {
         HelpPopover?.Focus();
+        ClampPopupToWindow(HelpPopup);
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
@@ -217,6 +218,7 @@ public partial class TopMenuBarView : UserControl
     private void OnHelpDocsPopupOpened(object? sender, EventArgs e)
     {
         HelpDocsPopover?.Focus();
+        ClampPopupToWindow(HelpDocsPopup);
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
@@ -264,5 +266,49 @@ public partial class TopMenuBarView : UserControl
         _helpDocsPopupTopLevel.RemoveHandler(InputElement.PointerPressedEvent, OnTopLevelHelpDocsPointerPressed);
         _helpDocsPopupTopLevel = null;
         _helpDocsPopupHandlersAttached = false;
+    }
+
+    private void ClampPopupToWindow(Popup? popup)
+    {
+        if (popup?.Child is not Control child)
+            return;
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is null)
+            return;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            var origin = child.TranslatePoint(new Point(0, 0), topLevel);
+            if (origin is null)
+                return;
+
+            var bounds = topLevel.Bounds;
+            var size = child.Bounds.Size;
+            const double margin = 8;
+
+            var left = origin.Value.X;
+            var top = origin.Value.Y;
+            var right = left + size.Width;
+            var bottom = top + size.Height;
+
+            var offsetX = 0.0;
+            var offsetY = 0.0;
+
+            if (left < margin)
+                offsetX = margin - left;
+            else if (right > bounds.Width - margin)
+                offsetX = bounds.Width - margin - right;
+
+            if (top < margin)
+                offsetY = margin - top;
+            else if (bottom > bounds.Height - margin)
+                offsetY = bounds.Height - margin - bottom;
+
+            if (Math.Abs(offsetX) > 0.1)
+                popup.HorizontalOffset += offsetX;
+            if (Math.Abs(offsetY) > 0.1)
+                popup.VerticalOffset += offsetY;
+        }, Avalonia.Threading.DispatcherPriority.Background);
     }
 }

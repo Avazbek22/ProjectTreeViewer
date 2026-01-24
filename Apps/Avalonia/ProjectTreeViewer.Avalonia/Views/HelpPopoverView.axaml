@@ -5,8 +5,8 @@
              x:DataType="vm:MainWindowViewModel">
   <Border Classes="theme-popover"
           Padding="16"
-          MinWidth="560"
-          MinHeight="420"
+          MinWidth="360"
+          MinHeight="260"
           MaxWidth="{Binding HelpPopoverMaxWidth}"
           MaxHeight="{Binding HelpPopoverMaxHeight}">
     <Grid RowDefinitions="Auto,*">
