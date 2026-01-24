@@ -127,7 +127,7 @@ public partial class HelpPopoverView : UserControl
         => new TextBlock
         {
             Text = text,
-            FontSize = 14,
+            FontSize = 15,
             TextWrapping = TextWrapping.Wrap
         };
 
@@ -141,14 +141,14 @@ public partial class HelpPopoverView : UserControl
         grid.Children.Add(new TextBlock
         {
             Text = "•",
-            FontSize = 14,
+            FontSize = 15,
             VerticalAlignment = VerticalAlignment.Top
         });
 
         grid.Children.Add(new TextBlock
         {
             Text = text,
-            FontSize = 14,
+            FontSize = 15,
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(6, 0, 0, 0)
         });

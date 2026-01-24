@@ -3,7 +3,12 @@
              xmlns:vm="using:ProjectTreeViewer.Avalonia.ViewModels"
              x:Class="ProjectTreeViewer.Avalonia.Views.AboutPopoverView"
              x:DataType="vm:MainWindowViewModel">
-  <Border Classes="theme-popover" Padding="14" MinWidth="400" MinHeight="350" MaxWidth="520" MaxHeight="700">
+  <Border Classes="theme-popover"
+          Padding="14"
+          MinWidth="400"
+          MinHeight="350"
+          MaxWidth="{Binding HelpPopoverMaxWidth}"
+          MaxHeight="{Binding HelpPopoverMaxHeight}">
     <StackPanel Spacing="12">
       <Grid ColumnDefinitions="*,Auto">
         <TextBlock Text="{Binding HelpAboutTitle}" FontSize="15" FontWeight="SemiBold" />

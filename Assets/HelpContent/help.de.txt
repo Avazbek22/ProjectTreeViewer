@@ -1,0 +1,121 @@
+## 1) Was ist das und wozu
+ProjectTreeViewer bereitet den Projektkontext schnell auf: zeigt die Ordner/Dateistruktur, erlaubt das Markieren von Elementen und das Kopieren des Baums und/oder von Dateiinhalten in die Zwischenablage. Nützlich für Code‑Reviews, Support, Schulung und das Teilen der Struktur mit einem KI‑Assistenten.
+
+Wichtig: Die App arbeitet nur lesend und ändert keine Dateien.
+
+## 2) Projektbaum
+* Symbole für Datei/Ordner‑Typen.
+* Kontrollkästchen an Knoten.
+* Auf‑/Zuklappen.
+
+Kontrollkästchen: Die Markierung eines Knotens gilt für seine Kinder; der Elternstatus wird automatisch neu berechnet.
+
+Tastenkürzel:
+* Ctrl+E — alles aufklappen
+* Ctrl+W — alles zuklappen (Wurzel bleibt offen)
+
+## 3) File (Datei)
+* Open folder… — Wurzelordner öffnen (Ctrl+O)
+* Refresh — Baum neu einlesen und aufbauen (F5)
+
+## 4) Copy (Kopieren)
+### Copy full tree
+Kopiert den vollständigen ASCII‑Projektbaum. Ctrl+Shift+C.
+
+### Copy selected tree
+Kopiert den Baum der markierten Knoten. Wenn nichts markiert ist, erscheint eine Meldung. Ctrl+Alt+C.
+
+### Copy selected content
+Kopiert Inhalte nur ausgewählter Textdateien:
+* Datei muss existieren;
+* Binärdateien werden übersprungen (Null‑Byte‑Prüfung);
+* Ausgabe ist sortiert und durch Leerzeilen getrennt.
+
+Ctrl+Alt+V.
+
+### Copy tree + content
+Kombiniert Baum und Inhalte:
+* Baum wird anhand der Auswahl erstellt; ist sie ungültig, wird der volle Baum verwendet;
+* Inhalte nur für Textdateien;
+* wenn kein Inhalt vorhanden ist, wird nur der Baum kopiert.
+
+Ctrl+Shift+V.
+
+## 5) View (Ansicht)
+### Zoom
+* Ctrl++ / Ctrl+= — vergrößern
+* Ctrl+- — verkleinern
+* Ctrl+0 — zurücksetzen
+* Ctrl + Mausrad über dem Baum — weiches Zoomen
+
+Bereich: 6–28, Reset: 12.
+
+### Compact Mode
+Macht die Oberfläche dichter: kleinere Abstände im Baum und in den Einstellungen.
+
+## 6) Search (Suche im Baum)
+Öffnet die Suche, hebt Treffer hervor und erlaubt Navigation.
+* Ctrl+F — anzeigen/ausblenden
+* Enter — nächstes Ergebnis
+* Shift+Enter — vorheriges
+* Esc — schließen
+
+Die Suche öffnet nur benötigte Zweige; beim Leeren der Suche wird der Baum eingeklappt (außer der Wurzel).
+
+## 7) Filter (Nach Namen)
+Zeigt nur passende Knoten und ihre Eltern. Aktualisierung mit Verzögerung (Debounce).
+* Ctrl+Shift+N — Filter anzeigen/ausblenden
+* Esc — Filter schließen
+
+## 8) Options (Einstellungs‑Panel)
+Rechts befinden sich Listen:
+* Font (Baum‑Schrift) — mit Apply anwenden
+* Ignore options
+* Extensions
+* Root folders
+
+Jede Liste hat einen All‑Schalter.
+
+Ctrl+P — Panel anzeigen/ausblenden.
+
+## 9) Ignore und Smart Ignore
+### Normale Regeln
+Ausschluss typischer Artefakte und „Rauschen“ (z. B. bin/obj, versteckte Elemente, Punkt‑Elemente).
+
+### Smart Ignore
+Zusätzliche „smarte“ Ausschlüsse (VCS/IDE‑Ordner, typische Junk‑Dateien). Frontend‑Regeln aktivieren sich nur, wenn passende Marker gefunden werden (package/lock‑Dateien).
+
+## 10) Wie der Baum gebaut wird
+Das Ergebnis hängt ab von:
+* ausgewählte Root folders
+* ausgewählte Extensions
+* Ignore rules
+* aktivem Filter
+
+Wenn der Zugriff verweigert wird, wird der Knoten als Access denied markiert.
+
+## 11) Symbole
+Auswahlreihenfolge:
+1) Knotentyp (Ordner/Datei)
+2) exakter Name (wenn eine Regel vorhanden ist)
+3) Erweiterung
+4) sonst — unknown
+
+## 12) Theme (Thema und Effekte)
+Das Theme‑Popover ermöglicht:
+* helles/dunkles Theme
+* Transparent / Mica / Acrylic
+* Intensität, Unschärfe, Kontrast, Rahmen
+
+Einträge mit [Beta] können sich zwischen Versionen ändern.
+
+## 13) Help → About (Über)
+Öffnet ein Popover mit App‑Info und Repository‑Link.
+* Esc — Popover schließen
+
+## 14) Sprachen
+Die Sprache wird über das Language‑Menü gewählt.
+
+## 15) Hinweise
+* Standardmäßig sind dunkles Theme und Transparenzeffekte aktiviert (wenn unterstützt).
+* Bei fehlenden Rechten kann die App einen Neustart mit erhöhten Rechten vorschlagen; bei Ablehnung erscheint eine Meldung.

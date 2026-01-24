@@ -42,6 +42,7 @@ public partial class MainWindow : Window
     private readonly TreeAndContentExportService _treeAndContentExport;
     private readonly IconCache _iconCache;
     private readonly IElevationService _elevation;
+    private readonly IDisposable _boundsSubscription;
 
     private readonly MainWindowViewModel _viewModel;
     private readonly TreeSearchCoordinator _searchCoordinator;
@@ -73,10 +74,13 @@ public partial class MainWindow : Window
         _iconCache = new IconCache(services.IconStore);
         _elevation = services.Elevation;
 
-        _viewModel = new MainWindowViewModel(_localization);
+        _viewModel = new MainWindowViewModel(_localization, services.HelpContentProvider);
         DataContext = _viewModel;
 
         InitializeComponent();
+
+        _boundsSubscription = this.GetObservable(BoundsProperty).Subscribe(bounds =>
+            _viewModel.UpdateHelpPopoverMaxSize(bounds.Size));
 
         _treeView = this.FindControl<TreeView>("ProjectTree");
         _topMenuBar = this.FindControl<TopMenuBarView>("TopMenuBar");
@@ -101,7 +105,11 @@ public partial class MainWindow : Window
             TryElevateAndRestart,
             () => _currentPath);
 
-        Closed += (_, _) => _filterCoordinator.Dispose();
+        Closed += (_, _) =>
+        {
+            _boundsSubscription.Dispose();
+            _filterCoordinator.Dispose();
+        };
         Deactivated += OnDeactivated;
 
         _elevationAttempted = startupOptions.ElevationAttempted;

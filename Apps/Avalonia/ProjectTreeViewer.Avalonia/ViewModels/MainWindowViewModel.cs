@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Infrastructure.ResourceStore;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
 
@@ -11,6 +12,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public const string BaseTitleWithAuthor = "Project Tree Viewer by Olimoff v4.1";
 
     private readonly LocalizationService _localization;
+    private readonly HelpContentProvider _helpContentProvider;
 
     private string _title;
     private bool _isProjectLoaded;
@@ -45,10 +47,13 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _themePopoverOpen;
     private bool _helpPopoverOpen;
     private bool _helpDocsPopoverOpen;
+    private double _helpPopoverMaxWidth = 720;
+    private double _helpPopoverMaxHeight = 650;
 
-    public MainWindowViewModel(LocalizationService localization)
+    public MainWindowViewModel(LocalizationService localization, HelpContentProvider helpContentProvider)
     {
         _localization = localization;
+        _helpContentProvider = helpContentProvider;
         _title = BaseTitleWithAuthor;
         _allExtensionsChecked = true;
         _allRootFoldersChecked = true;
@@ -319,6 +324,38 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public double HelpPopoverMaxWidth
+    {
+        get => _helpPopoverMaxWidth;
+        set
+        {
+            if (Math.Abs(_helpPopoverMaxWidth - value) < 0.1) return;
+            _helpPopoverMaxWidth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double HelpPopoverMaxHeight
+    {
+        get => _helpPopoverMaxHeight;
+        set
+        {
+            if (Math.Abs(_helpPopoverMaxHeight - value) < 0.1) return;
+            _helpPopoverMaxHeight = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public void UpdateHelpPopoverMaxSize(Size bounds)
+    {
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+            return;
+
+        const double padding = 40;
+        HelpPopoverMaxWidth = Math.Max(0, bounds.Width - padding);
+        HelpPopoverMaxHeight = Math.Max(0, bounds.Height - padding);
+    }
+
     // Material intensity: single slider for overall effect strength (transparency, depth, material feel)
     public double MaterialIntensity
     {
@@ -553,7 +590,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuHelpHelp = _localization["Menu.Help.Help"];
         MenuHelpAbout = _localization["Menu.Help.About"];
         HelpHelpTitle = _localization["Help.Help.Title"];
-        HelpHelpBody = _localization["Help.Help.Body"];
+        HelpHelpBody = _helpContentProvider.GetHelpBody(_localization.CurrentLanguage);
         HelpAboutTitle = _localization["Help.About.Title"];
         HelpAboutBody = _localization["Help.About.Body"];
         HelpAboutOpenLink = _localization["Help.About.OpenLink"];
