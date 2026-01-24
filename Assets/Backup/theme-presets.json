@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "presets": {
+    "Light.Transparent": {
+      "theme": "light",
+      "effect": "transparent",
+      "materialIntensity": 78.43450479233228,
+      "blurRadius": 30,
+      "panelContrast": 0,
+      "menuChildIntensity": 0,
+      "borderStrength": 53.51437699680511
+    },
+    "Light.Mica": {
+      "theme": "light",
+      "effect": "mica",
+      "materialIntensity": 100,
+      "blurRadius": 30,
+      "panelContrast": 0,
+      "menuChildIntensity": 0,
+      "borderStrength": 50.319488817891376
+    },
+    "Light.Acrylic": {
+      "theme": "light",
+      "effect": "acrylic",
+      "materialIntensity": 75.87859424920129,
+      "blurRadius": 30,
+      "panelContrast": 0,
+      "menuChildIntensity": 0,
+      "borderStrength": 10.702875399361023
+    },
+    "Dark.Transparent": {
+      "theme": "dark",
+      "effect": "transparent",
+      "materialIntensity": 52.23642172523962,
+      "blurRadius": 29.233226837060705,
+      "panelContrast": 50,
+      "menuChildIntensity": 0,
+      "borderStrength": 50
+    },
+    "Dark.Mica": {
+      "theme": "dark",
+      "effect": "mica",
+      "materialIntensity": 100,
+      "blurRadius": 30,
+      "panelContrast": 0,
+      "menuChildIntensity": 0,
+      "borderStrength": 50
+    },
+    "Dark.Acrylic": {
+      "theme": "dark",
+      "effect": "acrylic",
+      "materialIntensity": 73.00319488817892,
+      "blurRadius": 30,
+      "panelContrast": 0,
+      "menuChildIntensity": 0,
+      "borderStrength": 32.108626198083066
+    }
+  },
+  "lastSelected": "Dark.Transparent"
+}
