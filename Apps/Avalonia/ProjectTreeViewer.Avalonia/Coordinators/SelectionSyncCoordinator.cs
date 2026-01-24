@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
+using Avalonia.Threading;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.ViewModels;
@@ -136,24 +138,34 @@ public sealed class SelectionSyncCoordinator
         }
 
         var ignoreRules = _buildIgnoreRules(path);
-        var scan = _scanOptions.GetExtensionsForRootFolders(path, rootFolders, ignoreRules);
-        if (scan.RootAccessDenied && _tryElevateAndRestart(path))
-            return;
+        _ = Task.Run(async () =>
+        {
+            // Scan extensions off the UI thread to avoid freezing on large folders.
+            var scan = _scanOptions.GetExtensionsForRootFolders(path, rootFolders, ignoreRules);
+            if (scan.RootAccessDenied)
+            {
+                var elevated = await Dispatcher.UIThread.InvokeAsync(() => _tryElevateAndRestart(path));
+                if (elevated) return;
+            }
 
-        _viewModel.Extensions.Clear();
+            var options = _filterSelectionService.BuildExtensionOptions(scan.Value, prev);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _viewModel.Extensions.Clear();
 
-        _suppressExtensionItemCheck = true;
-        var options = _filterSelectionService.BuildExtensionOptions(scan.Value, prev);
-        foreach (var option in options)
-            _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
-        _suppressExtensionItemCheck = false;
+                _suppressExtensionItemCheck = true;
+                foreach (var option in options)
+                    _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
+                _suppressExtensionItemCheck = false;
 
-        if (_viewModel.AllExtensionsChecked)
-            SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
+                if (_viewModel.AllExtensionsChecked)
+                    SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
 
-        SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
-            value => _viewModel.AllExtensionsChecked = value);
-        UpdateExtensionsSelectionCache();
+                SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
+                    value => _viewModel.AllExtensionsChecked = value);
+                UpdateExtensionsSelectionCache();
+            });
+        });
     }
 
     public void PopulateRootFolders(string path)
@@ -164,23 +176,33 @@ public sealed class SelectionSyncCoordinator
             StringComparer.OrdinalIgnoreCase);
 
         var ignoreRules = _buildIgnoreRules(path);
-        var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules));
-        if (scan.RootAccessDenied && _tryElevateAndRestart(path))
-            return;
+        _ = Task.Run(async () =>
+        {
+            // Scan root folders off the UI thread to keep the window responsive.
+            var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules));
+            if (scan.RootAccessDenied)
+            {
+                var elevated = await Dispatcher.UIThread.InvokeAsync(() => _tryElevateAndRestart(path));
+                if (elevated) return;
+            }
 
-        _viewModel.RootFolders.Clear();
+            var options = _filterSelectionService.BuildRootFolderOptions(scan.RootFolders, prev, ignoreRules);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _viewModel.RootFolders.Clear();
 
-        _suppressRootItemCheck = true;
-        var options = _filterSelectionService.BuildRootFolderOptions(scan.RootFolders, prev, ignoreRules);
-        foreach (var option in options)
-            _viewModel.RootFolders.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
-        _suppressRootItemCheck = false;
+                _suppressRootItemCheck = true;
+                foreach (var option in options)
+                    _viewModel.RootFolders.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
+                _suppressRootItemCheck = false;
 
-        if (_viewModel.AllRootFoldersChecked)
-            SetAllChecked(_viewModel.RootFolders, true, ref _suppressRootItemCheck);
+                if (_viewModel.AllRootFoldersChecked)
+                    SetAllChecked(_viewModel.RootFolders, true, ref _suppressRootItemCheck);
 
-        SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck,
-            value => _viewModel.AllRootFoldersChecked = value);
+                SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck,
+                    value => _viewModel.AllRootFoldersChecked = value);
+            });
+        });
     }
 
     public void PopulateIgnoreOptionsForRootSelection(IReadOnlyCollection<string> rootFolders)
