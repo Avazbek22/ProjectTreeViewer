@@ -22,7 +22,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private FontFamily? _selectedFontFamily;
     private FontFamily? _pendingFontFamily;
 
-    private double _treeFontSize = 12;
+    private double _treeFontSize = 15;
 
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;
