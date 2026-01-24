@@ -3,13 +3,11 @@
   "Menu.File.Open": "Открыть папку...",
   "Menu.File.Refresh": "Обновить",
   "Menu.File.Exit": "Выход",
-
   "Menu.Copy": "Копирование",
   "Menu.Copy.FullTree": "Скопировать полное дерево",
   "Menu.Copy.SelectedTree": "Скопировать дерево выбранных файлов",
   "Menu.Copy.SelectedContent": "Скопировать содержимое выбранных файлов",
   "Menu.Copy.FullTreeAndContent": "Скопировать полное дерево и содержимое",
-
   "Menu.View": "Вид",
   "Menu.View.ExpandAll": "Развернуть всё",
   "Menu.View.CollapseAll": "Свернуть всё",
@@ -38,17 +36,17 @@
   "Menu.Search": "Поиск",
   "Filter.ByName": "Фильтр по названию",
   "Filter.Tooltip": "Фильтр по названию (Ctrl+Shift+N)",
-
   "Menu.Options": "Параметры",
   "Menu.Language": "Язык",
   "Menu.Help": "Справка",
+  "Menu.Help.Help": "Помощь",
   "Menu.Help.About": "О программе",
-
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
-
+  "Help.Help.Title": "Помощь",
+  "Help.About.Title": "О программе",
+  "Help.About.Body": "ProjectTreeViewer помогает быстро подготовить контекст проекта: визуализировать структуру, выбрать нужные файлы и скопировать дерево или содержимое в буфер обмена.\n\nРазработка проекта продолжается; архитектурные и функциональные улучшения внедряются постепенно, с упором на удобство и предсказуемость поведения.\n\nРежим работы приложения — только чтение (read-only).\n\nСтек: .NET 10 · Avalonia UI\nРазработчик: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "Открыть ссылку на GitHub",
+  "Help.About.CopyLink": "Скопировать ссылку",
   "Dialog.SelectRoot": "Выберите корневую папку проекта",
-
   "Settings.IgnoreTitle": "Игнорировать:",
   "Settings.Ignore.BinFolders": "Папки bin",
   "Settings.Ignore.ObjFolders": "Папки obj",
@@ -61,7 +59,6 @@
   "Settings.RootFolders": "Папки верхнего уровня:",
   "Settings.Font": "Шрифт дерева:",
   "Settings.Apply": "Применить настройки",
-
   "Msg.ErrorTitle": "Ошибка",
   "Msg.InfoTitle": "Информация",
   "Msg.PathNotFound": "Папка не найдена:\n{0}",
@@ -72,7 +69,6 @@
   "Msg.ElevationCanceled": "Повышение прав отменено. Папка может открыться не полностью.",
   "Msg.AccessDeniedRoot": "Нет доступа к выбранной папке. Попробуйте запустить приложение от имени администратора.",
   "Msg.AboutStub": "Здесь будет информация о программе (заглушка).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

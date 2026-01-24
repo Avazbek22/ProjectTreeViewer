@@ -17,6 +17,7 @@ public sealed class TreeSearchCoordinator
     private readonly TreeView _treeView;
     private readonly List<TreeNodeViewModel> _searchMatches = new();
     private int _searchMatchIndex = -1;
+    private TreeNodeViewModel? _currentSearchMatch;
 
     public TreeSearchCoordinator(MainWindowViewModel viewModel, TreeView treeView)
     {
@@ -28,6 +29,7 @@ public sealed class TreeSearchCoordinator
     {
         _searchMatches.Clear();
         _searchMatchIndex = -1;
+        UpdateCurrentSearchMatch(null);
 
         var query = _viewModel.SearchQuery;
         UpdateHighlights(query);
@@ -62,15 +64,16 @@ public sealed class TreeSearchCoordinator
 
     public void UpdateHighlights(string? query)
     {
-        var (highlightBackground, highlightForeground, normalForeground) = GetSearchHighlightBrushes();
+        var (highlightBackground, highlightForeground, normalForeground, currentBackground) = GetSearchHighlightBrushes();
         foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
-            node.UpdateSearchHighlight(query, highlightBackground, highlightForeground, normalForeground);
+            node.UpdateSearchHighlight(query, highlightBackground, highlightForeground, normalForeground, currentBackground);
     }
 
     public void ClearSearchState()
     {
         _searchMatches.Clear();
         _searchMatchIndex = -1;
+        UpdateCurrentSearchMatch(null);
         UpdateHighlights(string.Empty);
     }
 
@@ -83,7 +86,10 @@ public sealed class TreeSearchCoordinator
         SelectSearchMatch();
     }
 
-    public void RefreshThemeHighlights() => UpdateHighlights(_viewModel.SearchQuery);
+    public void RefreshThemeHighlights()
+    {
+        UpdateHighlights(_viewModel.SearchQuery);
+    }
 
     private void SelectSearchMatch()
     {
@@ -93,6 +99,7 @@ public sealed class TreeSearchCoordinator
         var node = _searchMatches[_searchMatchIndex];
         node.EnsureParentsExpanded();
         SelectTreeNode(node);
+        UpdateCurrentSearchMatch(node);
         BringNodeIntoView(node);
         _treeView.Focus();
     }
@@ -112,6 +119,39 @@ public sealed class TreeSearchCoordinator
         node.IsSelected = true;
     }
 
+    private void UpdateCurrentSearchMatch(TreeNodeViewModel? node)
+    {
+        if (ReferenceEquals(_currentSearchMatch, node))
+            return;
+
+        var query = _viewModel.SearchQuery;
+        var (highlightBackground, highlightForeground, normalForeground, currentBackground) = GetSearchHighlightBrushes();
+
+        if (_currentSearchMatch is not null)
+        {
+            _currentSearchMatch.IsCurrentSearchMatch = false;
+            _currentSearchMatch.UpdateSearchHighlight(
+                query,
+                highlightBackground,
+                highlightForeground,
+                normalForeground,
+                currentBackground);
+        }
+
+        _currentSearchMatch = node;
+
+        if (_currentSearchMatch is not null)
+        {
+            _currentSearchMatch.IsCurrentSearchMatch = true;
+            _currentSearchMatch.UpdateSearchHighlight(
+                query,
+                highlightBackground,
+                highlightForeground,
+                normalForeground,
+                currentBackground);
+        }
+    }
+
     private void CollapseAllExceptRoot(TreeNodeViewModel node)
     {
         foreach (var child in node.Children)
@@ -121,7 +161,7 @@ public sealed class TreeSearchCoordinator
         }
     }
 
-    private (IBrush highlightBackground, IBrush highlightForeground, IBrush normalForeground)
+    private (IBrush highlightBackground, IBrush highlightForeground, IBrush normalForeground, IBrush currentBackground)
         GetSearchHighlightBrushes()
     {
         var app = global::Avalonia.Application.Current;
@@ -132,6 +172,7 @@ public sealed class TreeSearchCoordinator
         IBrush normalForeground = theme == ThemeVariant.Dark
             ? new SolidColorBrush(Color.Parse("#E7E9EF"))
             : new SolidColorBrush(Color.Parse("#1A1A1A"));
+        IBrush currentBackground = new SolidColorBrush(Color.Parse("#F9A825"));
 
         if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true &&
             bg is IBrush bgBrush)
@@ -141,9 +182,13 @@ public sealed class TreeSearchCoordinator
             fg is IBrush fgBrush)
             highlightForeground = fgBrush;
 
+        if (app?.Resources.TryGetResource("TreeSearchCurrentBrush", theme, out var current) == true &&
+            current is IBrush currentBrush)
+            currentBackground = currentBrush;
+
         if (app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true && textFg is IBrush textBrush)
             normalForeground = textBrush;
 
-        return (highlightBackground, highlightForeground, normalForeground);
+        return (highlightBackground, highlightForeground, normalForeground, currentBackground);
     }
 }

@@ -3,13 +3,11 @@
   "Menu.File.Open": "Ouvrir le dossier...",
   "Menu.File.Refresh": "Actualiser",
   "Menu.File.Exit": "Quitter",
-
   "Menu.Copy": "Copier",
   "Menu.Copy.FullTree": "Copier l'arborescence complète",
   "Menu.Copy.SelectedTree": "Copier l'arborescence sélectionnée",
   "Menu.Copy.SelectedContent": "Copier le contenu des fichiers sélectionnés",
   "Menu.Copy.FullTreeAndContent": "Copier l'arborescence complète et le contenu",
-
   "Menu.View": "Affichage",
   "Menu.View.ExpandAll": "Tout développer",
   "Menu.View.CollapseAll": "Tout réduire",
@@ -38,17 +36,17 @@
   "Menu.Search": "Recherche",
   "Filter.ByName": "Filtrer par nom",
   "Filter.Tooltip": "Filtrer par nom (Ctrl+Shift+N)",
-
   "Menu.Options": "Options",
   "Menu.Language": "Langue",
   "Menu.Help": "Aide",
+  "Menu.Help.Help": "Aide",
   "Menu.Help.About": "À propos",
-
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
-
+  "Help.Help.Title": "Aide",
+  "Help.About.Title": "À propos",
+  "Help.About.Body": "ProjectTreeViewer aide à préparer rapidement le contexte d’un projet : visualiser la structure, sélectionner les fichiers nécessaires et copier l’arborescence ou le contenu dans le presse-papiers.\n\nLe développement se poursuit ; les améliorations architecturales et fonctionnelles sont introduites progressivement, en mettant l’accent sur la facilité d’usage et un comportement prévisible.\n\nL’application fonctionne en mode lecture seule.\n\nStack: .NET 10 · Avalonia UI\nDéveloppeur : Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "Ouvrir le lien GitHub",
+  "Help.About.CopyLink": "Copier le lien",
   "Dialog.SelectRoot": "Sélectionnez le dossier racine du projet",
-
   "Settings.IgnoreTitle": "Ignorer :",
   "Settings.Ignore.BinFolders": "dossiers bin",
   "Settings.Ignore.ObjFolders": "dossiers obj",
@@ -61,7 +59,6 @@
   "Settings.RootFolders": "Dossiers de premier niveau :",
   "Settings.Font": "Police de l’arborescence :",
   "Settings.Apply": "Appliquer",
-
   "Msg.ErrorTitle": "Erreur",
   "Msg.InfoTitle": "Info",
   "Msg.PathNotFound": "Dossier introuvable :\n{0}",
@@ -72,7 +69,6 @@
   "Msg.ElevationCanceled": "L’élévation a été annulée. Le dossier peut ne pas être entièrement accessible.",
   "Msg.AccessDeniedRoot": "Accès refusé au dossier sélectionné. Essayez en administrateur.",
   "Msg.AboutStub": "Les informations sur le programme seront ici (stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

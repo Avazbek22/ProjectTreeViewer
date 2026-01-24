@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ProjectTreeViewer.Avalonia.ViewModels;
 using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Infrastructure.ResourceStore;
 using ProjectTreeViewer.Kernel.Models;
 using ProjectTreeViewer.Tests.Unit.Helpers;
 using Xunit;
@@ -16,7 +17,8 @@ public sealed class MainWindowViewModelTests
             [AppLanguage.En] = strings ?? new Dictionary<string, string>()
         });
         var localization = new LocalizationService(catalog, AppLanguage.En);
-        return new MainWindowViewModel(localization);
+        var helpContentProvider = new HelpContentProvider();
+        return new MainWindowViewModel(localization, helpContentProvider);
     }
 
     [Fact]
@@ -29,7 +31,7 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.AllIgnoreChecked);
         Assert.True(viewModel.IsDarkTheme);
         Assert.True(viewModel.IsTransparentEnabled);
-        Assert.Equal(12, viewModel.TreeFontSize);
+        Assert.Equal(15, viewModel.TreeFontSize);
     }
 
     [Fact]

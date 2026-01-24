@@ -149,20 +149,29 @@ public sealed class ThemeBrushCoordinator
         }
         else if (_viewModel.IsMicaEnabled)
         {
-            var micaOpen = Math.Pow(material, 0.2);
+            var micaStrength = Math.Pow(material, 0.7);
 
-            bgAlpha = (byte)Math.Round(255 * (1.0 - micaOpen));
+            bgAlpha = (byte)Math.Round(255 * (1.0 - (micaStrength * 0.9)));
 
-            var panelBaseAlpha = 110 + (contrast * 120);
-            panelAlpha = (byte)Math.Clamp(panelBaseAlpha - (micaOpen * 50), 80, 255);
+            var panelMinAlpha = bgAlpha;
+            var panelMaxAlpha = 170 + (contrast * 70);
+            panelAlpha = (byte)Math.Clamp(
+                panelMinAlpha + (panelMaxAlpha - panelMinAlpha) * contrast - (micaStrength * 60),
+                panelMinAlpha,
+                255);
 
             menuAlpha = (byte)Math.Clamp(panelAlpha + 35, 160, 255);
             menuChildAlpha = (byte)Math.Clamp(menuAlpha - (menuChild * 40), 140, 255);
 
             if (isDark)
             {
-                bgBase = Color.Parse("#101012");
-                panelBase = Color.Parse("#151518");
+                bgBase = Color.Parse("#0D0E10");
+                panelBase = Color.Parse("#14161A");
+            }
+            else
+            {
+                bgBase = Color.Parse("#FFFFFF");
+                panelBase = Color.Parse("#F7F7F7");
             }
         }
         else if (_viewModel.IsAcrylicEnabled)

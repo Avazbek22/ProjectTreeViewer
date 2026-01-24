@@ -1,0 +1,121 @@
+## 1) Cos’è e a cosa serve
+ProjectTreeViewer prepara rapidamente il contesto del progetto: mostra la struttura di cartelle/file, permette di selezionare gli elementi e copiare l’albero e/o il contenuto dei file negli appunti. Utile per code review, supporto, formazione e condivisione della struttura con un assistente AI.
+
+Importante: l’app è solo in lettura e non modifica i file.
+
+## 2) Albero del progetto
+* Icone per tipo file/cartella.
+* Checkbox sui nodi.
+* Espandi/riduci.
+
+Checkbox: la selezione di un nodo si applica ai figli; lo stato dei genitori è ricalcolato automaticamente.
+
+Scorciatoie:
+* Ctrl+E — espandi tutto
+* Ctrl+W — comprimi tutto (la radice resta aperta)
+
+## 3) File
+* Apri cartella… — apri la cartella radice (Ctrl+O)
+* Aggiorna — rileggi e ricostruisci l’albero (F5)
+
+## 4) Copia
+### Copia albero completo
+Copia l’albero ASCII completo. Ctrl+Shift+C.
+
+### Copia albero selezionato
+Copia l’albero dei nodi selezionati. Se non c’è selezione, appare un messaggio. Ctrl+Alt+C.
+
+### Copia contenuto dei file selezionati
+Copia il contenuto dei soli file di testo selezionati:
+* il file deve esistere;
+* i file binari vengono ignorati (controllo byte nulli);
+* l’output è ordinato e separato da righe vuote.
+
+Ctrl+Alt+V.
+
+### Copia albero completo e contenuto
+Combina albero e contenuto:
+* l’albero è costruito dalla selezione; se non valida, si usa l’albero completo;
+* il contenuto è aggiunto solo per file di testo;
+* se non c’è contenuto, si copia solo l’albero.
+
+Ctrl+Shift+V.
+
+## 5) Visualizza
+### Zoom
+* Ctrl++ / Ctrl+= — aumenta
+* Ctrl+- — riduci
+* Ctrl+0 — reset
+* Ctrl + rotellina sul tree — zoom fluido
+
+Intervallo: 6–28, reset: 12.
+
+### Modalità compatta
+Rende l’interfaccia più densa: spazi più piccoli nell’albero e nelle impostazioni.
+
+## 6) Ricerca nell’albero
+Apre la ricerca, evidenzia le corrispondenze e permette la navigazione.
+* Ctrl+F — mostra/nascondi
+* Enter — risultato successivo
+* Shift+Enter — precedente
+* Esc — chiudi
+
+La ricerca apre solo i rami necessari; svuotando la query l’albero si richiude (tranne la radice).
+
+## 7) Filtra per nome
+Mostra solo i nodi che corrispondono al filtro e i loro genitori. Aggiornamento con debounce.
+* Ctrl+Shift+N — mostra/nascondi filtro
+* Esc — chiudi filtro
+
+## 8) Opzioni
+Liste a destra:
+* Font albero — applica con Applica
+* Ignora
+* Tipi di file
+* Cartelle di primo livello
+
+Ogni lista ha il toggle Tutti.
+
+Ctrl+P — mostra/nascondi pannello.
+
+## 9) Ignore e Smart Ignore
+### Regole normali
+Escludi artefatti e “rumore” comuni (bin/obj, elementi nascosti, elementi con punto, ecc.).
+
+### Smart Ignore
+Esclusioni “intelligenti” (cartelle VCS/IDE e file spazzatura). Le regole frontend si attivano solo se sono rilevati indicatori (file package/lock).
+
+## 10) Come si costruisce l’albero
+Il risultato dipende da:
+* cartelle di primo livello selezionate
+* tipi di file selezionati
+* regole di esclusione
+* filtro attivo
+
+Se l’accesso è negato, il nodo è marcato Accesso negato.
+
+## 11) Icone
+Ordine di scelta:
+1) tipo nodo (cartella/file)
+2) nome esatto (se esiste una regola)
+3) estensione
+4) altrimenti — sconosciuto
+
+## 12) Tema ed effetti
+Il popover del tema permette di scegliere:
+* tema chiaro/scuro
+* Trasparente / Mica / Acrylic
+* intensità, blur, contrasto, bordi
+
+Gli elementi [Beta] possono cambiare tra versioni.
+
+## 13) Aiuto → Informazioni
+Apre un popover con info app e link al repository.
+* Esc — chiudi popover
+
+## 14) Lingue
+La lingua si seleziona dal menu Lingua.
+
+## 15) Note
+* Per impostazione predefinita, tema scuro ed effetti di trasparenza sono attivi (se supportati).
+* Se i permessi non bastano, l’app può proporre il riavvio con privilegi elevati; in caso di rifiuto viene mostrato un avviso.

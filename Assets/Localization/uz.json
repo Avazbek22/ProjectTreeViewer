@@ -3,13 +3,11 @@
   "Menu.File.Open": "Jildni ochish...",
   "Menu.File.Refresh": "Yangilash",
   "Menu.File.Exit": "Chiqish",
-
   "Menu.Copy": "Nusxa",
   "Menu.Copy.FullTree": "To'liq daraxtni nusxalash",
   "Menu.Copy.SelectedTree": "Tanlangan daraxtni nusxalash",
   "Menu.Copy.SelectedContent": "Tanlangan fayllar matnini nusxalash",
   "Menu.Copy.FullTreeAndContent": "To'liq daraxt va matnni nusxalash",
-
   "Menu.View": "Ko'rinish",
   "Menu.View.ExpandAll": "Hammasini ochish",
   "Menu.View.CollapseAll": "Hammasini yopish",
@@ -38,17 +36,17 @@
   "Menu.Search": "Qidirish",
   "Filter.ByName": "Nom bo'yicha filtr",
   "Filter.Tooltip": "Nom bo'yicha filtr (Ctrl+Shift+N)",
-
   "Menu.Options": "Sozlamalar",
   "Menu.Language": "Til",
   "Menu.Help": "Yordam",
+  "Menu.Help.Help": "Yordam",
   "Menu.Help.About": "Dastur haqida",
-
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
-
+  "Help.Help.Title": "Yordam",
+  "Help.About.Title": "Dastur haqida",
+  "Help.About.Body": "ProjectTreeViewer loyiha kontekstini tez tayyorlashga yordam beradi: tuzilmani vizuallashtirish, kerakli fayllarni tanlash va daraxt yoki kontentni buferga nusxalash.\n\nLoyiha rivoji davom etmoqda; arxitektura va funksional yaxshilanishlar bosqichma-bosqich joriy etiladi, qulaylik va prognoz qilinadigan xulq-atvorga urg‘u beriladi.\n\nIlova faqat o‘qish rejimida ishlaydi.\n\nStack: .NET 10 · Avalonia UI\nDasturchi: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "GitHub havolasini ochish",
+  "Help.About.CopyLink": "Havolani nusxalash",
   "Dialog.SelectRoot": "Loyiha ildiz jildini tanlang",
-
   "Settings.IgnoreTitle": "E’tiborsiz qoldirish:",
   "Settings.Ignore.BinFolders": "bin jildlari",
   "Settings.Ignore.ObjFolders": "obj jildlari",
@@ -61,7 +59,6 @@
   "Settings.RootFolders": "Yuqori darajadagi jildlar:",
   "Settings.Font": "Daraxt shrift:",
   "Settings.Apply": "Sozlamalarni qo‘llash",
-
   "Msg.ErrorTitle": "Xatolik",
   "Msg.InfoTitle": "Ma’lumot",
   "Msg.PathNotFound": "Jild topilmadi:\n{0}",
@@ -72,7 +69,6 @@
   "Msg.ElevationCanceled": "Administrator huquqlari bekor qilindi. Jild to‘liq ochilmasligi mumkin.",
   "Msg.AccessDeniedRoot": "Tanlangan jildga ruxsat yo‘q. Administrator sifatida ishga tushiring.",
   "Msg.AboutStub": "Bu yerda dastur haqida ma’lumot bo‘ladi (stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

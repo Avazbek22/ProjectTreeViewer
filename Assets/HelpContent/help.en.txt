@@ -1,0 +1,121 @@
+## 1) What it is and why
+ProjectTreeViewer quickly prepares project context: shows the folder/file structure, lets you select items with checkboxes, and copy the tree and/or file contents to the clipboard. Useful for code review, support, learning, and sharing project structure with an AI assistant.
+
+Important: the app is read-only and never modifies files.
+
+## 2) Project tree
+* File/folder type icons.
+* Checkboxes on nodes.
+* Expand/collapse.
+
+Checkboxes: selecting a node applies to its children; parent state is recalculated automatically.
+
+Hotkeys:
+* Ctrl+E — expand all
+* Ctrl+W — collapse all (root stays expanded)
+
+## 3) File
+* Open folder… — open root folder (Ctrl+O)
+* Refresh — rescan and rebuild the tree (F5)
+
+## 4) Copy
+### Copy full tree
+Copies the full ASCII project tree. Ctrl+Shift+C.
+
+### Copy selected tree
+Copies the tree for selected (checked) nodes. If nothing is selected, a message is shown. Ctrl+Alt+C.
+
+### Copy selected content
+Copies contents of selected text files only:
+* the file must exist;
+* binary files are skipped (checked for null bytes);
+* output is sorted and separated by blank lines.
+
+Ctrl+Alt+V.
+
+### Copy tree + content
+Combines tree and content:
+* tree is built from selection; if selection is invalid, full tree is used;
+* content is added only for text files;
+* if there is no content, only the tree is copied.
+
+Ctrl+Shift+V.
+
+## 5) View
+### Zoom
+* Ctrl++ / Ctrl+= — zoom in
+* Ctrl+- — zoom out
+* Ctrl+0 — reset
+* Ctrl + mouse wheel over the tree — smooth zoom
+
+Range: 6–28, reset is 12.
+
+### Compact Mode
+Makes the UI denser: smaller spacing in the tree and settings.
+
+## 6) Search (tree)
+Opens the search bar, highlights matches, and allows navigation.
+* Ctrl+F — show/hide
+* Enter — next result
+* Shift+Enter — previous
+* Esc — close
+
+Search auto-expands only the needed branches; clearing the query collapses the tree (except root).
+
+## 7) Filter (by name)
+Shows only nodes matching the filter string and their parents. Updates are debounced.
+* Ctrl+Shift+N — show/hide filter
+* Esc — close filter
+
+## 8) Options (settings panel)
+Lists on the right:
+* Font (tree font) — apply with Apply
+* Ignore options
+* Extensions
+* Root folders
+
+Each list has an All toggle.
+
+Ctrl+P — show/hide the panel.
+
+## 9) Ignore and Smart Ignore
+### Regular rules
+Exclude common artifacts and noise (e.g., bin/obj, hidden items, dot-items, etc.).
+
+### Smart Ignore
+Additional smart exclusions (e.g., VCS/IDE folders and typical junk files). Frontend rules activate only when related project markers are detected (package/lock files).
+
+## 10) How the tree is built
+Result depends on:
+* selected Root folders
+* selected Extensions
+* Ignore rules
+* active Filter
+
+If access is denied, the node is marked Access denied.
+
+## 11) Icons
+Icon selection order:
+1) node type (folder/file)
+2) exact name (if rule exists)
+3) extension
+4) otherwise — unknown
+
+## 12) Theme and effects
+Theme popover lets you switch:
+* light/dark theme
+* Transparent / Mica / Acrylic
+* intensity, blur, contrast, border settings
+
+Items marked [Beta] may change between versions.
+
+## 13) Help → About
+Opens a popover with app info and repository link.
+* Esc — close popover
+
+## 14) Languages
+Language is selected via the Language menu.
+
+## 15) Notes
+* By default, dark theme and transparency effects are enabled (if supported).
+* If permissions are insufficient, the app may suggest restarting with elevation; if declined, a notification is shown.

@@ -3,13 +3,11 @@
   "Menu.File.Open": "Қалтаны ашу...",
   "Menu.File.Refresh": "Жаңарту",
   "Menu.File.Exit": "Шығу",
-
   "Menu.Copy": "Көшіру",
   "Menu.Copy.FullTree": "Толық ағашты көшіру",
   "Menu.Copy.SelectedTree": "Таңдалған ағашты көшіру",
   "Menu.Copy.SelectedContent": "Таңдалған файлдардың мәтінін көшіру",
   "Menu.Copy.FullTreeAndContent": "Толық ағаш пен мазмұнын көшіру",
-
   "Menu.View": "Көрініс",
   "Menu.View.ExpandAll": "Барлығын ашу",
   "Menu.View.CollapseAll": "Барлығын жабу",
@@ -38,17 +36,17 @@
   "Menu.Search": "Іздеу",
   "Filter.ByName": "Атау бойынша сүзгі",
   "Filter.Tooltip": "Атау бойынша сүзгі (Ctrl+Shift+N)",
-
   "Menu.Options": "Параметрлер",
   "Menu.Language": "Тіл",
   "Menu.Help": "Анықтама",
+  "Menu.Help.Help": "Көмек",
   "Menu.Help.About": "Бағдарлама туралы",
-
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
-
+  "Help.Help.Title": "Көмек",
+  "Help.About.Title": "Бағдарлама туралы",
+  "Help.About.Body": "ProjectTreeViewer жоба контекстін тез дайындауға көмектеседі: құрылымды визуализациялау, қажетті файлдарды таңдау және ағашты немесе мазмұнды алмасу буферіне көшіру.\n\nЖобаны дамыту жалғасуда; архитектуралық және функционалдық жақсартулар біртіндеп енгізіледі, ыңғайлылық пен болжамды мінез-құлыққа басымдық беріледі.\n\nҚолданба тек оқу режимінде жұмыс істейді.\n\nStack: .NET 10 · Avalonia UI\nӘзірлеуші: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "GitHub сілтемесін ашу",
+  "Help.About.CopyLink": "Сілтемені көшіру",
   "Dialog.SelectRoot": "Жоба түбір қалтасын таңдаңыз",
-
   "Settings.IgnoreTitle": "Елемеу:",
   "Settings.Ignore.BinFolders": "bin қалталары",
   "Settings.Ignore.ObjFolders": "obj қалталары",
@@ -61,7 +59,6 @@
   "Settings.RootFolders": "Жоғарғы деңгей қалталары:",
   "Settings.Font": "Ағаш қарпі:",
   "Settings.Apply": "Қолдану",
-
   "Msg.ErrorTitle": "Қате",
   "Msg.InfoTitle": "Ақпарат",
   "Msg.PathNotFound": "Қалта табылмады:\n{0}",
@@ -72,7 +69,6 @@
   "Msg.ElevationCanceled": "Әкімші құқықтарын көтеру тоқтатылды. Қалта толық ашылмауы мүмкін.",
   "Msg.AccessDeniedRoot": "Таңдалған қалтаға рұқсат жоқ. Әкімші ретінде іске қосыңыз.",
   "Msg.AboutStub": "Мұнда бағдарлама туралы ақпарат болады (stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

@@ -3,13 +3,11 @@
   "Menu.File.Open": "Кушодани ҷузвдон...",
   "Menu.File.Refresh": "Навсозӣ",
   "Menu.File.Exit": "Баромад",
-
   "Menu.Copy": "Нусха",
   "Menu.Copy.FullTree": "Нусхаи дарахти пурра",
   "Menu.Copy.SelectedTree": "Нусхаи дарахти интихобшуда",
   "Menu.Copy.SelectedContent": "Нусхаи мундариҷаи файлҳои интихобшуда",
   "Menu.Copy.FullTreeAndContent": "Нусхаи дарахти пурра ва мундариҷа",
-
   "Menu.View": "Намоиш",
   "Menu.View.ExpandAll": "Кушодани ҳама",
   "Menu.View.CollapseAll": "Пӯшидани ҳама",
@@ -38,17 +36,17 @@
   "Menu.Search": "Ҷустуҷӯ",
   "Filter.ByName": "Филтр бо ном",
   "Filter.Tooltip": "Филтр бо ном (Ctrl+Shift+N)",
-
   "Menu.Options": "Танзимот",
   "Menu.Language": "Забон",
   "Menu.Help": "Ёрӣ",
+  "Menu.Help.Help": "Ёрӣ",
   "Menu.Help.About": "Дар бораи барнома",
-
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
-
+  "Help.Help.Title": "Ёрӣ",
+  "Help.About.Title": "Дар бораи барнома",
+  "Help.About.Body": "ProjectTreeViewer барои зуд омода кардани контексти лоиҳа кӯмак мекунад: сохторро намоиш додан, файлҳои лозимиро интихоб кардан ва дарахт ё мазмунро ба буфери нусхабардорӣ гузоштан.\n\nТаҳия идома дорад; беҳбудиҳои меъморӣ ва функсионалӣ тадриҷан ҷорӣ мешаванд, бо тамаркуз ба роҳатӣ ва рафтори пешбинишаванда.\n\nБарнома дар реҷаи танҳо-хондан кор мекунад.\n\nStack: .NET 10 · Avalonia UI\nТаҳиягар: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "Кушодани пайванди GitHub",
+  "Help.About.CopyLink": "Нусха кардани пайванд",
   "Dialog.SelectRoot": "Ҷузвдони решаи лоиҳаро интихоб кунед",
-
   "Settings.IgnoreTitle": "Нодида гирифтан:",
   "Settings.Ignore.BinFolders": "ҷузвдонҳои bin",
   "Settings.Ignore.ObjFolders": "ҷузвдонҳои obj",
@@ -61,7 +59,6 @@
   "Settings.RootFolders": "Ҷузвдонҳои сатҳи боло:",
   "Settings.Font": "Шрифти дарахт:",
   "Settings.Apply": "Истифодаи танзимот",
-
   "Msg.ErrorTitle": "Хато",
   "Msg.InfoTitle": "Маълумот",
   "Msg.PathNotFound": "Ҷузвдон ёфт нашуд:\n{0}",
@@ -72,7 +69,6 @@
   "Msg.ElevationCanceled": "Баланд бардоштани ҳуқуқҳо бекор шуд. Шояд ҷузвдон пурра дастрас набошад.",
   "Msg.AccessDeniedRoot": "Ба ҷузвдони интихобшуда дастрасӣ нест. Бо ҳуқуқи админ оғоз кунед.",
   "Msg.AboutStub": "Дар ин ҷо маълумоти барнома хоҳад буд (stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

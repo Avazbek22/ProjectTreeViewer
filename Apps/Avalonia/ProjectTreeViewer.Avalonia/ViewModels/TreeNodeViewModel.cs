@@ -13,6 +13,7 @@ public sealed class TreeNodeViewModel : ViewModelBase
     private bool _isExpanded;
     private bool _isSelected;
     private string _displayName;
+    private bool _isCurrentSearchMatch;
 
     public TreeNodeViewModel(
         TreeNodeDescriptor descriptor,
@@ -34,6 +35,17 @@ public sealed class TreeNodeViewModel : ViewModelBase
     public IImage? Icon { get; set; }
 
     public InlineCollection DisplayInlines { get; } = new();
+
+    public bool IsCurrentSearchMatch
+    {
+        get => _isCurrentSearchMatch;
+        set
+        {
+            if (_isCurrentSearchMatch == value) return;
+            _isCurrentSearchMatch = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public string DisplayName
     {
@@ -113,7 +125,12 @@ public sealed class TreeNodeViewModel : ViewModelBase
         RaisePropertyChanged(nameof(Icon));
     }
 
-    public void UpdateSearchHighlight(string? query, IBrush? highlightBackground, IBrush? highlightForeground, IBrush? normalForeground)
+    public void UpdateSearchHighlight(
+        string? query,
+        IBrush? highlightBackground,
+        IBrush? highlightForeground,
+        IBrush? normalForeground,
+        IBrush? currentHighlightBackground)
     {
         DisplayInlines.Clear();
 
@@ -137,9 +154,10 @@ public sealed class TreeNodeViewModel : ViewModelBase
             if (index > startIndex)
                 DisplayInlines.Add(new Run(DisplayName[startIndex..index]) { Foreground = normalForeground });
 
+            var matchBackground = IsCurrentSearchMatch ? currentHighlightBackground : highlightBackground;
             DisplayInlines.Add(new Run(DisplayName.Substring(index, query.Length))
             {
-                Background = highlightBackground,
+                Background = matchBackground,
                 Foreground = highlightForeground
             });
 

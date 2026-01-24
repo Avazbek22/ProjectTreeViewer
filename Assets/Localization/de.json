@@ -3,13 +3,11 @@
   "Menu.File.Open": "Ordner öffnen...",
   "Menu.File.Refresh": "Aktualisieren",
   "Menu.File.Exit": "Beenden",
-
   "Menu.Copy": "Kopieren",
   "Menu.Copy.FullTree": "Kompletten Baum kopieren",
   "Menu.Copy.SelectedTree": "Ausgewählten Baum kopieren",
   "Menu.Copy.SelectedContent": "Inhalt ausgewählter Dateien kopieren",
   "Menu.Copy.FullTreeAndContent": "Kompletten Baum und Inhalt kopieren",
-
   "Menu.View": "Ansicht",
   "Menu.View.ExpandAll": "Alles erweitern",
   "Menu.View.CollapseAll": "Alles reduzieren",
@@ -38,17 +36,17 @@
   "Menu.Search": "Suche",
   "Filter.ByName": "Nach Name filtern",
   "Filter.Tooltip": "Nach Name filtern (Ctrl+Shift+N)",
-
   "Menu.Options": "Optionen",
   "Menu.Language": "Sprache",
   "Menu.Help": "Hilfe",
+  "Menu.Help.Help": "Hilfe",
   "Menu.Help.About": "Über",
-
-  "Title.Default": "Project Tree Viewer by Avazbek",
-  "Title.WithPath": "Project Tree Viewer - {0}",
-
+  "Help.Help.Title": "Hilfe",
+  "Help.About.Title": "Über",
+  "Help.About.Body": "ProjectTreeViewer hilft, den Projektkontext schnell vorzubereiten: Struktur visualisieren, benötigte Dateien auswählen und Baum oder Inhalte in die Zwischenablage kopieren.\n\nDie Entwicklung läuft weiter; architektonische und funktionale Verbesserungen werden schrittweise eingeführt, mit Fokus auf Bedienbarkeit und vorhersehbares Verhalten.\n\nDie Anwendung arbeitet im Nur-Lese-Modus.\n\nStack: .NET 10 · Avalonia UI\nEntwickler: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "GitHub-Link öffnen",
+  "Help.About.CopyLink": "Link kopieren",
   "Dialog.SelectRoot": "Projekt-Stammordner auswählen",
-
   "Settings.IgnoreTitle": "Ignorieren:",
   "Settings.Ignore.BinFolders": "bin-Ordner",
   "Settings.Ignore.ObjFolders": "obj-Ordner",
@@ -61,7 +59,6 @@
   "Settings.RootFolders": "Ordner der obersten Ebene:",
   "Settings.Font": "Baum-Schrift:",
   "Settings.Apply": "Anwenden",
-
   "Msg.ErrorTitle": "Fehler",
   "Msg.InfoTitle": "Info",
   "Msg.PathNotFound": "Ordner nicht gefunden:\n{0}",
@@ -72,7 +69,6 @@
   "Msg.ElevationCanceled": "Erhöhung wurde abgebrochen. Der Ordner ist möglicherweise nicht vollständig zugänglich.",
   "Msg.AccessDeniedRoot": "Zugriff verweigert. Als Administrator ausführen.",
   "Msg.AboutStub": "Programminfo kommt hier hin (Stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

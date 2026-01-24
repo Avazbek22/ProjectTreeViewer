@@ -2,12 +2,17 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Infrastructure.ResourceStore;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
 
 public sealed class MainWindowViewModel : ViewModelBase
 {
+    public const string BaseTitle = "Project Tree Viewer v4.1";
+    public const string BaseTitleWithAuthor = "Project Tree Viewer by Olimoff v4.1";
+
     private readonly LocalizationService _localization;
+    private readonly HelpContentProvider _helpContentProvider;
 
     private string _title;
     private bool _isProjectLoaded;
@@ -19,7 +24,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private FontFamily? _selectedFontFamily;
     private FontFamily? _pendingFontFamily;
 
-    private double _treeFontSize = 12;
+    private double _treeFontSize = 15;
 
     private bool _allExtensionsChecked;
     private bool _allRootFoldersChecked;
@@ -40,11 +45,18 @@ public sealed class MainWindowViewModel : ViewModelBase
     private double _menuChildIntensity = 50;
 
     private bool _themePopoverOpen;
+    private bool _helpPopoverOpen;
+    private bool _helpDocsPopoverOpen;
+    private double _helpPopoverMaxWidth = 800;
+    private double _helpPopoverMaxHeight = 680;
+    private double _aboutPopoverMaxWidth = 520;
+    private double _aboutPopoverMaxHeight = 380;
 
-    public MainWindowViewModel(LocalizationService localization)
+    public MainWindowViewModel(LocalizationService localization, HelpContentProvider helpContentProvider)
     {
         _localization = localization;
-        _title = localization["Title.Default"];
+        _helpContentProvider = helpContentProvider;
+        _title = BaseTitleWithAuthor;
         _allExtensionsChecked = true;
         _allRootFoldersChecked = true;
         _allIgnoreChecked = true;
@@ -145,6 +157,9 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (_isCompactMode == value) return;
             _isCompactMode = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(TreeItemSpacing));
+            RaisePropertyChanged(nameof(TreeItemPadding));
+            RaisePropertyChanged(nameof(SettingsListSpacing));
         }
     }
 
@@ -289,6 +304,89 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool HelpPopoverOpen
+    {
+        get => _helpPopoverOpen;
+        set
+        {
+            if (_helpPopoverOpen == value) return;
+            _helpPopoverOpen = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool HelpDocsPopoverOpen
+    {
+        get => _helpDocsPopoverOpen;
+        set
+        {
+            if (_helpDocsPopoverOpen == value) return;
+            _helpDocsPopoverOpen = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double HelpPopoverMaxWidth
+    {
+        get => _helpPopoverMaxWidth;
+        set
+        {
+            if (Math.Abs(_helpPopoverMaxWidth - value) < 0.1) return;
+            _helpPopoverMaxWidth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double HelpPopoverMaxHeight
+    {
+        get => _helpPopoverMaxHeight;
+        set
+        {
+            if (Math.Abs(_helpPopoverMaxHeight - value) < 0.1) return;
+            _helpPopoverMaxHeight = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double AboutPopoverMaxWidth
+    {
+        get => _aboutPopoverMaxWidth;
+        set
+        {
+            if (Math.Abs(_aboutPopoverMaxWidth - value) < 0.1) return;
+            _aboutPopoverMaxWidth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double AboutPopoverMaxHeight
+    {
+        get => _aboutPopoverMaxHeight;
+        set
+        {
+            if (Math.Abs(_aboutPopoverMaxHeight - value) < 0.1) return;
+            _aboutPopoverMaxHeight = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public void UpdateHelpPopoverMaxSize(Size bounds)
+    {
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+            return;
+
+        const double padding = 16;
+        var maxHelpWidth = Math.Max(260, Math.Min(800, (bounds.Width - padding) * 0.8));
+        var maxHelpHeight = Math.Max(220, Math.Min(680, (bounds.Height - padding) * 0.9));
+        var maxAboutWidth = Math.Min(520, (bounds.Width - padding) * 0.7);
+        var maxAboutHeight = Math.Min(380, (bounds.Height - padding) * 0.7);
+
+        HelpPopoverMaxWidth = maxHelpWidth;
+        HelpPopoverMaxHeight = maxHelpHeight;
+        AboutPopoverMaxWidth = maxAboutWidth;
+        AboutPopoverMaxHeight = maxAboutHeight;
+    }
+
     // Material intensity: single slider for overall effect strength (transparency, depth, material feel)
     public double MaterialIntensity
     {
@@ -395,6 +493,15 @@ public sealed class MainWindowViewModel : ViewModelBase
             ? new Thickness(0, 9, 0, 0)
             : new Thickness(0);
 
+    // Tree row spacing is controlled in VM so compact mode is a single switch.
+    public double TreeItemSpacing => _isCompactMode ? 2 : 6;
+
+    // TreeViewItem padding follows the same compact flag to keep row height tight.
+    public Thickness TreeItemPadding => _isCompactMode ? new Thickness(0, 0) : new Thickness(4, 1);
+
+    // Settings lists use an ItemsPanel with explicit Spacing (can go negative to tighten).
+    public double SettingsListSpacing => _isCompactMode ? -7 : -3;
+
     public bool AllExtensionsChecked
     {
         get => _allExtensionsChecked;
@@ -453,7 +560,14 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuOptionsTreeSettings { get; private set; } = string.Empty;
     public string MenuLanguage { get; private set; } = string.Empty;
     public string MenuHelp { get; private set; } = string.Empty;
+    public string MenuHelpHelp { get; private set; } = string.Empty;
     public string MenuHelpAbout { get; private set; } = string.Empty;
+    public string HelpHelpTitle { get; private set; } = string.Empty;
+    public string HelpHelpBody { get; private set; } = string.Empty;
+    public string HelpAboutTitle { get; private set; } = string.Empty;
+    public string HelpAboutBody { get; private set; } = string.Empty;
+    public string HelpAboutOpenLink { get; private set; } = string.Empty;
+    public string HelpAboutCopyLink { get; private set; } = string.Empty;
     public string MenuTheme { get; private set; } = string.Empty;
     public string ThemeModeLabel { get; private set; } = string.Empty;
     public string ThemeEffectsLabel { get; private set; } = string.Empty;
@@ -504,7 +618,14 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuOptionsTreeSettings = _localization["Menu.Options.TreeSettings"];
         MenuLanguage = _localization["Menu.Language"];
         MenuHelp = _localization["Menu.Help"];
+        MenuHelpHelp = _localization["Menu.Help.Help"];
         MenuHelpAbout = _localization["Menu.Help.About"];
+        HelpHelpTitle = _localization["Help.Help.Title"];
+        HelpHelpBody = _helpContentProvider.GetHelpBody(_localization.CurrentLanguage);
+        HelpAboutTitle = _localization["Help.About.Title"];
+        HelpAboutBody = _localization["Help.About.Body"];
+        HelpAboutOpenLink = _localization["Help.About.OpenLink"];
+        HelpAboutCopyLink = _localization["Help.About.CopyLink"];
         SettingsIgnoreTitle = _localization["Settings.IgnoreTitle"];
         SettingsAll = _localization["Settings.All"];
         SettingsExtensions = _localization["Settings.Extensions"];
@@ -555,7 +676,14 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuOptionsTreeSettings));
         RaisePropertyChanged(nameof(MenuLanguage));
         RaisePropertyChanged(nameof(MenuHelp));
+        RaisePropertyChanged(nameof(MenuHelpHelp));
         RaisePropertyChanged(nameof(MenuHelpAbout));
+        RaisePropertyChanged(nameof(HelpHelpTitle));
+        RaisePropertyChanged(nameof(HelpHelpBody));
+        RaisePropertyChanged(nameof(HelpAboutTitle));
+        RaisePropertyChanged(nameof(HelpAboutBody));
+        RaisePropertyChanged(nameof(HelpAboutOpenLink));
+        RaisePropertyChanged(nameof(HelpAboutCopyLink));
         RaisePropertyChanged(nameof(SettingsIgnoreTitle));
         RaisePropertyChanged(nameof(SettingsAll));
         RaisePropertyChanged(nameof(SettingsExtensions));
