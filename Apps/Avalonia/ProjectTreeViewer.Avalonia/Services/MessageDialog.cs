@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace ProjectTreeViewer.Avalonia.Services;
@@ -10,6 +11,13 @@ public static class MessageDialog
 {
     public static async Task ShowAsync(Window owner, string title, string message)
     {
+        var themeVariant = owner?.ActualThemeVariant
+            ?? global::Avalonia.Application.Current?.ActualThemeVariant
+            ?? ThemeVariant.Default;
+        var appBackground = global::Avalonia.Application.Current?.TryFindResource("AppBackgroundBrush", themeVariant, out var resource) == true
+            ? resource as IBrush
+            : null;
+
         var dialog = new Window
         {
             Title = title,
@@ -17,6 +25,9 @@ public static class MessageDialog
             Height = 200,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             CanResize = false,
+            RequestedThemeVariant = themeVariant,
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
+            Background = appBackground,
             Content = BuildContent(message)
         };
 

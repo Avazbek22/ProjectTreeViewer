@@ -40,6 +40,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private double _menuChildIntensity = 50;
 
     private bool _themePopoverOpen;
+    private bool _helpPopoverOpen;
 
     public MainWindowViewModel(LocalizationService localization)
     {
@@ -289,6 +290,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool HelpPopoverOpen
+    {
+        get => _helpPopoverOpen;
+        set
+        {
+            if (_helpPopoverOpen == value) return;
+            _helpPopoverOpen = value;
+            RaisePropertyChanged();
+        }
+    }
+
     // Material intensity: single slider for overall effect strength (transparency, depth, material feel)
     public double MaterialIntensity
     {
@@ -454,6 +466,10 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuLanguage { get; private set; } = string.Empty;
     public string MenuHelp { get; private set; } = string.Empty;
     public string MenuHelpAbout { get; private set; } = string.Empty;
+    public string HelpAboutTitle { get; private set; } = string.Empty;
+    public string HelpAboutBody { get; private set; } = string.Empty;
+    public string HelpAboutOpenLink { get; private set; } = string.Empty;
+    public string HelpAboutCopyLink { get; private set; } = string.Empty;
     public string MenuTheme { get; private set; } = string.Empty;
     public string ThemeModeLabel { get; private set; } = string.Empty;
     public string ThemeEffectsLabel { get; private set; } = string.Empty;
@@ -505,6 +521,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuLanguage = _localization["Menu.Language"];
         MenuHelp = _localization["Menu.Help"];
         MenuHelpAbout = _localization["Menu.Help.About"];
+        HelpAboutTitle = _localization["Help.About.Title"];
+        HelpAboutBody = _localization["Help.About.Body"];
+        HelpAboutOpenLink = _localization["Help.About.OpenLink"];
+        HelpAboutCopyLink = _localization["Help.About.CopyLink"];
         SettingsIgnoreTitle = _localization["Settings.IgnoreTitle"];
         SettingsAll = _localization["Settings.All"];
         SettingsExtensions = _localization["Settings.Extensions"];
@@ -556,6 +576,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuLanguage));
         RaisePropertyChanged(nameof(MenuHelp));
         RaisePropertyChanged(nameof(MenuHelpAbout));
+        RaisePropertyChanged(nameof(HelpAboutTitle));
+        RaisePropertyChanged(nameof(HelpAboutBody));
+        RaisePropertyChanged(nameof(HelpAboutOpenLink));
+        RaisePropertyChanged(nameof(HelpAboutCopyLink));
         RaisePropertyChanged(nameof(SettingsIgnoreTitle));
         RaisePropertyChanged(nameof(SettingsAll));
         RaisePropertyChanged(nameof(SettingsExtensions));

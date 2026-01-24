@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using ProjectTreeViewer.Application;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.Coordinators;
@@ -95,6 +97,7 @@ public partial class MainWindow : Window
             () => _currentPath);
 
         Closed += (_, _) => _filterCoordinator.Dispose();
+        Deactivated += OnDeactivated;
 
         _elevationAttempted = startupOptions.ElevationAttempted;
 
@@ -137,6 +140,12 @@ public partial class MainWindow : Window
         global::Avalonia.Threading.Dispatcher.UIThread.Post(
             () => _searchCoordinator.RefreshThemeHighlights(),
             global::Avalonia.Threading.DispatcherPriority.Background);
+    }
+
+    private void OnDeactivated(object? sender, EventArgs e)
+    {
+        if (_viewModel.HelpPopoverOpen)
+            _viewModel.HelpPopoverOpen = false;
     }
 
     private async void OnOpened(object? sender, EventArgs e)
@@ -438,9 +447,29 @@ public partial class MainWindow : Window
     private void OnLangDe(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.De);
     private void OnLangIt(object? sender, RoutedEventArgs e) => _localization.SetLanguage(AppLanguage.It);
 
-    private async void OnAbout(object? sender, RoutedEventArgs e)
+    private void OnAbout(object? sender, RoutedEventArgs e)
     {
-        await ShowInfoAsync(_localization["Msg.AboutStub"]);
+        _viewModel.HelpPopoverOpen = true;
+        _viewModel.ThemePopoverOpen = false;
+        e.Handled = true;
+    }
+
+    private void OnAboutClose(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.HelpPopoverOpen = false;
+        e.Handled = true;
+    }
+
+    private void OnAboutOpenLink(object? sender, RoutedEventArgs e)
+    {
+        OpenRepositoryLink();
+        e.Handled = true;
+    }
+
+    private async void OnAboutCopyLink(object? sender, RoutedEventArgs e)
+    {
+        await SetClipboardTextAsync(ProjectLinks.RepositoryUrl);
+        e.Handled = true;
     }
 
     private void OnSearchNext(object? sender, RoutedEventArgs e) => _searchCoordinator.Navigate(1);
@@ -569,6 +598,14 @@ public partial class MainWindow : Window
         {
             if (_viewModel.IsProjectLoaded)
                 OnToggleFilter(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // Esc закрывает help popover
+        if (e.Key == Key.Escape && _viewModel.HelpPopoverOpen)
+        {
+            _viewModel.HelpPopoverOpen = false;
             e.Handled = true;
             return;
         }
@@ -892,6 +929,15 @@ public partial class MainWindow : Window
 
         if (clipboard != null)
             await clipboard.SetTextAsync(content);
+    }
+
+    private static void OpenRepositoryLink()
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = ProjectLinks.RepositoryUrl,
+            UseShellExecute = true
+        });
     }
 
     private bool EnsureTreeReady() => _currentTree is not null && !string.IsNullOrWhiteSpace(_currentPath);

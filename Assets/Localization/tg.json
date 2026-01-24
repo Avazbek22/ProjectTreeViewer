@@ -43,6 +43,10 @@
   "Menu.Language": "Забон",
   "Menu.Help": "Ёрӣ",
   "Menu.Help.About": "Дар бораи барнома",
+  "Help.About.Title": "Дар бораи барнома",
+  "Help.About.Body": "ProjectTreeViewer барои зуд омода кардани контексти лоиҳа кӯмак мекунад: сохторро намоиш додан, файлҳои лозимиро интихоб кардан ва дарахт ё мазмунро ба буфери нусхабардорӣ гузоштан.\n\nТаҳия идома дорад; беҳбудиҳои меъморӣ ва функсионалӣ тадриҷан ҷорӣ мешаванд, бо тамаркуз ба роҳатӣ ва рафтори пешбинишаванда.\n\nБарнома дар реҷаи танҳо-хондан кор мекунад.\n\nStack: .NET 10 · Avalonia UI\nТаҳиягар: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "Кушодани пайванди GitHub",
+  "Help.About.CopyLink": "Нусха кардани пайванд",
 
   "Title.Default": "Project Tree Viewer by Avazbek",
   "Title.WithPath": "Project Tree Viewer - {0}",
