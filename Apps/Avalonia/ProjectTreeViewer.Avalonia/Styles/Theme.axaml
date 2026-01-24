@@ -13,6 +13,7 @@
     <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
     <Color x:Key="TreeSelectionColor">#DCEEFF</Color>
     <Color x:Key="TreeSearchHighlightColor">#FFF59D</Color>
+    <Color x:Key="TreeSearchCurrentColor">#F9A825</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
@@ -24,6 +25,7 @@
     <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
+    <SolidColorBrush x:Key="TreeSearchCurrentBrush" Color="{StaticResource TreeSearchCurrentColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
     <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}"/>
     <SolidColorBrush x:Key="MenuChildPopupBrush" Color="{StaticResource AppPanelColor}"/>
@@ -39,6 +41,7 @@
     <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
     <Color x:Key="TreeSelectionColor">#254861</Color>
     <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
+    <Color x:Key="TreeSearchCurrentColor">#F39C12</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
@@ -50,6 +53,7 @@
     <SolidColorBrush x:Key="TreeSelectionBrush" Color="{StaticResource TreeSelectionColor}" />
     <SolidColorBrush x:Key="TreeSelectionTextBrush" Color="{StaticResource AppTextColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightBrush" Color="{StaticResource TreeSearchHighlightColor}" />
+    <SolidColorBrush x:Key="TreeSearchCurrentBrush" Color="{StaticResource TreeSearchCurrentColor}" />
     <SolidColorBrush x:Key="TreeSearchHighlightTextBrush" Color="#000000" />
     <SolidColorBrush x:Key="MenuPopupBrush" Color="{StaticResource AppPanelColor}" />
     <SolidColorBrush x:Key="MenuChildPopupBrush" Color="{StaticResource AppPanelColor}"/>
