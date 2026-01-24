@@ -21,9 +21,10 @@ public sealed class FilterOptionSelectionService
 		IReadOnlySet<string> previousSelections)
 	{
 		var list = new List<SelectionOption>();
-		bool hasPrevious = previousSelections.Count > 0;
+		var ordered = extensions.OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
+		bool hasPrevious = previousSelections.Count > 0 && ordered.Any(previousSelections.Contains);
 
-		foreach (var ext in extensions.OrderBy(e => e, StringComparer.OrdinalIgnoreCase))
+		foreach (var ext in ordered)
 		{
 			bool isChecked = previousSelections.Contains(ext) ||
 				(!hasPrevious && DefaultExtensions.Contains(ext));

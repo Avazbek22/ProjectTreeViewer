@@ -33,6 +33,13 @@ internal sealed class TemporaryDirectory : IDisposable
 		return fullPath;
 	}
 
+	public string CreateFolder(string relativePath)
+	{
+		var fullPath = System.IO.Path.Combine(Path, relativePath);
+		Directory.CreateDirectory(fullPath);
+		return fullPath;
+	}
+
 	public void Dispose()
 	{
 		if (Directory.Exists(Path))

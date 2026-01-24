@@ -159,4 +159,89 @@ public sealed class FilterOptionSelectionServiceTests
 		Assert.Equal("b", options[0].Name);
 		Assert.Equal("a", options[1].Name);
 	}
+
+	// Verifies empty extension list yields empty options.
+	[Fact]
+	public void BuildExtensionOptions_ReturnsEmptyWhenNoExtensions()
+	{
+		var service = new FilterOptionSelectionService();
+
+		var options = service.BuildExtensionOptions(Array.Empty<string>(), new HashSet<string>());
+
+		Assert.Empty(options);
+	}
+
+	// Verifies empty root folders yield empty options.
+	[Fact]
+	public void BuildRootFolderOptions_ReturnsEmptyWhenNoFolders()
+	{
+		var service = new FilterOptionSelectionService();
+		var rules = new IgnoreRules(
+			IgnoreBinFolders: false,
+			IgnoreObjFolders: false,
+			IgnoreHiddenFolders: false,
+			IgnoreHiddenFiles: false,
+			IgnoreDotFolders: false,
+			IgnoreDotFiles: false,
+			SmartIgnoredFolders: new HashSet<string>(),
+			SmartIgnoredFiles: new HashSet<string>());
+
+		var options = service.BuildRootFolderOptions(Array.Empty<string>(), new HashSet<string>(), rules);
+
+		Assert.Empty(options);
+	}
+
+	// Verifies previous selections not present are ignored.
+	[Fact]
+	public void BuildExtensionOptions_IgnoresPreviousSelectionsNotInList()
+	{
+		var service = new FilterOptionSelectionService();
+		var previous = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".missing" };
+
+		var options = service.BuildExtensionOptions(new[] { ".cs" }, previous);
+
+		Assert.True(options.Single(o => o.Name == ".cs").IsChecked);
+	}
+
+	// Verifies smart ignored folders are excluded when no previous selection.
+	[Fact]
+	public void BuildRootFolderOptions_ExcludesSmartIgnoredFolders()
+	{
+		var service = new FilterOptionSelectionService();
+		var rules = new IgnoreRules(
+			IgnoreBinFolders: false,
+			IgnoreObjFolders: false,
+			IgnoreHiddenFolders: false,
+			IgnoreHiddenFiles: false,
+			IgnoreDotFolders: false,
+			IgnoreDotFiles: false,
+			SmartIgnoredFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Cache" },
+			SmartIgnoredFiles: new HashSet<string>());
+
+		var options = service.BuildRootFolderOptions(new[] { "cache", "src" }, new HashSet<string>(), rules);
+
+		Assert.False(options.Single(o => o.Name == "cache").IsChecked);
+		Assert.True(options.Single(o => o.Name == "src").IsChecked);
+	}
+
+	// Verifies dot folders are excluded when IgnoreDotFolders enabled.
+	[Fact]
+	public void BuildRootFolderOptions_ExcludesDotFolders()
+	{
+		var service = new FilterOptionSelectionService();
+		var rules = new IgnoreRules(
+			IgnoreBinFolders: false,
+			IgnoreObjFolders: false,
+			IgnoreHiddenFolders: false,
+			IgnoreHiddenFiles: false,
+			IgnoreDotFolders: true,
+			IgnoreDotFiles: false,
+			SmartIgnoredFolders: new HashSet<string>(),
+			SmartIgnoredFiles: new HashSet<string>());
+
+		var options = service.BuildRootFolderOptions(new[] { ".git", "src" }, new HashSet<string>(), rules);
+
+		Assert.False(options.Single(o => o.Name == ".git").IsChecked);
+		Assert.True(options.Single(o => o.Name == "src").IsChecked);
+	}
 }

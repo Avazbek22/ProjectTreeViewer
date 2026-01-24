@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Kernel.Contracts;
 using ProjectTreeViewer.Tests.Unit.Helpers;
@@ -152,5 +153,62 @@ public sealed class TreeAndContentExportServiceTests
 
 		var nl = Environment.NewLine;
 		Assert.Contains($"\u00A0{nl}\u00A0{nl}", result);
+	}
+
+	// Verifies selecting a directory yields tree output but no content.
+	[Fact]
+	public void Build_ReturnsTreeOnlyWhenSelectionIsDirectory()
+	{
+		using var temp = new TemporaryDirectory();
+		var folder = temp.CreateFolder("src");
+		var file = temp.CreateFile(Path.Combine("src", "main.cs"), "class C {}");
+
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: temp.Path,
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor(
+					"src",
+					folder,
+					true,
+					false,
+					"folder",
+					new List<TreeNodeDescriptor>
+					{
+						new TreeNodeDescriptor("main.cs", file, false, false, "text", new List<TreeNodeDescriptor>())
+					})
+			});
+
+		var service = new TreeAndContentExportService(new TreeExportService(), new SelectedContentExportService());
+		var result = service.Build(temp.Path, root, new HashSet<string> { folder });
+
+		Assert.Contains("src", result);
+		Assert.DoesNotContain("main.cs:", result);
+	}
+
+	// Verifies a file root is treated as a file when no selection is provided.
+	[Fact]
+	public void Build_IncludesFileContentWhenRootIsFile()
+	{
+		using var temp = new TemporaryDirectory();
+		var file = temp.CreateFile("root.txt", "root content");
+
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root.txt",
+			FullPath: file,
+			IsDirectory: false,
+			IsAccessDenied: false,
+			IconKey: "text",
+			Children: new List<TreeNodeDescriptor>());
+
+		var service = new TreeAndContentExportService(new TreeExportService(), new SelectedContentExportService());
+		var result = service.Build(temp.Path, root, new HashSet<string>());
+
+		Assert.Contains("root.txt:", result);
+		Assert.Contains("root content", result);
 	}
 }
