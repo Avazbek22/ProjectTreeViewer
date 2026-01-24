@@ -390,7 +390,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            ReloadProject();
+            await ReloadProjectAsync();
         }
         catch (Exception ex)
         {
@@ -703,7 +703,7 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
-        RefreshTree();
+        _ = RefreshTreeAsync();
         _searchCoordinator.UpdateHighlights(_viewModel.NameFilter);
 
         // Auto-expand folders with matching items
@@ -948,7 +948,7 @@ public partial class MainWindow : Window
                 _viewModel.SelectedFontFamily = pending;
             }
 
-            RefreshTree();
+            _ = RefreshTreeAsync();
         }
         catch (Exception ex)
         {
@@ -980,7 +980,7 @@ public partial class MainWindow : Window
         _viewModel.SearchVisible = false;
         UpdateTitle();
 
-        ReloadProject();
+        _ = ReloadProjectAsync();
     }
 
     private bool TryElevateAndRestart(string path)
@@ -1013,16 +1013,16 @@ public partial class MainWindow : Window
         return false;
     }
 
-    private async void ReloadProject()
+    private async Task ReloadProjectAsync()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
         // Keep root/extension scans sequenced to avoid inconsistent UI states.
         await _selectionCoordinator.RefreshRootAndDependentsAsync(_currentPath);
-        RefreshTree();
+        await RefreshTreeAsync();
     }
 
-    private async void RefreshTree()
+    private async Task RefreshTreeAsync()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
