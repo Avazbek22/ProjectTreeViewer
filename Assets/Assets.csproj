@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Localization\*.json" />
-    <EmbeddedResource Include="HelpContent\*.txt" />
+    <EmbeddedResource Include="HelpContent\**\*.txt" />
     <EmbeddedResource Include="IgnoreProfiles\*.json" />
     <EmbeddedResource Include="IconPacks\**\*.*" />
   </ItemGroup>

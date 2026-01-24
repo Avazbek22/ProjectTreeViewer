@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Linq;
 using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.Infrastructure.ResourceStore;
@@ -38,8 +39,19 @@ public sealed class HelpContentProvider
     private static string Load(Assembly assembly, string code)
     {
         var resourceName = $"ProjectTreeViewer.Assets.HelpContent.help.{code}.txt";
-        using var stream = assembly.GetManifestResourceStream(resourceName)
-            ?? throw new InvalidOperationException($"Help content resource not found: {resourceName}");
+        var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            var fallbackName = assembly.GetManifestResourceNames()
+                .FirstOrDefault(name => name.EndsWith($".HelpContent.help.{code}.txt", StringComparison.OrdinalIgnoreCase));
+
+            stream = fallbackName is null
+                ? null
+                : assembly.GetManifestResourceStream(fallbackName);
+        }
+
+        if (stream is null)
+            throw new InvalidOperationException($"Help content resource not found: {resourceName}");
 
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         return reader.ReadToEnd();
