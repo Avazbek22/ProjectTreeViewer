@@ -43,6 +43,10 @@
   "Menu.Language": "Язык",
   "Menu.Help": "Справка",
   "Menu.Help.About": "О программе",
+  "Help.About.Title": "О программе",
+  "Help.About.Body": "ProjectTreeViewer помогает быстро подготовить контекст проекта: визуализировать структуру, выбрать нужные файлы и скопировать дерево или содержимое в буфер обмена.\n\nРазработка проекта продолжается; архитектурные и функциональные улучшения внедряются постепенно, с упором на удобство и предсказуемость поведения.\n\nРежим работы приложения — только чтение (read-only).\n\nСтек: .NET 10 · Avalonia UI\nРазработчик: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
+  "Help.About.OpenLink": "Открыть ссылку",
+  "Help.About.CopyLink": "Скопировать ссылку",
 
   "Title.Default": "Project Tree Viewer by Avazbek",
   "Title.WithPath": "Project Tree Viewer - {0}",

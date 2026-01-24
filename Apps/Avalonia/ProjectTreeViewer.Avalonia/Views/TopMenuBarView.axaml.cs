@@ -32,6 +32,9 @@ public partial class TopMenuBarView : UserControl
     public event EventHandler<RoutedEventArgs>? LanguageDeRequested;
     public event EventHandler<RoutedEventArgs>? LanguageItRequested;
     public event EventHandler<RoutedEventArgs>? AboutRequested;
+    public event EventHandler<RoutedEventArgs>? AboutCloseRequested;
+    public event EventHandler<RoutedEventArgs>? AboutOpenLinkRequested;
+    public event EventHandler<RoutedEventArgs>? AboutCopyLinkRequested;
     public event EventHandler<RoutedEventArgs>? SetLightThemeRequested;
     public event EventHandler<RoutedEventArgs>? SetDarkThemeRequested;
     public event EventHandler<RoutedEventArgs>? SetTransparentModeRequested;
@@ -50,6 +53,14 @@ public partial class TopMenuBarView : UserControl
             popover.SetTransparentModeRequested += (_, e) => SetTransparentModeRequested?.Invoke(this, e);
             popover.SetMicaModeRequested += (_, e) => SetMicaModeRequested?.Invoke(this, e);
             popover.SetAcrylicModeRequested += (_, e) => SetAcrylicModeRequested?.Invoke(this, e);
+        }
+
+        var helpPopover = HelpPopover;
+        if (helpPopover is not null)
+        {
+            helpPopover.CloseRequested += (_, e) => AboutCloseRequested?.Invoke(this, e);
+            helpPopover.OpenLinkRequested += (_, e) => AboutOpenLinkRequested?.Invoke(this, e);
+            helpPopover.CopyLinkRequested += (_, e) => AboutCopyLinkRequested?.Invoke(this, e);
         }
     }
 
