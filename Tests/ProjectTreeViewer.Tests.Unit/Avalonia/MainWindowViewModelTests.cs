@@ -29,7 +29,7 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.AllIgnoreChecked);
         Assert.True(viewModel.IsDarkTheme);
         Assert.True(viewModel.IsTransparentEnabled);
-        Assert.Equal(12, viewModel.TreeFontSize);
+        Assert.Equal(15, viewModel.TreeFontSize);
     }
 
     [Fact]
