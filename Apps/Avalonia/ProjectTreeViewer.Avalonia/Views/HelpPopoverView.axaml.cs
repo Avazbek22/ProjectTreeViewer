@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ProjectTreeViewer.Avalonia.ViewModels;
 
@@ -16,35 +17,45 @@ public partial class HelpPopoverView : UserControl
 
     public HelpPopoverView()
     {
-        InitializeComponent();
+        AvaloniaXamlLoader.Load(this);
         DataContextChanged += OnDataContextChanged;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
+        var bodyPanel = GetBodyPanel();
+        if (bodyPanel is null)
+            return;
+
         if (_boundViewModel is not null)
             _boundViewModel.PropertyChanged -= OnViewModelPropertyChanged;
 
         _boundViewModel = DataContext as MainWindowViewModel;
         if (_boundViewModel is null)
         {
-            BodyPanel.Children.Clear();
+            bodyPanel.Children.Clear();
             return;
         }
 
         _boundViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        BuildBody(_boundViewModel.HelpHelpBody);
+        BuildBody(bodyPanel, _boundViewModel.HelpHelpBody);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainWindowViewModel.HelpHelpBody) && DataContext is MainWindowViewModel viewModel)
-            BuildBody(viewModel.HelpHelpBody);
+        {
+            var bodyPanel = GetBodyPanel();
+            if (bodyPanel is null)
+                return;
+
+            BuildBody(bodyPanel, viewModel.HelpHelpBody);
+        }
     }
 
-    private void BuildBody(string? rawText)
+    private void BuildBody(StackPanel bodyPanel, string? rawText)
     {
-        BodyPanel.Children.Clear();
+        bodyPanel.Children.Clear();
         if (string.IsNullOrWhiteSpace(rawText))
             return;
 
@@ -62,51 +73,51 @@ public partial class HelpPopoverView : UserControl
 
             if (pendingSpacer)
             {
-                BodyPanel.Children.Add(new Border { Height = 8 });
+                bodyPanel.Children.Add(new Border { Height = 8 });
                 pendingSpacer = false;
             }
 
-            if (TryAddHeading(trimmed)) continue;
-            if (TryAddSubheading(trimmed)) continue;
-            if (TryAddBullet(trimmed)) continue;
-            if (TryAddNumbered(trimmed)) continue;
+            if (TryAddHeading(bodyPanel, trimmed)) continue;
+            if (TryAddSubheading(bodyPanel, trimmed)) continue;
+            if (TryAddBullet(bodyPanel, trimmed)) continue;
+            if (TryAddNumbered(bodyPanel, trimmed)) continue;
 
-            BodyPanel.Children.Add(CreateParagraph(trimmed));
+            bodyPanel.Children.Add(CreateParagraph(trimmed));
         }
     }
 
-    private bool TryAddHeading(string line)
+    private bool TryAddHeading(StackPanel bodyPanel, string line)
     {
         if (!line.StartsWith("## ", StringComparison.Ordinal)) return false;
-        BodyPanel.Children.Add(CreateHeading(line[3..], 16));
+        bodyPanel.Children.Add(CreateHeading(line[3..], 16));
         return true;
     }
 
-    private bool TryAddSubheading(string line)
+    private bool TryAddSubheading(StackPanel bodyPanel, string line)
     {
         if (!line.StartsWith("### ", StringComparison.Ordinal)) return false;
-        BodyPanel.Children.Add(CreateHeading(line[4..], 14));
+        bodyPanel.Children.Add(CreateHeading(line[4..], 14));
         return true;
     }
 
-    private bool TryAddBullet(string line)
+    private bool TryAddBullet(StackPanel bodyPanel, string line)
     {
         if (line.Length < 2) return false;
         if (!(line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("* ", StringComparison.Ordinal)))
             return false;
 
-        BodyPanel.Children.Add(CreateBullet(line[2..]));
+        bodyPanel.Children.Add(CreateBullet(line[2..]));
         return true;
     }
 
-    private bool TryAddNumbered(string line)
+    private bool TryAddNumbered(StackPanel bodyPanel, string line)
     {
         var dotIndex = line.IndexOf(')');
         if (dotIndex <= 0 || dotIndex > 4) return false;
         if (!char.IsDigit(line[0])) return false;
         if (dotIndex + 1 < line.Length && line[dotIndex + 1] == ' ')
         {
-            BodyPanel.Children.Add(CreateBullet(line));
+            bodyPanel.Children.Add(CreateBullet(line));
             return true;
         }
 
@@ -156,6 +167,8 @@ public partial class HelpPopoverView : UserControl
         Grid.SetColumn(grid.Children[1], 1);
         return grid;
     }
+
+    private StackPanel? GetBodyPanel() => this.FindControl<StackPanel>("BodyPanel");
 
     private void OnClose(object? sender, RoutedEventArgs e) => CloseRequested?.Invoke(this, e);
 }

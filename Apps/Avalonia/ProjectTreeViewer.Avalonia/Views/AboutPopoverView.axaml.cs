@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 
 namespace ProjectTreeViewer.Avalonia.Views;
 
@@ -12,7 +13,7 @@ public partial class AboutPopoverView : UserControl
 
     public AboutPopoverView()
     {
-        InitializeComponent();
+        AvaloniaXamlLoader.Load(this);
     }
 
     private void OnClose(object? sender, RoutedEventArgs e)
