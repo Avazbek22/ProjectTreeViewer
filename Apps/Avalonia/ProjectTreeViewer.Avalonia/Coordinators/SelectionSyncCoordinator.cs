@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using ProjectTreeViewer.Application.Services;
@@ -33,6 +34,8 @@ public sealed class SelectionSyncCoordinator
     private bool _suppressExtensionItemCheck;
     private bool _suppressIgnoreAllCheck;
     private bool _suppressIgnoreItemCheck;
+    private int _rootScanVersion;
+    private int _extensionScanVersion;
 
     public SelectionSyncCoordinator(
         MainWindowViewModel viewModel,
@@ -83,7 +86,7 @@ public sealed class SelectionSyncCoordinator
         _suppressRootAllCheck = false;
 
         SetAllChecked(_viewModel.RootFolders, isChecked, ref _suppressRootItemCheck);
-        UpdateLiveOptionsFromRootSelection(currentPath);
+        _ = UpdateLiveOptionsFromRootSelectionAsync(currentPath);
     }
 
     public void HandleExtensionsAllChanged(bool isChecked)
@@ -112,14 +115,14 @@ public sealed class SelectionSyncCoordinator
         UpdateIgnoreSelectionCache();
         if (!string.IsNullOrEmpty(currentPath))
         {
-            PopulateRootFolders(currentPath);
-            UpdateLiveOptionsFromRootSelection(currentPath);
+            _ = RefreshRootAndDependentsAsync(currentPath);
         }
     }
 
-    public void PopulateExtensionsForRootSelection(string path, IReadOnlyCollection<string> rootFolders)
+    public Task PopulateExtensionsForRootSelectionAsync(string path, IReadOnlyCollection<string> rootFolders)
     {
-        if (string.IsNullOrEmpty(path)) return;
+        if (string.IsNullOrEmpty(path)) return Task.CompletedTask;
+        var version = Interlocked.Increment(ref _extensionScanVersion);
 
         var prev = _extensionsSelectionCache.Count > 0
             ? new HashSet<string>(_extensionsSelectionCache, StringComparer.OrdinalIgnoreCase)
@@ -134,11 +137,11 @@ public sealed class SelectionSyncCoordinator
             _suppressExtensionAllCheck = false;
             SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
                 value => _viewModel.AllExtensionsChecked = value);
-            return;
+            return Task.CompletedTask;
         }
 
         var ignoreRules = _buildIgnoreRules(path);
-        _ = Task.Run(async () =>
+        return Task.Run(async () =>
         {
             // Scan extensions off the UI thread to avoid freezing on large folders.
             var scan = _scanOptions.GetExtensionsForRootFolders(path, rootFolders, ignoreRules);
@@ -151,6 +154,7 @@ public sealed class SelectionSyncCoordinator
             var options = _filterSelectionService.BuildExtensionOptions(scan.Value, prev);
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                if (version != _extensionScanVersion) return;
                 _viewModel.Extensions.Clear();
 
                 _suppressExtensionItemCheck = true;
@@ -168,15 +172,16 @@ public sealed class SelectionSyncCoordinator
         });
     }
 
-    public void PopulateRootFolders(string path)
+    public Task PopulateRootFoldersAsync(string path)
     {
-        if (string.IsNullOrEmpty(path)) return;
+        if (string.IsNullOrEmpty(path)) return Task.CompletedTask;
+        var version = Interlocked.Increment(ref _rootScanVersion);
 
         var prev = new HashSet<string>(_viewModel.RootFolders.Where(o => o.IsChecked).Select(o => o.Name),
             StringComparer.OrdinalIgnoreCase);
 
         var ignoreRules = _buildIgnoreRules(path);
-        _ = Task.Run(async () =>
+        return Task.Run(async () =>
         {
             // Scan root folders off the UI thread to keep the window responsive.
             var scan = _scanOptions.Execute(new ScanOptionsRequest(path, ignoreRules));
@@ -189,6 +194,7 @@ public sealed class SelectionSyncCoordinator
             var options = _filterSelectionService.BuildRootFolderOptions(scan.RootFolders, prev, ignoreRules);
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                if (version != _rootScanVersion) return;
                 _viewModel.RootFolders.Clear();
 
                 _suppressRootItemCheck = true;
@@ -250,13 +256,20 @@ public sealed class SelectionSyncCoordinator
         return _viewModel.RootFolders.Where(o => o.IsChecked).Select(o => o.Name).ToList();
     }
 
-    public void UpdateLiveOptionsFromRootSelection(string? currentPath)
+    public async Task UpdateLiveOptionsFromRootSelectionAsync(string? currentPath)
     {
         if (string.IsNullOrEmpty(currentPath)) return;
 
         var selectedRoots = GetSelectedRootFolders();
-        PopulateExtensionsForRootSelection(currentPath, selectedRoots);
+        await PopulateExtensionsForRootSelectionAsync(currentPath, selectedRoots);
         PopulateIgnoreOptionsForRootSelection(selectedRoots);
+    }
+
+    public async Task RefreshRootAndDependentsAsync(string currentPath)
+    {
+        // Run in order so root folders are ready before extensions/ignore lists refresh.
+        await PopulateRootFoldersAsync(currentPath);
+        await UpdateLiveOptionsFromRootSelectionAsync(currentPath);
     }
 
     public IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()
@@ -321,7 +334,7 @@ public sealed class SelectionSyncCoordinator
             SyncAllCheckbox(_viewModel.RootFolders, ref _suppressRootAllCheck,
                 value => _viewModel.AllRootFoldersChecked = value);
 
-            UpdateLiveOptionsFromRootSelection(_currentPathProvider());
+            _ = UpdateLiveOptionsFromRootSelectionAsync(_currentPathProvider());
         }
         else if (_viewModel.Extensions.Contains(option))
         {
@@ -348,8 +361,7 @@ public sealed class SelectionSyncCoordinator
         var currentPath = _currentPathProvider();
         if (!string.IsNullOrEmpty(currentPath))
         {
-            PopulateRootFolders(currentPath);
-            UpdateLiveOptionsFromRootSelection(currentPath);
+            _ = RefreshRootAndDependentsAsync(currentPath);
         }
     }
 

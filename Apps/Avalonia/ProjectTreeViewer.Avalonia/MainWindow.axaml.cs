@@ -1013,12 +1013,12 @@ public partial class MainWindow : Window
         return false;
     }
 
-    private void ReloadProject()
+    private async void ReloadProject()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
-        _selectionCoordinator.PopulateRootFolders(_currentPath);
-        _selectionCoordinator.UpdateLiveOptionsFromRootSelection(_currentPath);
+        // Keep root/extension scans sequenced to avoid inconsistent UI states.
+        await _selectionCoordinator.RefreshRootAndDependentsAsync(_currentPath);
         RefreshTree();
     }
 
