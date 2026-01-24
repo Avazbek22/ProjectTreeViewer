@@ -4,7 +4,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.VisualTree;
+using ProjectTreeViewer.Avalonia.ViewModels;
 
 namespace ProjectTreeViewer.Avalonia.Views;
 
@@ -12,8 +14,10 @@ public partial class TopMenuBarView : UserControl
 {
     private TopLevel? _helpPopupTopLevel;
     private bool _helpPopupHandlersAttached;
+    private bool _helpPopupBoundsHandlerAttached;
     private TopLevel? _helpDocsPopupTopLevel;
     private bool _helpDocsPopupHandlersAttached;
+    private bool _helpDocsPopupBoundsHandlerAttached;
 
     public event EventHandler<RoutedEventArgs>? OpenFolderRequested;
     public event EventHandler<RoutedEventArgs>? RefreshRequested;
@@ -156,7 +160,7 @@ public partial class TopMenuBarView : UserControl
     private void OnHelpPopupOpened(object? sender, EventArgs e)
     {
         HelpPopover?.Focus();
-        ClampPopupToWindow(HelpPopup);
+        ApplyPopupBackdrop(HelpPopup);
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
@@ -170,6 +174,10 @@ public partial class TopMenuBarView : UserControl
         topLevel.AddHandler(InputElement.GotFocusEvent, OnTopLevelGotFocus, RoutingStrategies.Tunnel);
         topLevel.AddHandler(InputElement.PointerPressedEvent, OnTopLevelPointerPressed, RoutingStrategies.Tunnel);
         _helpPopupHandlersAttached = true;
+        topLevel.PropertyChanged += OnHelpPopupTopLevelPropertyChanged;
+        _helpPopupBoundsHandlerAttached = true;
+
+        SchedulePopupClamp(HelpPopup, HelpPopover);
     }
 
     private void OnHelpPopupClosed(object? sender, EventArgs e)
@@ -211,6 +219,11 @@ public partial class TopMenuBarView : UserControl
 
         _helpPopupTopLevel.RemoveHandler(InputElement.GotFocusEvent, OnTopLevelGotFocus);
         _helpPopupTopLevel.RemoveHandler(InputElement.PointerPressedEvent, OnTopLevelPointerPressed);
+        if (_helpPopupBoundsHandlerAttached)
+        {
+            _helpPopupTopLevel.PropertyChanged -= OnHelpPopupTopLevelPropertyChanged;
+            _helpPopupBoundsHandlerAttached = false;
+        }
         _helpPopupTopLevel = null;
         _helpPopupHandlersAttached = false;
     }
@@ -218,7 +231,7 @@ public partial class TopMenuBarView : UserControl
     private void OnHelpDocsPopupOpened(object? sender, EventArgs e)
     {
         HelpDocsPopover?.Focus();
-        ClampPopupToWindow(HelpDocsPopup);
+        ApplyPopupBackdrop(HelpDocsPopup);
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
@@ -232,6 +245,10 @@ public partial class TopMenuBarView : UserControl
         topLevel.AddHandler(InputElement.GotFocusEvent, OnTopLevelHelpDocsGotFocus, RoutingStrategies.Tunnel);
         topLevel.AddHandler(InputElement.PointerPressedEvent, OnTopLevelHelpDocsPointerPressed, RoutingStrategies.Tunnel);
         _helpDocsPopupHandlersAttached = true;
+        topLevel.PropertyChanged += OnHelpDocsPopupTopLevelPropertyChanged;
+        _helpDocsPopupBoundsHandlerAttached = true;
+
+        SchedulePopupClamp(HelpDocsPopup, HelpDocsPopover);
     }
 
     private void OnHelpDocsPopupClosed(object? sender, EventArgs e)
@@ -264,51 +281,160 @@ public partial class TopMenuBarView : UserControl
 
         _helpDocsPopupTopLevel.RemoveHandler(InputElement.GotFocusEvent, OnTopLevelHelpDocsGotFocus);
         _helpDocsPopupTopLevel.RemoveHandler(InputElement.PointerPressedEvent, OnTopLevelHelpDocsPointerPressed);
+        if (_helpDocsPopupBoundsHandlerAttached)
+        {
+            _helpDocsPopupTopLevel.PropertyChanged -= OnHelpDocsPopupTopLevelPropertyChanged;
+            _helpDocsPopupBoundsHandlerAttached = false;
+        }
         _helpDocsPopupTopLevel = null;
         _helpDocsPopupHandlersAttached = false;
     }
 
-    private void ClampPopupToWindow(Popup? popup)
+    private void OnHelpPopupTopLevelPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (popup?.Child is not Control child)
+        if (e.Property != BoundsProperty)
+            return;
+        if (HelpPopup?.IsOpen == true)
+            SchedulePopupClamp(HelpPopup, HelpPopover);
+    }
+
+    private void OnHelpDocsPopupTopLevelPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property != BoundsProperty)
+            return;
+        if (HelpDocsPopup?.IsOpen == true)
+            SchedulePopupClamp(HelpDocsPopup, HelpDocsPopover);
+    }
+
+    private void SchedulePopupClamp(Popup? popup, Control? popover)
+    {
+        if (popup is null || popover is null)
             return;
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
             return;
 
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        const double margin = 8;
+        var bounds = topLevel.Bounds;
+        var availableWidth = Math.Max(0, bounds.Width - margin * 2);
+        var availableHeight = Math.Max(0, bounds.Height - margin * 2);
+
+        if (availableWidth <= 0 || availableHeight <= 0)
+            return;
+
+        popover.Measure(new Size(availableWidth, availableHeight));
+        var desired = popover.DesiredSize;
+
+        if (desired.Width > availableWidth + 0.5)
+            popover.Width = availableWidth;
+        else if (!double.IsNaN(popover.Width))
+            popover.Width = double.NaN;
+
+        if (desired.Height > availableHeight + 0.5)
+            popover.Height = availableHeight;
+        else if (!double.IsNaN(popover.Height))
+            popover.Height = double.NaN;
+
+        global::Avalonia.Threading.Dispatcher.UIThread.Post(
+            () => ApplyPopupOffsets(popup, topLevel, margin),
+            global::Avalonia.Threading.DispatcherPriority.Render);
+    }
+
+    private static void ApplyPopupOffsets(Popup popup, TopLevel topLevel, double margin)
+    {
+        if (popup.Child is not Visual popupRoot)
+            return;
+
+        var origin = popupRoot.TranslatePoint(new Point(0, 0), topLevel);
+        if (origin is null)
+            return;
+
+        var bounds = topLevel.Bounds;
+        var size = popupRoot.Bounds.Size;
+        var left = origin.Value.X;
+        var top = origin.Value.Y;
+        var right = left + size.Width;
+        var bottom = top + size.Height;
+
+        var offsetX = 0.0;
+        var offsetY = 0.0;
+
+        if (left < margin)
+            offsetX = margin - left;
+        else if (right > bounds.Width - margin)
+            offsetX = bounds.Width - margin - right;
+
+        if (top < margin)
+            offsetY = margin - top;
+        else if (bottom > bounds.Height - margin)
+            offsetY = bounds.Height - margin - bottom;
+
+        var fitsHorizontally = size.Width <= bounds.Width - margin * 2;
+        if (fitsHorizontally)
         {
-            var origin = child.TranslatePoint(new Point(0, 0), topLevel);
-            if (origin is null)
-                return;
+            var candidateLeft = left + offsetX;
+            var desiredLeft = (bounds.Width - size.Width) / 2;
+            var nudge = (desiredLeft - candidateLeft) * 0.25;
+            offsetX += nudge;
+        }
 
-            var bounds = topLevel.Bounds;
-            var size = child.Bounds.Size;
-            const double margin = 8;
+        var finalLeft = left + offsetX;
+        var finalRight = finalLeft + size.Width;
+        if (finalLeft < margin)
+            offsetX += margin - finalLeft;
+        else if (finalRight > bounds.Width - margin)
+            offsetX += bounds.Width - margin - finalRight;
 
-            var left = origin.Value.X;
-            var top = origin.Value.Y;
-            var right = left + size.Width;
-            var bottom = top + size.Height;
+        if (Math.Abs(offsetX) > 0.1)
+            popup.HorizontalOffset += offsetX;
+        if (Math.Abs(offsetY) > 0.1)
+            popup.VerticalOffset += offsetY;
+    }
 
-            var offsetX = 0.0;
-            var offsetY = 0.0;
+    private void ApplyPopupBackdrop(Popup? popup)
+    {
+        if (popup?.Child is null)
+            return;
 
-            if (left < margin)
-                offsetX = margin - left;
-            else if (right > bounds.Width - margin)
-                offsetX = bounds.Width - margin - right;
+        if (popup.Child.GetVisualRoot() is null)
+            return;
 
-            if (top < margin)
-                offsetY = margin - top;
-            else if (bottom > bounds.Height - margin)
-                offsetY = bounds.Height - margin - bottom;
+        if (TopLevel.GetTopLevel(popup.Child) is not TopLevel popupLevel)
+            return;
 
-            if (Math.Abs(offsetX) > 0.1)
-                popup.HorizontalOffset += offsetX;
-            if (Math.Abs(offsetY) > 0.1)
-                popup.VerticalOffset += offsetY;
-        }, Avalonia.Threading.DispatcherPriority.Background);
+        var host = TopLevel.GetTopLevel(this);
+        if (host is not null && ReferenceEquals(popupLevel, host))
+            return;
+
+        var viewModel = DataContext as MainWindowViewModel;
+        if (viewModel is null)
+            return;
+
+        try
+        {
+            if (viewModel.HasAnyEffect)
+            {
+                popupLevel.TransparencyLevelHint = new[]
+                {
+                    WindowTransparencyLevel.AcrylicBlur,
+                    WindowTransparencyLevel.Blur,
+                    WindowTransparencyLevel.None
+                };
+
+                popupLevel.Background = Brushes.Transparent;
+            }
+            else
+            {
+                popupLevel.TransparencyLevelHint = new[]
+                {
+                    WindowTransparencyLevel.None
+                };
+            }
+        }
+        catch
+        {
+            // Ignore: popup could have closed.
+        }
     }
 }

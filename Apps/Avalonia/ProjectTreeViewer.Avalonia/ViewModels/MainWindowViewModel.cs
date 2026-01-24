@@ -47,10 +47,10 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _themePopoverOpen;
     private bool _helpPopoverOpen;
     private bool _helpDocsPopoverOpen;
-    private double _helpPopoverMaxWidth = 720;
-    private double _helpPopoverMaxHeight = 650;
+    private double _helpPopoverMaxWidth = 800;
+    private double _helpPopoverMaxHeight = 680;
     private double _aboutPopoverMaxWidth = 520;
-    private double _aboutPopoverMaxHeight = 420;
+    private double _aboutPopoverMaxHeight = 380;
 
     public MainWindowViewModel(LocalizationService localization, HelpContentProvider helpContentProvider)
     {
@@ -376,10 +376,10 @@ public sealed class MainWindowViewModel : ViewModelBase
             return;
 
         const double padding = 16;
-        var maxHelpWidth = Math.Max(280, (bounds.Width - padding) * 0.9);
-        var maxHelpHeight = Math.Max(220, (bounds.Height - padding) * 0.9);
+        var maxHelpWidth = Math.Max(260, Math.Min(800, (bounds.Width - padding) * 0.8));
+        var maxHelpHeight = Math.Max(220, Math.Min(680, (bounds.Height - padding) * 0.9));
         var maxAboutWidth = Math.Min(520, (bounds.Width - padding) * 0.7);
-        var maxAboutHeight = Math.Min(420, (bounds.Height - padding) * 0.7);
+        var maxAboutHeight = Math.Min(380, (bounds.Height - padding) * 0.7);
 
         HelpPopoverMaxWidth = maxHelpWidth;
         HelpPopoverMaxHeight = maxHelpHeight;
