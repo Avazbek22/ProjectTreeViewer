@@ -121,31 +121,75 @@ public sealed class ThemePresetStore
 
     private Dictionary<string, ThemePreset> CreateDefaultPresets()
     {
-        var presets = new Dictionary<string, ThemePreset>(StringComparer.OrdinalIgnoreCase);
-        foreach (var theme in Enum.GetValues<ThemeVariant>())
+        return new Dictionary<string, ThemePreset>(StringComparer.OrdinalIgnoreCase)
         {
-            foreach (var effect in Enum.GetValues<ThemeEffectMode>())
+            [GetKey(ThemeVariant.Light, ThemeEffectMode.Transparent)] = new ThemePreset
             {
-                var key = GetKey(theme, effect);
-                presets[key] = CreateDefaultPreset(theme, effect);
+                Theme = ThemeVariant.Light,
+                Effect = ThemeEffectMode.Transparent,
+                MaterialIntensity = 78.43450479233228,
+                BlurRadius = 30,
+                PanelContrast = 0,
+                MenuChildIntensity = 0,
+                BorderStrength = 53.51437699680511
+            },
+            [GetKey(ThemeVariant.Light, ThemeEffectMode.Mica)] = new ThemePreset
+            {
+                Theme = ThemeVariant.Light,
+                Effect = ThemeEffectMode.Mica,
+                MaterialIntensity = 100,
+                BlurRadius = 30,
+                PanelContrast = 0,
+                MenuChildIntensity = 0,
+                BorderStrength = 50.319488817891376
+            },
+            [GetKey(ThemeVariant.Light, ThemeEffectMode.Acrylic)] = new ThemePreset
+            {
+                Theme = ThemeVariant.Light,
+                Effect = ThemeEffectMode.Acrylic,
+                MaterialIntensity = 75.87859424920129,
+                BlurRadius = 30,
+                PanelContrast = 0,
+                MenuChildIntensity = 0,
+                BorderStrength = 10.702875399361023
+            },
+            [GetKey(ThemeVariant.Dark, ThemeEffectMode.Transparent)] = new ThemePreset
+            {
+                Theme = ThemeVariant.Dark,
+                Effect = ThemeEffectMode.Transparent,
+                MaterialIntensity = 52.23642172523962,
+                BlurRadius = 29.233226837060705,
+                PanelContrast = 50,
+                MenuChildIntensity = 0,
+                BorderStrength = 50
+            },
+            [GetKey(ThemeVariant.Dark, ThemeEffectMode.Mica)] = new ThemePreset
+            {
+                Theme = ThemeVariant.Dark,
+                Effect = ThemeEffectMode.Mica,
+                MaterialIntensity = 100,
+                BlurRadius = 30,
+                PanelContrast = 0,
+                MenuChildIntensity = 0,
+                BorderStrength = 50
+            },
+            [GetKey(ThemeVariant.Dark, ThemeEffectMode.Acrylic)] = new ThemePreset
+            {
+                Theme = ThemeVariant.Dark,
+                Effect = ThemeEffectMode.Acrylic,
+                MaterialIntensity = 73.00319488817892,
+                BlurRadius = 30,
+                PanelContrast = 0,
+                MenuChildIntensity = 0,
+                BorderStrength = 32.108626198083066
             }
-        }
-
-        return presets;
+        };
     }
 
     private ThemePreset CreateDefaultPreset(ThemeVariant theme, ThemeEffectMode effect)
     {
-        return new ThemePreset
-        {
-            Theme = theme,
-            Effect = effect,
-            MaterialIntensity = 65,
-            BlurRadius = 30,
-            PanelContrast = 50,
-            MenuChildIntensity = 50,
-            BorderStrength = 50
-        };
+        var defaults = CreateDefaultPresets();
+        return defaults[GetKey(theme, effect)];
     }
 
     private string GetKey(ThemeVariant theme, ThemeEffectMode effect) => $"{theme}.{effect}";
