@@ -24,7 +24,7 @@ public sealed class SmartIgnoreRulesAdditionalTests
 
 		var result = rule.Evaluate("any");
 
-		Assert.Contains(folderName, result.Folders, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains(folderName, result.FolderNames, StringComparer.OrdinalIgnoreCase);
 	}
 
 	[Theory]
@@ -38,7 +38,7 @@ public sealed class SmartIgnoreRulesAdditionalTests
 
 		var result = rule.Evaluate("any");
 
-		Assert.Contains(fileName, result.Files, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains(fileName, result.FileNames, StringComparer.OrdinalIgnoreCase);
 	}
 
 	[Theory]
@@ -55,8 +55,8 @@ public sealed class SmartIgnoreRulesAdditionalTests
 
 		var result = rule.Evaluate(temp.Path);
 
-		Assert.Empty(result.Folders);
-		Assert.Empty(result.Files);
+		Assert.Empty(result.FolderNames);
+		Assert.Empty(result.FileNames);
 	}
 
 	[Theory]
@@ -73,11 +73,11 @@ public sealed class SmartIgnoreRulesAdditionalTests
 
 		var result = rule.Evaluate(temp.Path);
 
-		Assert.Contains("dist", result.Folders, StringComparer.OrdinalIgnoreCase);
-		Assert.Contains("build", result.Folders, StringComparer.OrdinalIgnoreCase);
-		Assert.Contains(".next", result.Folders, StringComparer.OrdinalIgnoreCase);
-		Assert.Contains(".nuxt", result.Folders, StringComparer.OrdinalIgnoreCase);
-		Assert.Contains(".turbo", result.Folders, StringComparer.OrdinalIgnoreCase);
-		Assert.Contains(".svelte-kit", result.Folders, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains("dist", result.FolderNames, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains("build", result.FolderNames, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains(".next", result.FolderNames, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains(".nuxt", result.FolderNames, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains(".turbo", result.FolderNames, StringComparer.OrdinalIgnoreCase);
+		Assert.Contains(".svelte-kit", result.FolderNames, StringComparer.OrdinalIgnoreCase);
 	}
 }
