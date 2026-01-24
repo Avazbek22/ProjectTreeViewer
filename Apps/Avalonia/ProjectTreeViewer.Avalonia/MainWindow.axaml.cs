@@ -42,7 +42,6 @@ public partial class MainWindow : Window
     private readonly TreeAndContentExportService _treeAndContentExport;
     private readonly IconCache _iconCache;
     private readonly IElevationService _elevation;
-    private readonly IDisposable _boundsSubscription;
 
     private readonly MainWindowViewModel _viewModel;
     private readonly TreeSearchCoordinator _searchCoordinator;
@@ -79,8 +78,8 @@ public partial class MainWindow : Window
 
         InitializeComponent();
 
-        _boundsSubscription = this.GetObservable(BoundsProperty).Subscribe(bounds =>
-            _viewModel.UpdateHelpPopoverMaxSize(bounds.Size));
+        _viewModel.UpdateHelpPopoverMaxSize(Bounds.Size);
+        PropertyChanged += OnWindowPropertyChanged;
 
         _treeView = this.FindControl<TreeView>("ProjectTree");
         _topMenuBar = this.FindControl<TopMenuBarView>("TopMenuBar");
@@ -107,7 +106,7 @@ public partial class MainWindow : Window
 
         Closed += (_, _) =>
         {
-            _boundsSubscription.Dispose();
+            PropertyChanged -= OnWindowPropertyChanged;
             _filterCoordinator.Dispose();
         };
         Deactivated += OnDeactivated;
@@ -153,6 +152,15 @@ public partial class MainWindow : Window
         global::Avalonia.Threading.Dispatcher.UIThread.Post(
             () => _searchCoordinator.RefreshThemeHighlights(),
             global::Avalonia.Threading.DispatcherPriority.Background);
+    }
+
+    private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property != BoundsProperty)
+            return;
+
+        if (e.NewValue is Rect rect)
+            _viewModel.UpdateHelpPopoverMaxSize(rect.Size);
     }
 
     private void OnDeactivated(object? sender, EventArgs e)
