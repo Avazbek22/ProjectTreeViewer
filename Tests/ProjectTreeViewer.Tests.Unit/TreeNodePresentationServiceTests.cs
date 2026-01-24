@@ -121,6 +121,66 @@ public sealed class TreeNodePresentationServiceTests
 		Assert.Equal("/root/child.txt", result.Children[0].FullPath);
 	}
 
+	// Verifies access-denied child uses child-specific localization.
+	[Fact]
+	public void Build_UsesChildAccessDeniedLabelWhenRootAccessible()
+	{
+		var catalog = new StubLocalizationCatalog(new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
+		{
+			[AppLanguage.En] = new Dictionary<string, string>
+			{
+				["Tree.AccessDeniedRoot"] = "RootDenied",
+				["Tree.AccessDenied"] = "ChildDenied"
+			}
+		});
+		var localization = new LocalizationService(catalog, AppLanguage.En);
+		var iconMapper = new StubIconMapper { IconKey = "icon" };
+		var service = new TreeNodePresentationService(localization, iconMapper);
+
+		var root = new FileSystemNode(
+			name: "root",
+			fullPath: "/root",
+			isDirectory: true,
+			isAccessDenied: false,
+			children: new List<FileSystemNode>
+			{
+				new FileSystemNode("child", "/root/child", true, true, new List<FileSystemNode>())
+			});
+
+		var result = service.Build(root);
+
+		Assert.Equal("root", result.DisplayName);
+		Assert.Equal("ChildDenied", result.Children[0].DisplayName);
+	}
+
+	// Verifies nested children preserve directory flags.
+	[Fact]
+	public void Build_PreservesDirectoryFlags()
+	{
+		var catalog = new StubLocalizationCatalog(new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
+		{
+			[AppLanguage.En] = new Dictionary<string, string>()
+		});
+		var localization = new LocalizationService(catalog, AppLanguage.En);
+		var iconMapper = new StubIconMapper { IconKey = "icon" };
+		var service = new TreeNodePresentationService(localization, iconMapper);
+
+		var root = new FileSystemNode(
+			name: "root",
+			fullPath: "/root",
+			isDirectory: true,
+			isAccessDenied: false,
+			children: new List<FileSystemNode>
+			{
+				new FileSystemNode("child", "/root/child", true, false, new List<FileSystemNode>())
+			});
+
+		var result = service.Build(root);
+
+		Assert.True(result.IsDirectory);
+		Assert.True(result.Children[0].IsDirectory);
+	}
+
 	private sealed class TestIconMapper : ProjectTreeViewer.Kernel.Abstractions.IIconMapper
 	{
 		public string GetIconKey(FileSystemNode node)
