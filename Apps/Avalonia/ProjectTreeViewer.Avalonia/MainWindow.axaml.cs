@@ -97,6 +97,7 @@ public partial class MainWindow : Window
             () => _currentPath);
 
         Closed += (_, _) => _filterCoordinator.Dispose();
+        Deactivated += OnDeactivated;
 
         _elevationAttempted = startupOptions.ElevationAttempted;
 
@@ -139,6 +140,12 @@ public partial class MainWindow : Window
         global::Avalonia.Threading.Dispatcher.UIThread.Post(
             () => _searchCoordinator.RefreshThemeHighlights(),
             global::Avalonia.Threading.DispatcherPriority.Background);
+    }
+
+    private void OnDeactivated(object? sender, EventArgs e)
+    {
+        if (_viewModel.HelpPopoverOpen)
+            _viewModel.HelpPopoverOpen = false;
     }
 
     private async void OnOpened(object? sender, EventArgs e)
