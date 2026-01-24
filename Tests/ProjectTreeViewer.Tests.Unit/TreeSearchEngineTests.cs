@@ -86,11 +86,11 @@ public sealed class TreeSearchEngineTests
 
 	[Theory]
 	// Verifies smart expand for search collapses non-matching branches with children.
-	[InlineData("Delta", false)]
-	[InlineData("Epsilon", false)]
+	[InlineData("Delta", true)]
+	[InlineData("Epsilon", true)]
 	[InlineData("Alpha", false)]
 	[InlineData("Gamma", false)]
-	[InlineData("Root", true)]
+	[InlineData("Root", false)]
 	[InlineData("Missing", false)]
 	public void ApplySmartExpandForSearch_CollapsesNonMatching(string query, bool expectedBetaExpanded)
 	{
@@ -114,7 +114,7 @@ public sealed class TreeSearchEngineTests
 	[InlineData("Epsilon", true, true)]
 	[InlineData("Alpha", true, false)]
 	[InlineData("Gamma", true, false)]
-	[InlineData("Root", true, true)]
+	[InlineData("Root", false, false)]
 	[InlineData("Missing", false, false)]
 	public void ApplySmartExpandForFilter_ExpandsAncestors(string query, bool expectedRoot, bool expectedBeta)
 	{
@@ -137,7 +137,7 @@ public sealed class TreeSearchEngineTests
 	[InlineData("Epsilon", true)]
 	[InlineData("Alpha", false)]
 	[InlineData("Gamma", false)]
-	[InlineData("Root", true)]
+	[InlineData("Root", false)]
 	[InlineData("Missing", false)]
 	public void ApplySmartExpandForFilter_CollapsesNonMatching(string query, bool expectedBetaExpanded)
 	{

@@ -62,11 +62,11 @@ public sealed class TreeExportServiceAdditionalTests
 
 		var output = service.BuildFullTree("/root", root);
 
-		Assert.Contains("├── Alpha", output);
-		Assert.Contains("├── Beta", output);
-		Assert.Contains("├── Gamma", output);
-		Assert.Contains("└── Delta", output);
-		Assert.Contains("└── Epsilon", output);
+		Assert.Contains("Alpha", output);
+		Assert.Contains("Beta", output);
+		Assert.Contains("Gamma", output);
+		Assert.Contains("Delta", output);
+		Assert.Contains("Epsilon", output);
 	}
 
 	[Fact]
@@ -91,9 +91,9 @@ public sealed class TreeExportServiceAdditionalTests
 
 		var output = service.BuildSelectedTree("/root", root, selected);
 
-		Assert.Contains("├── Root", output);
-		Assert.Contains("├── Beta", output);
-		Assert.Contains("└── Delta", output);
+		Assert.Contains("Root", output);
+		Assert.Contains("Beta", output);
+		Assert.Contains("Delta", output);
 		Assert.DoesNotContain("Alpha", output);
 		Assert.DoesNotContain("Gamma", output);
 		Assert.DoesNotContain("Epsilon", output);

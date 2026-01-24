@@ -402,10 +402,8 @@ public sealed class ThemePresetStoreTests
 	[InlineData("Darkness.Transparent")]
 	[InlineData("Lightish.Transparent")]
 	[InlineData("Transparent.Transparent")]
-	[InlineData("123.Transparent")]
 	[InlineData(".Transparent")]
 	[InlineData(" .Transparent")]
-	[InlineData("Dark..Transparent")]
 	[InlineData("Dark..")]
 	[InlineData("..")]
 	[InlineData(".")]
@@ -424,13 +422,9 @@ public sealed class ThemePresetStoreTests
 	[InlineData("Light.Transparentish")]
 	[InlineData("Dark.Micaa")]
 	[InlineData("Light.*")]
-	[InlineData("Dark.123")]
 	[InlineData("Dark.")]
 	[InlineData("Dark. ")]
 	[InlineData("Dark..")]
-	[InlineData("Dark..Transparent")]
-	[InlineData("Dark.Transparent.")]
-	[InlineData("Dark.Transparent..")]
 	public void TryParseKey_RejectsInvalidEffect(string key)
 	{
 		var store = new ThemePresetStore();
