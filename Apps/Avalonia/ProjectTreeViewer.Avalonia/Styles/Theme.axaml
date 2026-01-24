@@ -106,28 +106,9 @@
         <Setter Property="Padding" Value="0,0" />
     </Style>
 
-    <Style Selector="Window.compact-mode CheckBox.list-item">
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="MinHeight" Value="0" />
-        <Setter Property="RenderTransformOrigin" Value="0,0.5" />
-        <Setter Property="RenderTransform">
-            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
-        </Setter>
-    </Style>
-
     <Style Selector="Window.compact-mode TextBlock.section-title">
         <Setter Property="Margin" Value="0,8,0,2" />
         <Setter Property="FontSize" Value="11" />
-    </Style>
-
-    <Style Selector="Window.compact-mode CheckBox.section-all">
-        <Setter Property="Margin" Value="0,4,4,0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="RenderTransformOrigin" Value="0,0.5" />
-        <Setter Property="RenderTransform">
-            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
-        </Setter>
     </Style>
 
     <Style Selector="Window.compact-mode Border.panel">
@@ -152,18 +133,6 @@
     <Style Selector="Window.compact-mode TreeView CheckBox /template/ Border#PART_Bullet">
         <Setter Property="Width" Value="12" />
         <Setter Property="Height" Value="12" />
-    </Style>
-
-    <Style Selector="Window.compact-mode CheckBox.list-item /template/ ContentPresenter">
-        <Setter Property="Margin" Value="6,0,0,0" />
-    </Style>
-
-    <Style Selector="Window.compact-mode CheckBox.section-all /template/ ContentPresenter">
-        <Setter Property="Margin" Value="6,0,0,0" />
-        <Setter Property="RenderTransformOrigin" Value="0,0.5" />
-        <Setter Property="RenderTransform">
-            <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
-        </Setter>
     </Style>
 
     <!-- Disable all hover and selection highlighting on TreeViewItem -->
@@ -331,11 +300,27 @@
     <Style Selector="Window.compact-mode CheckBox.list-item">
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
+        <!-- Increase MinHeight if you bump FontSize to avoid clipping. -->
         <Setter Property="MinHeight" Value="0" />
+        <!-- Compact label font size for settings list items. -->
+        <Setter Property="FontSize" Value="15" />
         <Setter Property="RenderTransformOrigin" Value="0,0.5" />
         <Setter Property="RenderTransform">
-            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+            <!-- Compact checkbox scale for settings list items. -->
+            <ScaleTransform ScaleX="0.88" ScaleY="0.88" />
         </Setter>
+    </Style>
+
+    <!-- Ensure list-item labels track the CheckBox FontSize in compact mode. -->
+    <Style Selector="Window.compact-mode CheckBox.list-item TextBlock">
+        <Setter Property="FontSize" Value="{Binding $parent[CheckBox].FontSize}" />
+    </Style>
+
+    <!-- Keep padding between checkbox and label consistent in compact mode. -->
+    <Style Selector="Window.compact-mode CheckBox.list-item /template/ ContentPresenter">
+        <Setter Property="Margin" Value="6,0,0,0" />
+        <!-- Fluent template can override FontSize on the presenter; force it here. -->
+        <Setter Property="FontSize" Value="{Binding $parent[CheckBox].FontSize}" />
     </Style>
 
     <!-- "All" checkboxes: same scale as list items, but text is compensated below. -->
@@ -344,17 +329,19 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="RenderTransformOrigin" Value="0,0.5" />
         <Setter Property="RenderTransform">
-            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+            <!-- Keep checkbox visuals consistent with list items. -->
+            <ScaleTransform ScaleX="0.88" ScaleY="0.88" />
         </Setter>
     </Style>
 
     <!-- Compensate text size for "All" checkboxes so label stays readable. -->
     <!-- If you change the checkbox scale, adjust this inverse scale accordingly. -->
+    <!-- Increase these scale values to make "All" label font larger in compact mode. -->
     <Style Selector="Window.compact-mode CheckBox.section-all /template/ ContentPresenter">
         <Setter Property="Margin" Value="6,0,0,0" />
         <Setter Property="RenderTransformOrigin" Value="0,0.5" />
         <Setter Property="RenderTransform">
-            <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+            <ScaleTransform ScaleX="1.136" ScaleY="1.136" />
         </Setter>
     </Style>
 
