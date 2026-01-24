@@ -73,10 +73,13 @@ public partial class MainWindow : Window
         _iconCache = new IconCache(services.IconStore);
         _elevation = services.Elevation;
 
-        _viewModel = new MainWindowViewModel(_localization);
+        _viewModel = new MainWindowViewModel(_localization, services.HelpContentProvider);
         DataContext = _viewModel;
 
         InitializeComponent();
+
+        _viewModel.UpdateHelpPopoverMaxSize(Bounds.Size);
+        PropertyChanged += OnWindowPropertyChanged;
 
         _treeView = this.FindControl<TreeView>("ProjectTree");
         _topMenuBar = this.FindControl<TopMenuBarView>("TopMenuBar");
@@ -101,7 +104,11 @@ public partial class MainWindow : Window
             TryElevateAndRestart,
             () => _currentPath);
 
-        Closed += (_, _) => _filterCoordinator.Dispose();
+        Closed += (_, _) =>
+        {
+            PropertyChanged -= OnWindowPropertyChanged;
+            _filterCoordinator.Dispose();
+        };
         Deactivated += OnDeactivated;
 
         _elevationAttempted = startupOptions.ElevationAttempted;
@@ -145,6 +152,15 @@ public partial class MainWindow : Window
         global::Avalonia.Threading.Dispatcher.UIThread.Post(
             () => _searchCoordinator.RefreshThemeHighlights(),
             global::Avalonia.Threading.DispatcherPriority.Background);
+    }
+
+    private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property != BoundsProperty)
+            return;
+
+        if (e.NewValue is Rect rect)
+            _viewModel.UpdateHelpPopoverMaxSize(rect.Size);
     }
 
     private void OnDeactivated(object? sender, EventArgs e)

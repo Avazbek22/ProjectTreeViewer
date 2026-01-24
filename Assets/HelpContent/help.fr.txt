@@ -1,0 +1,121 @@
+## 1) Qu’est‑ce que c’est et pourquoi
+ProjectTreeViewer prépare rapidement le contexte d’un projet : affiche la structure dossiers/fichiers, permet de sélectionner des éléments et de copier l’arborescence et/ou le contenu des fichiers dans le presse‑papiers. Utile pour code review, support, formation et partage de structure avec un assistant IA.
+
+Important : l’application est en lecture seule et ne modifie jamais les fichiers.
+
+## 2) Arborescence du projet
+* Icônes de type fichier/dossier.
+* Cases à cocher sur les nœuds.
+* Déplier/replier.
+
+Cases à cocher : cocher un nœud s’applique aux enfants ; l’état des parents se recalculent automatiquement.
+
+Raccourcis :
+* Ctrl+E — tout déplier
+* Ctrl+W — tout replier (la racine reste ouverte)
+
+## 3) Fichier
+* Ouvrir le dossier… — ouvrir le dossier racine (Ctrl+O)
+* Actualiser — relire et reconstruire l’arborescence (F5)
+
+## 4) Copier
+### Copier l'arborescence complète
+Copie l’arborescence ASCII complète. Ctrl+Shift+C.
+
+### Copier l'arborescence sélectionnée
+Copie l’arborescence pour les nœuds cochés. Si rien n’est sélectionné, un message s’affiche. Ctrl+Alt+C.
+
+### Copier le contenu des fichiers sélectionnés
+Copie le contenu des fichiers texte sélectionnés :
+* le fichier doit exister ;
+* les fichiers binaires sont ignorés (test de bytes nuls) ;
+* la sortie est triée et séparée par des lignes vides.
+
+Ctrl+Alt+V.
+
+### Copier l'arborescence complète et le contenu
+Combine arborescence et contenu :
+* l’arborescence est basée sur la sélection ; si elle est invalide, l’arborescence complète est utilisée ;
+* le contenu est ajouté uniquement pour les fichiers texte ;
+* s’il n’y a pas de contenu, seule l’arborescence est copiée.
+
+Ctrl+Shift+V.
+
+## 5) Affichage
+### Zoom
+* Ctrl++ / Ctrl+= — agrandir
+* Ctrl+- — réduire
+* Ctrl+0 — réinitialiser
+* Ctrl + molette sur l’arbre — zoom fluide
+
+Plage : 6–28, reset : 12.
+
+### Mode compact
+Rend l’interface plus dense : moins d’espaces dans l’arbre et les paramètres.
+
+## 6) Recherche dans l’arbre
+Ouvre la recherche, met en évidence les correspondances et permet la navigation.
+* Ctrl+F — afficher/masquer
+* Enter — résultat suivant
+* Shift+Enter — précédent
+* Esc — fermer
+
+La recherche n’ouvre que les branches nécessaires ; en effaçant la requête, l’arbre se replie (sauf la racine).
+
+## 7) Filtrer par nom
+Affiche uniquement les nœuds correspondant au filtre et leurs parents. Mise à jour avec délai (debounce).
+* Ctrl+Shift+N — afficher/masquer le filtre
+* Esc — fermer le filtre
+
+## 8) Options
+Listes à droite :
+* Police de l’arborescence — appliquer avec Appliquer
+* Ignorer
+* Types de fichiers
+* Dossiers de premier niveau
+
+Chaque liste a un bouton Tous.
+
+Ctrl+P — afficher/masquer le panneau.
+
+## 9) Ignore et Smart Ignore
+### Règles classiques
+Exclut les artefacts et « bruits » courants (bin/obj, éléments cachés, éléments avec point, etc.).
+
+### Smart Ignore
+Exclusions « intelligentes » (dossiers VCS/IDE, fichiers indésirables). Les règles frontend s’activent uniquement si des marqueurs sont détectés (fichiers package/lock).
+
+## 10) Construction de l’arbre
+Le résultat dépend de :
+* dossiers de premier niveau sélectionnés
+* types de fichiers sélectionnés
+* règles d’exclusion
+* filtre actif
+
+Si l’accès est refusé, le nœud est marqué Accès refusé.
+
+## 11) Icônes
+Ordre de sélection :
+1) type de nœud (dossier/fichier)
+2) nom exact (s’il existe une règle)
+3) extension
+4) sinon — inconnu
+
+## 12) Thème et effets
+Le popover de thème permet :
+* thème clair/sombre
+* Transparent / Mica / Acrylic
+* intensité, flou, contraste, bordures
+
+Les éléments [Beta] peuvent évoluer entre versions.
+
+## 13) Aide → À propos
+Ouvre un popover avec les infos de l’app et un lien vers le dépôt.
+* Esc — fermer le popover
+
+## 14) Langues
+La langue se choisit via le menu Langue.
+
+## 15) Notes
+* Par défaut, le thème sombre et les effets de transparence sont activés (si supportés).
+* Si les permissions sont insuffisantes, l’app peut proposer un redémarrage avec élévation ; sinon un avertissement s’affiche.

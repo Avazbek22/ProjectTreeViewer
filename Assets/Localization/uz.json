@@ -3,13 +3,11 @@
   "Menu.File.Open": "Jildni ochish...",
   "Menu.File.Refresh": "Yangilash",
   "Menu.File.Exit": "Chiqish",
-
   "Menu.Copy": "Nusxa",
   "Menu.Copy.FullTree": "To'liq daraxtni nusxalash",
   "Menu.Copy.SelectedTree": "Tanlangan daraxtni nusxalash",
   "Menu.Copy.SelectedContent": "Tanlangan fayllar matnini nusxalash",
   "Menu.Copy.FullTreeAndContent": "To'liq daraxt va matnni nusxalash",
-
   "Menu.View": "Ko'rinish",
   "Menu.View.ExpandAll": "Hammasini ochish",
   "Menu.View.CollapseAll": "Hammasini yopish",
@@ -38,22 +36,17 @@
   "Menu.Search": "Qidirish",
   "Filter.ByName": "Nom bo'yicha filtr",
   "Filter.Tooltip": "Nom bo'yicha filtr (Ctrl+Shift+N)",
-
   "Menu.Options": "Sozlamalar",
   "Menu.Language": "Til",
   "Menu.Help": "Yordam",
   "Menu.Help.Help": "Yordam",
   "Menu.Help.About": "Dastur haqida",
   "Help.Help.Title": "Yordam",
-  "Help.Help.Body": "## 1) Nima va nima uchun\nProjectTreeViewer loyiha kontekstini tez tayyorlaydi: papka/fayl tuzilmasini ko‘rsatadi, elementlarni belgilash va daraxtni va/yoki fayl mazmunini buferga nusxalash imkonini beradi. Code review, qo‘llab‑quvvatlash, o‘qitish va loyiha tuzilmasini AI‑yordamchiga berish uchun qulay.\n\nMuhim: ilova faqat o‘qish rejimida ishlaydi va fayllarni o‘zgartirmaydi.\n\n## 2) Loyiha daraxti\n* Fayl/papka ikonkalari.\n* Tugunlardagi checkboxlar.\n* Ochish/yopish.\n\nCheckboxlar: tugunni belgilash uning avlodlariga qo‘llanadi; ota holati avtomatik qayta hisoblanadi.\n\nIssiq tugmalar:\n* Ctrl+E — hammasini ochish\n* Ctrl+W — hammasini yopish (ildiz ochiq qoladi)\n\n## 3) File (Fayl)\n* Open folder… — ildiz papkani ochish (Ctrl+O)\n* Refresh — daraxtni qayta o‘qish va qayta qurish (F5)\n\n## 4) Copy (Nusxa olish)\n### Copy full tree\nLoyihaning to‘liq ASCII‑daraxtini nusxalaydi. Ctrl+Shift+C.\n\n### Copy selected tree\nBelgilangan tugunlar bo‘yicha daraxtni nusxalaydi. Hech narsa belgilanmagan bo‘lsa, xabar chiqadi. Ctrl+Alt+C.\n\n### Copy selected content\nFaqat belgilangan matnli fayllar mazmunini nusxalaydi:\n* fayl mavjud bo‘lishi kerak;\n* binar fayllar o‘tkazib yuboriladi (null‑bayt tekshiruvi);\n* chiqish tartiblanadi va bo‘sh satrlar bilan ajratiladi.\n\nCtrl+Alt+V.\n\n### Copy tree + content\nDaraxt va mazmunni birlashtiradi:\n* daraxt belgilash bo‘yicha quriladi; noto‘g‘ri bo‘lsa, to‘liq daraxt olinadi;\n* mazmun faqat matnli fayllar uchun qo‘shiladi;\n* mazmun bo‘lmasa, faqat daraxt nusxalanadi.\n\nCtrl+Shift+V.\n\n## 5) View (Ko‘rinish)\n### Masshtab (Zoom)\n* Ctrl++ / Ctrl+= — kattalashtirish\n* Ctrl+- — kichraytirish\n* Ctrl+0 — tiklash\n* Ctrl + g‘ildirak — silliq zoom\n\nOraliq: 6–28, tiklash — 12.\n\n### Compact Mode\nInterfeysni zichroq qiladi: daraxt va sozlamalarda oraliqlar kichikroq.\n\n## 6) Search (Daraxt bo‘yicha qidiruv)\nQidiruv panelini ochadi, mosliklarni yoritadi va navigatsiya qiladi.\n* Ctrl+F — ko‘rsatish/yashirish\n* Enter — keyingi\n* Shift+Enter — oldingi\n* Esc — yopish\n\nQidiruv faqat kerakli shoxlarni ochadi; so‘rov tozalansa, daraxt yig‘iladi (ildizdan tashqari).\n\n## 7) Filter (Nom bo‘yicha)\nFiltr satriga mos tugunlar va ularning ota‑onalarini ko‘rsatadi. Yangilanish kechikish bilan.\n* Ctrl+Shift+N — filtrni ko‘rsatish/yashirish\n* Esc — filtrni yopish\n\n## 8) Options (Sozlamalar paneli)\nO‘ng tomonda ro‘yxatlar:\n* Font (daraxt shrifti) — Apply tugmasi bilan\n* Ignore options\n* Extensions\n* Root folders\n\nHar bir ro‘yxatda All (hammasi) tugmasi bor.\n\nCtrl+P — panelni ko‘rsatish/yashirish.\n\n## 9) Ignore va Smart Ignore\n### Oddiy qoidalar\nBin/obj, yashirin elementlar, nuqtali elementlar kabi shovqinlarni chiqarib tashlash.\n\n### Smart Ignore\nQo‘shimcha aqlli istisnolar (VCS/IDE papkalari, tipik “junk” fayllar). Frontend qoidalari faqat mos belgilar topilganda yoqiladi (package/lock fayllari).\n\n## 10) Daraxt qanday quriladi\nNatija quyidagilarga bog‘liq:\n* tanlangan Root folders\n* tanlangan Extensions\n* Ignore rules\n* faol Filter\n\nAgar ruxsat bo‘lmasa, tugun Access denied deb belgilanadi.\n\n## 11) Ikonkalar\nIkonka tanlash tartibi:\n1) tugun turi (papka/fayl)\n2) aniq nom (qoida bo‘lsa)\n3) kengaytma\n4) aks holda — unknown\n\n## 12) Theme (Mavzu va effektlar)\nTema popoveri quyilarni almashtiradi:\n* light/dark tema\n* Transparent / Mica / Acrylic\n* intensivlik, blur, kontrast, chegara sozlamalari\n\n[Beta] belgilari versiyalar oralig‘ida o‘zgarishi mumkin.\n\n## 13) Help → About (Dastur haqida)\nIlova ma’lumoti va repozitoriy havolasi bilan popover ochadi.\n* Esc — popoverni yopish\n\n## 14) Tillar\nTil Language menyusi orqali tanlanadi.\n\n## 15) Eslatmalar\n* Odatiy holatda dark tema va shaffoflik effektlari yoqilgan (mavjud bo‘lsa).\n* Ruxsat yetarli bo‘lmasa, ilova admin huquqi bilan qayta ishga tushirishni taklif qiladi; rad etilsa, xabar chiqadi.",
   "Help.About.Title": "Dastur haqida",
   "Help.About.Body": "ProjectTreeViewer loyiha kontekstini tez tayyorlashga yordam beradi: tuzilmani vizuallashtirish, kerakli fayllarni tanlash va daraxt yoki kontentni buferga nusxalash.\n\nLoyiha rivoji davom etmoqda; arxitektura va funksional yaxshilanishlar bosqichma-bosqich joriy etiladi, qulaylik va prognoz qilinadigan xulq-atvorga urg‘u beriladi.\n\nIlova faqat o‘qish rejimida ishlaydi.\n\nStack: .NET 10 · Avalonia UI\nDasturchi: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
   "Help.About.OpenLink": "GitHub havolasini ochish",
   "Help.About.CopyLink": "Havolani nusxalash",
-
-
   "Dialog.SelectRoot": "Loyiha ildiz jildini tanlang",
-
   "Settings.IgnoreTitle": "E’tiborsiz qoldirish:",
   "Settings.Ignore.BinFolders": "bin jildlari",
   "Settings.Ignore.ObjFolders": "obj jildlari",
@@ -66,7 +59,6 @@
   "Settings.RootFolders": "Yuqori darajadagi jildlar:",
   "Settings.Font": "Daraxt shrift:",
   "Settings.Apply": "Sozlamalarni qo‘llash",
-
   "Msg.ErrorTitle": "Xatolik",
   "Msg.InfoTitle": "Ma’lumot",
   "Msg.PathNotFound": "Jild topilmadi:\n{0}",
@@ -77,7 +69,6 @@
   "Msg.ElevationCanceled": "Administrator huquqlari bekor qilindi. Jild to‘liq ochilmasligi mumkin.",
   "Msg.AccessDeniedRoot": "Tanlangan jildga ruxsat yo‘q. Administrator sifatida ishga tushiring.",
   "Msg.AboutStub": "Bu yerda dastur haqida ma’lumot bo‘ladi (stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",
