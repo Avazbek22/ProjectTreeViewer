@@ -10,5 +10,6 @@
     <EmbeddedResource Include="Localization\*.json" />
     <EmbeddedResource Include="IgnoreProfiles\*.json" />
     <EmbeddedResource Include="IconPacks\**\*.*" />
+    <EmbeddedResource Include="HelpContent\*.txt" />
   </ItemGroup>
 </Project>

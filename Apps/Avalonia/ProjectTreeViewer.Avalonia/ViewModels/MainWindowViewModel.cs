@@ -1,7 +1,9 @@
+using System;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Infrastructure.ResourceStore;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
 
@@ -11,6 +13,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public const string BaseTitleWithAuthor = "Project Tree Viewer by Olimoff v4.1";
 
     private readonly LocalizationService _localization;
+    private readonly HelpContentProvider _helpContentProvider;
 
     private string _title;
     private bool _isProjectLoaded;
@@ -45,10 +48,13 @@ public sealed class MainWindowViewModel : ViewModelBase
     private bool _themePopoverOpen;
     private bool _helpPopoverOpen;
     private bool _helpDocsPopoverOpen;
+    private double _helpPopoverMaxWidth = 520;
+    private double _helpPopoverMaxHeight = 700;
 
-    public MainWindowViewModel(LocalizationService localization)
+    public MainWindowViewModel(LocalizationService localization, HelpContentProvider helpContentProvider)
     {
         _localization = localization;
+        _helpContentProvider = helpContentProvider;
         _title = BaseTitleWithAuthor;
         _allExtensionsChecked = true;
         _allRootFoldersChecked = true;
@@ -523,6 +529,36 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string FilterByNamePlaceholder { get; private set; } = string.Empty;
     public string FilterTooltip { get; private set; } = string.Empty;
 
+    public double HelpPopoverMaxWidth
+    {
+        get => _helpPopoverMaxWidth;
+        set
+        {
+            if (Math.Abs(_helpPopoverMaxWidth - value) < 0.1) return;
+            _helpPopoverMaxWidth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double HelpPopoverMaxHeight
+    {
+        get => _helpPopoverMaxHeight;
+        set
+        {
+            if (Math.Abs(_helpPopoverMaxHeight - value) < 0.1) return;
+            _helpPopoverMaxHeight = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public void UpdateHelpPopoverBounds(double width, double height)
+    {
+        var maxWidth = Math.Max(200, width - 40);
+        var maxHeight = Math.Max(160, height - 40);
+        HelpPopoverMaxWidth = maxWidth;
+        HelpPopoverMaxHeight = maxHeight;
+    }
+
     public void UpdateLocalization()
     {
         MenuFile = _localization["Menu.File"];
@@ -553,7 +589,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuHelpHelp = _localization["Menu.Help.Help"];
         MenuHelpAbout = _localization["Menu.Help.About"];
         HelpHelpTitle = _localization["Help.Help.Title"];
-        HelpHelpBody = _localization["Help.Help.Body"];
+        HelpHelpBody = _helpContentProvider.GetHelpBody(_localization.CurrentLanguage);
         HelpAboutTitle = _localization["Help.About.Title"];
         HelpAboutBody = _localization["Help.About.Body"];
         HelpAboutOpenLink = _localization["Help.About.OpenLink"];

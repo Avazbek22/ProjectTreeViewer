@@ -3,13 +3,11 @@
   "Menu.File.Open": "Ordner öffnen...",
   "Menu.File.Refresh": "Aktualisieren",
   "Menu.File.Exit": "Beenden",
-
   "Menu.Copy": "Kopieren",
   "Menu.Copy.FullTree": "Kompletten Baum kopieren",
   "Menu.Copy.SelectedTree": "Ausgewählten Baum kopieren",
   "Menu.Copy.SelectedContent": "Inhalt ausgewählter Dateien kopieren",
   "Menu.Copy.FullTreeAndContent": "Kompletten Baum und Inhalt kopieren",
-
   "Menu.View": "Ansicht",
   "Menu.View.ExpandAll": "Alles erweitern",
   "Menu.View.CollapseAll": "Alles reduzieren",
@@ -38,22 +36,17 @@
   "Menu.Search": "Suche",
   "Filter.ByName": "Nach Name filtern",
   "Filter.Tooltip": "Nach Name filtern (Ctrl+Shift+N)",
-
   "Menu.Options": "Optionen",
   "Menu.Language": "Sprache",
   "Menu.Help": "Hilfe",
   "Menu.Help.Help": "Hilfe",
   "Menu.Help.About": "Über",
   "Help.Help.Title": "Hilfe",
-  "Help.Help.Body": "## 1) Was ist das und wozu\nProjectTreeViewer bereitet den Projektkontext schnell auf: zeigt die Ordner/Dateistruktur, erlaubt das Markieren von Elementen und das Kopieren des Baums und/oder von Dateiinhalten in die Zwischenablage. Nützlich für Code‑Reviews, Support, Schulung und das Teilen der Struktur mit einem KI‑Assistenten.\n\nWichtig: Die App arbeitet nur lesend und ändert keine Dateien.\n\n## 2) Projektbaum\n* Symbole für Datei/Ordner‑Typen.\n* Kontrollkästchen an Knoten.\n* Auf‑/Zuklappen.\n\nKontrollkästchen: Die Markierung eines Knotens gilt für seine Kinder; der Elternstatus wird automatisch neu berechnet.\n\nTastenkürzel:\n* Ctrl+E — alles aufklappen\n* Ctrl+W — alles zuklappen (Wurzel bleibt offen)\n\n## 3) File (Datei)\n* Open folder… — Wurzelordner öffnen (Ctrl+O)\n* Refresh — Baum neu einlesen und aufbauen (F5)\n\n## 4) Copy (Kopieren)\n### Copy full tree\nKopiert den vollständigen ASCII‑Projektbaum. Ctrl+Shift+C.\n\n### Copy selected tree\nKopiert den Baum der markierten Knoten. Wenn nichts markiert ist, erscheint eine Meldung. Ctrl+Alt+C.\n\n### Copy selected content\nKopiert Inhalte nur ausgewählter Textdateien:\n* Datei muss existieren;\n* Binärdateien werden übersprungen (Null‑Byte‑Prüfung);\n* Ausgabe ist sortiert und durch Leerzeilen getrennt.\n\nCtrl+Alt+V.\n\n### Copy tree + content\nKombiniert Baum und Inhalte:\n* Baum wird anhand der Auswahl erstellt; ist sie ungültig, wird der volle Baum verwendet;\n* Inhalte nur für Textdateien;\n* wenn kein Inhalt vorhanden ist, wird nur der Baum kopiert.\n\nCtrl+Shift+V.\n\n## 5) View (Ansicht)\n### Zoom\n* Ctrl++ / Ctrl+= — vergrößern\n* Ctrl+- — verkleinern\n* Ctrl+0 — zurücksetzen\n* Ctrl + Mausrad über dem Baum — weiches Zoomen\n\nBereich: 6–28, Reset: 12.\n\n### Compact Mode\nMacht die Oberfläche dichter: kleinere Abstände im Baum und in den Einstellungen.\n\n## 6) Search (Suche im Baum)\nÖffnet die Suche, hebt Treffer hervor und erlaubt Navigation.\n* Ctrl+F — anzeigen/ausblenden\n* Enter — nächstes Ergebnis\n* Shift+Enter — vorheriges\n* Esc — schließen\n\nDie Suche öffnet nur benötigte Zweige; beim Leeren der Suche wird der Baum eingeklappt (außer der Wurzel).\n\n## 7) Filter (Nach Namen)\nZeigt nur passende Knoten und ihre Eltern. Aktualisierung mit Verzögerung (Debounce).\n* Ctrl+Shift+N — Filter anzeigen/ausblenden\n* Esc — Filter schließen\n\n## 8) Options (Einstellungs‑Panel)\nRechts befinden sich Listen:\n* Font (Baum‑Schrift) — mit Apply anwenden\n* Ignore options\n* Extensions\n* Root folders\n\nJede Liste hat einen All‑Schalter.\n\nCtrl+P — Panel anzeigen/ausblenden.\n\n## 9) Ignore und Smart Ignore\n### Normale Regeln\nAusschluss typischer Artefakte und „Rauschen“ (z. B. bin/obj, versteckte Elemente, Punkt‑Elemente).\n\n### Smart Ignore\nZusätzliche „smarte“ Ausschlüsse (VCS/IDE‑Ordner, typische Junk‑Dateien). Frontend‑Regeln aktivieren sich nur, wenn passende Marker gefunden werden (package/lock‑Dateien).\n\n## 10) Wie der Baum gebaut wird\nDas Ergebnis hängt ab von:\n* ausgewählte Root folders\n* ausgewählte Extensions\n* Ignore rules\n* aktivem Filter\n\nWenn der Zugriff verweigert wird, wird der Knoten als Access denied markiert.\n\n## 11) Symbole\nAuswahlreihenfolge:\n1) Knotentyp (Ordner/Datei)\n2) exakter Name (wenn eine Regel vorhanden ist)\n3) Erweiterung\n4) sonst — unknown\n\n## 12) Theme (Thema und Effekte)\nDas Theme‑Popover ermöglicht:\n* helles/dunkles Theme\n* Transparent / Mica / Acrylic\n* Intensität, Unschärfe, Kontrast, Rahmen\n\nEinträge mit [Beta] können sich zwischen Versionen ändern.\n\n## 13) Help → About (Über)\nÖffnet ein Popover mit App‑Info und Repository‑Link.\n* Esc — Popover schließen\n\n## 14) Sprachen\nDie Sprache wird über das Language‑Menü gewählt.\n\n## 15) Hinweise\n* Standardmäßig sind dunkles Theme und Transparenzeffekte aktiviert (wenn unterstützt).\n* Bei fehlenden Rechten kann die App einen Neustart mit erhöhten Rechten vorschlagen; bei Ablehnung erscheint eine Meldung.",
   "Help.About.Title": "Über",
   "Help.About.Body": "ProjectTreeViewer hilft, den Projektkontext schnell vorzubereiten: Struktur visualisieren, benötigte Dateien auswählen und Baum oder Inhalte in die Zwischenablage kopieren.\n\nDie Entwicklung läuft weiter; architektonische und funktionale Verbesserungen werden schrittweise eingeführt, mit Fokus auf Bedienbarkeit und vorhersehbares Verhalten.\n\nDie Anwendung arbeitet im Nur-Lese-Modus.\n\nStack: .NET 10 · Avalonia UI\nEntwickler: Avazbek Olimov\nCopyright © 2025–2026 Avazbek Olimov",
   "Help.About.OpenLink": "GitHub-Link öffnen",
   "Help.About.CopyLink": "Link kopieren",
-
-
   "Dialog.SelectRoot": "Projekt-Stammordner auswählen",
-
   "Settings.IgnoreTitle": "Ignorieren:",
   "Settings.Ignore.BinFolders": "bin-Ordner",
   "Settings.Ignore.ObjFolders": "obj-Ordner",
@@ -66,7 +59,6 @@
   "Settings.RootFolders": "Ordner der obersten Ebene:",
   "Settings.Font": "Baum-Schrift:",
   "Settings.Apply": "Anwenden",
-
   "Msg.ErrorTitle": "Fehler",
   "Msg.InfoTitle": "Info",
   "Msg.PathNotFound": "Ordner nicht gefunden:\n{0}",
@@ -77,7 +69,6 @@
   "Msg.ElevationCanceled": "Erhöhung wurde abgebrochen. Der Ordner ist möglicherweise nicht vollständig zugänglich.",
   "Msg.AccessDeniedRoot": "Zugriff verweigert. Als Administrator ausführen.",
   "Msg.AboutStub": "Programminfo kommt hier hin (Stub).",
-
   "Language.Ru": "Русский",
   "Language.En": "English",
   "Language.Uz": "O‘zbek",

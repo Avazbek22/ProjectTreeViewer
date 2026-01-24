@@ -15,6 +15,7 @@ public static class AvaloniaCompositionRoot
     {
         var localizationCatalog = new JsonLocalizationCatalog();
         var localization = new LocalizationService(localizationCatalog, options.Language ?? CommandLineOptions.DetectSystemLanguage());
+        var helpContentProvider = new HelpContentProvider();
         var iconStore = new EmbeddedIconStore();
         var iconMapper = new IconMapper();
         var treePresenter = new TreeNodePresentationService(localization, iconMapper);
@@ -38,6 +39,7 @@ public static class AvaloniaCompositionRoot
 
         return new AvaloniaAppServices(
             Localization: localization,
+            HelpContentProvider: helpContentProvider,
             Elevation: elevation,
             ScanOptionsUseCase: scanOptionsUseCase,
             BuildTreeUseCase: buildTreeUseCase,

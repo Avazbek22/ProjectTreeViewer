@@ -73,6 +73,7 @@
            IsOpen="{Binding HelpPopoverOpen, Mode=TwoWay}"
            IsLightDismissEnabled="True"
            PlacementMode="Bottom"
+           PlacementConstraintAdjustment="All"
            PlacementTarget="{Binding #HelpMenuItem}">
       <views:AboutPopoverView Name="HelpPopover" />
     </Popup>
@@ -82,6 +83,7 @@
            IsOpen="{Binding HelpDocsPopoverOpen, Mode=TwoWay}"
            IsLightDismissEnabled="True"
            PlacementMode="Bottom"
+           PlacementConstraintAdjustment="All"
            PlacementTarget="{Binding #HelpMenuItem}">
       <views:HelpPopoverView Name="HelpDocsPopover" />
     </Popup>

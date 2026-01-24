@@ -20,6 +20,7 @@ using ProjectTreeViewer.Avalonia.ViewModels;
 using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Contracts;
 using ProjectTreeViewer.Kernel.Models;
+using ProjectTreeViewer.Infrastructure.ResourceStore;
 
 namespace ProjectTreeViewer.Avalonia;
 
@@ -42,6 +43,7 @@ public partial class MainWindow : Window
     private readonly TreeAndContentExportService _treeAndContentExport;
     private readonly IconCache _iconCache;
     private readonly IElevationService _elevation;
+    private readonly HelpContentProvider _helpContentProvider;
 
     private readonly MainWindowViewModel _viewModel;
     private readonly TreeSearchCoordinator _searchCoordinator;
@@ -57,6 +59,7 @@ public partial class MainWindow : Window
     private TopMenuBarView? _topMenuBar;
     private SearchBarView? _searchBar;
     private FilterBarView? _filterBar;
+    private IDisposable? _boundsSubscription;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -72,8 +75,9 @@ public partial class MainWindow : Window
         _treeAndContentExport = services.TreeAndContentExportService;
         _iconCache = new IconCache(services.IconStore);
         _elevation = services.Elevation;
+        _helpContentProvider = services.HelpContentProvider;
 
-        _viewModel = new MainWindowViewModel(_localization);
+        _viewModel = new MainWindowViewModel(_localization, _helpContentProvider);
         DataContext = _viewModel;
 
         InitializeComponent();
@@ -101,7 +105,11 @@ public partial class MainWindow : Window
             TryElevateAndRestart,
             () => _currentPath);
 
-        Closed += (_, _) => _filterCoordinator.Dispose();
+        Closed += (_, _) =>
+        {
+            _filterCoordinator.Dispose();
+            _boundsSubscription?.Dispose();
+        };
         Deactivated += OnDeactivated;
 
         _elevationAttempted = startupOptions.ElevationAttempted;
@@ -115,6 +123,10 @@ public partial class MainWindow : Window
         _selectionCoordinator.HookOptionListeners(_viewModel.RootFolders);
         _selectionCoordinator.HookOptionListeners(_viewModel.Extensions);
         _selectionCoordinator.HookIgnoreListeners(_viewModel.IgnoreOptions);
+
+        _boundsSubscription = this.GetObservable(BoundsProperty)
+            .Subscribe(bounds => _viewModel.UpdateHelpPopoverBounds(bounds.Width, bounds.Height));
+        _viewModel.UpdateHelpPopoverBounds(Bounds.Width, Bounds.Height);
 
         _viewModel.PropertyChanged += (_, args) =>
         {

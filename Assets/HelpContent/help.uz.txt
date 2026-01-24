@@ -1,0 +1,121 @@
+## 1) Nima va nima uchun
+ProjectTreeViewer loyiha kontekstini tez tayyorlaydi: papka/fayl tuzilmasini ko‘rsatadi, elementlarni belgilash va daraxtni va/yoki fayl mazmunini buferga nusxalash imkonini beradi. Code review, qo‘llab‑quvvatlash, o‘qitish va loyiha tuzilmasini AI‑yordamchiga berish uchun qulay.
+
+Muhim: ilova faqat o‘qish rejimida ishlaydi va fayllarni o‘zgartirmaydi.
+
+## 2) Loyiha daraxti
+* Fayl/papka ikonkalari.
+* Tugunlardagi checkboxlar.
+* Ochish/yopish.
+
+Checkboxlar: tugunni belgilash uning avlodlariga qo‘llanadi; ota holati avtomatik qayta hisoblanadi.
+
+Issiq tugmalar:
+* Ctrl+E — hammasini ochish
+* Ctrl+W — hammasini yopish (ildiz ochiq qoladi)
+
+## 3) File (Fayl)
+* Open folder… — ildiz papkani ochish (Ctrl+O)
+* Refresh — daraxtni qayta o‘qish va qayta qurish (F5)
+
+## 4) Copy (Nusxa olish)
+### Copy full tree
+Loyihaning to‘liq ASCII‑daraxtini nusxalaydi. Ctrl+Shift+C.
+
+### Copy selected tree
+Belgilangan tugunlar bo‘yicha daraxtni nusxalaydi. Hech narsa belgilanmagan bo‘lsa, xabar chiqadi. Ctrl+Alt+C.
+
+### Copy selected content
+Faqat belgilangan matnli fayllar mazmunini nusxalaydi:
+* fayl mavjud bo‘lishi kerak;
+* binar fayllar o‘tkazib yuboriladi (null‑bayt tekshiruvi);
+* chiqish tartiblanadi va bo‘sh satrlar bilan ajratiladi.
+
+Ctrl+Alt+V.
+
+### Copy tree + content
+Daraxt va mazmunni birlashtiradi:
+* daraxt belgilash bo‘yicha quriladi; noto‘g‘ri bo‘lsa, to‘liq daraxt olinadi;
+* mazmun faqat matnli fayllar uchun qo‘shiladi;
+* mazmun bo‘lmasa, faqat daraxt nusxalanadi.
+
+Ctrl+Shift+V.
+
+## 5) View (Ko‘rinish)
+### Masshtab (Zoom)
+* Ctrl++ / Ctrl+= — kattalashtirish
+* Ctrl+- — kichraytirish
+* Ctrl+0 — tiklash
+* Ctrl + g‘ildirak — silliq zoom
+
+Oraliq: 6–28, tiklash — 12.
+
+### Compact Mode
+Interfeysni zichroq qiladi: daraxt va sozlamalarda oraliqlar kichikroq.
+
+## 6) Search (Daraxt bo‘yicha qidiruv)
+Qidiruv panelini ochadi, mosliklarni yoritadi va navigatsiya qiladi.
+* Ctrl+F — ko‘rsatish/yashirish
+* Enter — keyingi
+* Shift+Enter — oldingi
+* Esc — yopish
+
+Qidiruv faqat kerakli shoxlarni ochadi; so‘rov tozalansa, daraxt yig‘iladi (ildizdan tashqari).
+
+## 7) Filter (Nom bo‘yicha)
+Filtr satriga mos tugunlar va ularning ota‑onalarini ko‘rsatadi. Yangilanish kechikish bilan.
+* Ctrl+Shift+N — filtrni ko‘rsatish/yashirish
+* Esc — filtrni yopish
+
+## 8) Options (Sozlamalar paneli)
+O‘ng tomonda ro‘yxatlar:
+* Font (daraxt shrifti) — Apply tugmasi bilan
+* Ignore options
+* Extensions
+* Root folders
+
+Har bir ro‘yxatda All (hammasi) tugmasi bor.
+
+Ctrl+P — panelni ko‘rsatish/yashirish.
+
+## 9) Ignore va Smart Ignore
+### Oddiy qoidalar
+Bin/obj, yashirin elementlar, nuqtali elementlar kabi shovqinlarni chiqarib tashlash.
+
+### Smart Ignore
+Qo‘shimcha aqlli istisnolar (VCS/IDE papkalari, tipik “junk” fayllar). Frontend qoidalari faqat mos belgilar topilganda yoqiladi (package/lock fayllari).
+
+## 10) Daraxt qanday quriladi
+Natija quyidagilarga bog‘liq:
+* tanlangan Root folders
+* tanlangan Extensions
+* Ignore rules
+* faol Filter
+
+Agar ruxsat bo‘lmasa, tugun Access denied deb belgilanadi.
+
+## 11) Ikonkalar
+Ikonka tanlash tartibi:
+1) tugun turi (papka/fayl)
+2) aniq nom (qoida bo‘lsa)
+3) kengaytma
+4) aks holda — unknown
+
+## 12) Theme (Mavzu va effektlar)
+Tema popoveri quyilarni almashtiradi:
+* light/dark tema
+* Transparent / Mica / Acrylic
+* intensivlik, blur, kontrast, chegara sozlamalari
+
+[Beta] belgilari versiyalar oralig‘ida o‘zgarishi mumkin.
+
+## 13) Help → About (Dastur haqida)
+Ilova ma’lumoti va repozitoriy havolasi bilan popover ochadi.
+* Esc — popoverni yopish
+
+## 14) Tillar
+Til Language menyusi orqali tanlanadi.
+
+## 15) Eslatmalar
+* Odatiy holatda dark tema va shaffoflik effektlari yoqilgan (mavjud bo‘lsa).
+* Ruxsat yetarli bo‘lmasa, ilova admin huquqi bilan qayta ishga tushirishni taklif qiladi; rad etilsa, xabar chiqadi.
