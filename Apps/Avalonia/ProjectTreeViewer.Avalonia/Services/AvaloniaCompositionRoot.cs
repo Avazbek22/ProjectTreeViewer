@@ -4,6 +4,7 @@ using ProjectTreeViewer.Infrastructure.Elevation;
 using ProjectTreeViewer.Infrastructure.FileSystem;
 using ProjectTreeViewer.Infrastructure.ResourceStore;
 using ProjectTreeViewer.Infrastructure.SmartIgnore;
+using ProjectTreeViewer.Infrastructure.ThemePresets;
 using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Models;
 
@@ -36,10 +37,12 @@ public static class AvaloniaCompositionRoot
         var contentExportService = new SelectedContentExportService();
         var treeAndContentExportService = new TreeAndContentExportService(treeExportService, contentExportService);
         var elevation = new ElevationService();
+        var themePresetStore = new ThemePresetStore();
 
         return new AvaloniaAppServices(
             Localization: localization,
             HelpContentProvider: helpContentProvider,
+            ThemePresetStore: themePresetStore,
             Elevation: elevation,
             ScanOptionsUseCase: scanOptionsUseCase,
             BuildTreeUseCase: buildTreeUseCase,

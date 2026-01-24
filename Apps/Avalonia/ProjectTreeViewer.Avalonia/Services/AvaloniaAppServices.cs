@@ -1,6 +1,7 @@
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Infrastructure.ResourceStore;
+using ProjectTreeViewer.Infrastructure.ThemePresets;
 using ProjectTreeViewer.Kernel.Abstractions;
 
 namespace ProjectTreeViewer.Avalonia.Services;
@@ -8,6 +9,7 @@ namespace ProjectTreeViewer.Avalonia.Services;
 public sealed record AvaloniaAppServices(
     LocalizationService Localization,
     HelpContentProvider HelpContentProvider,
+    ThemePresetStore ThemePresetStore,
     IElevationService Elevation,
     ScanOptionsUseCase ScanOptionsUseCase,
     BuildTreeUseCase BuildTreeUseCase,
