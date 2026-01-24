@@ -44,6 +44,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private bool _themePopoverOpen;
     private bool _helpPopoverOpen;
+    private bool _helpDocsPopoverOpen;
 
     public MainWindowViewModel(LocalizationService localization)
     {
@@ -307,6 +308,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool HelpDocsPopoverOpen
+    {
+        get => _helpDocsPopoverOpen;
+        set
+        {
+            if (_helpDocsPopoverOpen == value) return;
+            _helpDocsPopoverOpen = value;
+            RaisePropertyChanged();
+        }
+    }
+
     // Material intensity: single slider for overall effect strength (transparency, depth, material feel)
     public double MaterialIntensity
     {
@@ -480,7 +492,10 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuOptionsTreeSettings { get; private set; } = string.Empty;
     public string MenuLanguage { get; private set; } = string.Empty;
     public string MenuHelp { get; private set; } = string.Empty;
+    public string MenuHelpHelp { get; private set; } = string.Empty;
     public string MenuHelpAbout { get; private set; } = string.Empty;
+    public string HelpHelpTitle { get; private set; } = string.Empty;
+    public string HelpHelpBody { get; private set; } = string.Empty;
     public string HelpAboutTitle { get; private set; } = string.Empty;
     public string HelpAboutBody { get; private set; } = string.Empty;
     public string HelpAboutOpenLink { get; private set; } = string.Empty;
@@ -535,7 +550,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuOptionsTreeSettings = _localization["Menu.Options.TreeSettings"];
         MenuLanguage = _localization["Menu.Language"];
         MenuHelp = _localization["Menu.Help"];
+        MenuHelpHelp = _localization["Menu.Help.Help"];
         MenuHelpAbout = _localization["Menu.Help.About"];
+        HelpHelpTitle = _localization["Help.Help.Title"];
+        HelpHelpBody = _localization["Help.Help.Body"];
         HelpAboutTitle = _localization["Help.About.Title"];
         HelpAboutBody = _localization["Help.About.Body"];
         HelpAboutOpenLink = _localization["Help.About.OpenLink"];
@@ -590,7 +608,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuOptionsTreeSettings));
         RaisePropertyChanged(nameof(MenuLanguage));
         RaisePropertyChanged(nameof(MenuHelp));
+        RaisePropertyChanged(nameof(MenuHelpHelp));
         RaisePropertyChanged(nameof(MenuHelpAbout));
+        RaisePropertyChanged(nameof(HelpHelpTitle));
+        RaisePropertyChanged(nameof(HelpHelpBody));
         RaisePropertyChanged(nameof(HelpAboutTitle));
         RaisePropertyChanged(nameof(HelpAboutBody));
         RaisePropertyChanged(nameof(HelpAboutOpenLink));

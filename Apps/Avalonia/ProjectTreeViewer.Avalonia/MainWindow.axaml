@@ -39,6 +39,8 @@
                           ToggleSettingsRequested="OnToggleSettings"
                           ToggleFilterRequested="OnToggleFilter"
                           ThemeMenuClickRequested="OnThemeMenuClick"
+                          HelpRequested="OnHelp"
+                          HelpCloseRequested="OnHelpClose"
                           LanguageRuRequested="OnLangRu"
                           LanguageEnRequested="OnLangEn"
                           LanguageUzRequested="OnLangUz"

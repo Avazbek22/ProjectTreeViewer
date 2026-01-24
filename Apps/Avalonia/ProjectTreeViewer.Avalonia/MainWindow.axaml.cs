@@ -151,6 +151,8 @@ public partial class MainWindow : Window
     {
         if (_viewModel.HelpPopoverOpen)
             _viewModel.HelpPopoverOpen = false;
+        if (_viewModel.HelpDocsPopoverOpen)
+            _viewModel.HelpDocsPopoverOpen = false;
     }
 
     private async void OnOpened(object? sender, EventArgs e)
@@ -455,6 +457,7 @@ public partial class MainWindow : Window
     private void OnAbout(object? sender, RoutedEventArgs e)
     {
         _viewModel.HelpPopoverOpen = true;
+        _viewModel.HelpDocsPopoverOpen = false;
         _viewModel.ThemePopoverOpen = false;
         e.Handled = true;
     }
@@ -462,6 +465,20 @@ public partial class MainWindow : Window
     private void OnAboutClose(object? sender, RoutedEventArgs e)
     {
         _viewModel.HelpPopoverOpen = false;
+        e.Handled = true;
+    }
+
+    private void OnHelp(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.HelpDocsPopoverOpen = true;
+        _viewModel.HelpPopoverOpen = false;
+        _viewModel.ThemePopoverOpen = false;
+        e.Handled = true;
+    }
+
+    private void OnHelpClose(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.HelpDocsPopoverOpen = false;
         e.Handled = true;
     }
 
@@ -611,6 +628,12 @@ public partial class MainWindow : Window
         if (e.Key == Key.Escape && _viewModel.HelpPopoverOpen)
         {
             _viewModel.HelpPopoverOpen = false;
+            e.Handled = true;
+            return;
+        }
+        if (e.Key == Key.Escape && _viewModel.HelpDocsPopoverOpen)
+        {
+            _viewModel.HelpDocsPopoverOpen = false;
             e.Handled = true;
             return;
         }

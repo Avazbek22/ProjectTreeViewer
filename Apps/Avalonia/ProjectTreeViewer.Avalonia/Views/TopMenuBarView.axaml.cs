@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -11,6 +12,8 @@ public partial class TopMenuBarView : UserControl
 {
     private TopLevel? _helpPopupTopLevel;
     private bool _helpPopupHandlersAttached;
+    private TopLevel? _helpDocsPopupTopLevel;
+    private bool _helpDocsPopupHandlersAttached;
 
     public event EventHandler<RoutedEventArgs>? OpenFolderRequested;
     public event EventHandler<RoutedEventArgs>? RefreshRequested;
@@ -37,6 +40,8 @@ public partial class TopMenuBarView : UserControl
     public event EventHandler<RoutedEventArgs>? LanguageFrRequested;
     public event EventHandler<RoutedEventArgs>? LanguageDeRequested;
     public event EventHandler<RoutedEventArgs>? LanguageItRequested;
+    public event EventHandler<RoutedEventArgs>? HelpRequested;
+    public event EventHandler<RoutedEventArgs>? HelpCloseRequested;
     public event EventHandler<RoutedEventArgs>? AboutRequested;
     public event EventHandler<RoutedEventArgs>? AboutCloseRequested;
     public event EventHandler<RoutedEventArgs>? AboutOpenLinkRequested;
@@ -74,6 +79,17 @@ public partial class TopMenuBarView : UserControl
         {
             helpPopup.Opened += OnHelpPopupOpened;
             helpPopup.Closed += OnHelpPopupClosed;
+        }
+
+        var helpDocsPopover = HelpDocsPopover;
+        if (helpDocsPopover is not null)
+            helpDocsPopover.CloseRequested += (_, e) => HelpCloseRequested?.Invoke(this, e);
+
+        var helpDocsPopup = HelpDocsPopup;
+        if (helpDocsPopup is not null)
+        {
+            helpDocsPopup.Opened += OnHelpDocsPopupOpened;
+            helpDocsPopup.Closed += OnHelpDocsPopupClosed;
         }
     }
 
@@ -133,6 +149,8 @@ public partial class TopMenuBarView : UserControl
 
     private void OnLangIt(object? sender, RoutedEventArgs e) => LanguageItRequested?.Invoke(sender, e);
 
+    private void OnHelp(object? sender, RoutedEventArgs e) => HelpRequested?.Invoke(sender, e);
+
     private void OnAbout(object? sender, RoutedEventArgs e) => AboutRequested?.Invoke(sender, e);
 
     private void OnHelpPopupOpened(object? sender, EventArgs e)
@@ -163,7 +181,7 @@ public partial class TopMenuBarView : UserControl
         if (HelpPopup?.IsOpen != true)
             return;
 
-        if (!IsInsideHelpPopup(e.Source as Visual))
+        if (!IsInsidePopup(HelpPopup, e.Source as Visual))
             HelpPopup.IsOpen = false;
     }
 
@@ -172,13 +190,13 @@ public partial class TopMenuBarView : UserControl
         if (HelpPopup?.IsOpen != true)
             return;
 
-        if (!IsInsideHelpPopup(e.Source as Visual))
+        if (!IsInsidePopup(HelpPopup, e.Source as Visual))
             HelpPopup.IsOpen = false;
     }
 
-    private bool IsInsideHelpPopup(Visual? source)
+    private bool IsInsidePopup(Popup? popup, Visual? source)
     {
-        var popupRoot = HelpPopup?.Child as Visual;
+        var popupRoot = popup?.Child as Visual;
         if (popupRoot is null || source is null)
             return false;
 
@@ -194,5 +212,57 @@ public partial class TopMenuBarView : UserControl
         _helpPopupTopLevel.RemoveHandler(InputElement.PointerPressedEvent, OnTopLevelPointerPressed);
         _helpPopupTopLevel = null;
         _helpPopupHandlersAttached = false;
+    }
+
+    private void OnHelpDocsPopupOpened(object? sender, EventArgs e)
+    {
+        HelpDocsPopover?.Focus();
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is null)
+            return;
+
+        if (_helpDocsPopupHandlersAttached && _helpDocsPopupTopLevel == topLevel)
+            return;
+
+        DetachHelpDocsPopupHandlers();
+        _helpDocsPopupTopLevel = topLevel;
+        topLevel.AddHandler(InputElement.GotFocusEvent, OnTopLevelHelpDocsGotFocus, RoutingStrategies.Tunnel);
+        topLevel.AddHandler(InputElement.PointerPressedEvent, OnTopLevelHelpDocsPointerPressed, RoutingStrategies.Tunnel);
+        _helpDocsPopupHandlersAttached = true;
+    }
+
+    private void OnHelpDocsPopupClosed(object? sender, EventArgs e)
+    {
+        DetachHelpDocsPopupHandlers();
+    }
+
+    private void OnTopLevelHelpDocsGotFocus(object? sender, GotFocusEventArgs e)
+    {
+        if (HelpDocsPopup?.IsOpen != true)
+            return;
+
+        if (!IsInsidePopup(HelpDocsPopup, e.Source as Visual))
+            HelpDocsPopup.IsOpen = false;
+    }
+
+    private void OnTopLevelHelpDocsPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (HelpDocsPopup?.IsOpen != true)
+            return;
+
+        if (!IsInsidePopup(HelpDocsPopup, e.Source as Visual))
+            HelpDocsPopup.IsOpen = false;
+    }
+
+    private void DetachHelpDocsPopupHandlers()
+    {
+        if (!_helpDocsPopupHandlersAttached || _helpDocsPopupTopLevel is null)
+            return;
+
+        _helpDocsPopupTopLevel.RemoveHandler(InputElement.GotFocusEvent, OnTopLevelHelpDocsGotFocus);
+        _helpDocsPopupTopLevel.RemoveHandler(InputElement.PointerPressedEvent, OnTopLevelHelpDocsPointerPressed);
+        _helpDocsPopupTopLevel = null;
+        _helpDocsPopupHandlersAttached = false;
     }
 }
