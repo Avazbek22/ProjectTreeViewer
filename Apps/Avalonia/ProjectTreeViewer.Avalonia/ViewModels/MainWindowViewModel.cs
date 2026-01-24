@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia;
 using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
 
@@ -355,6 +356,8 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (_selectedFontFamily == value) return;
             _selectedFontFamily = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(TreeIconSize));
+            RaisePropertyChanged(nameof(TreeTextMargin));
         }
     }
 
@@ -382,7 +385,15 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public double TreeIconSize => Math.Max(12, Math.Round(TreeFontSize * 1.25, 0));
+    private double TreeIconScale =>
+        string.Equals(_selectedFontFamily?.Name, "Consolas", StringComparison.OrdinalIgnoreCase) ? 1.35 : 1.25;
+
+    public double TreeIconSize => Math.Max(12, Math.Round(TreeFontSize * TreeIconScale, 0));
+
+    public Thickness TreeTextMargin =>
+        string.Equals(_selectedFontFamily?.Name, "Consolas", StringComparison.OrdinalIgnoreCase)
+            ? new Thickness(0, 9, 0, 0)
+            : new Thickness(0);
 
     public bool AllExtensionsChecked
     {

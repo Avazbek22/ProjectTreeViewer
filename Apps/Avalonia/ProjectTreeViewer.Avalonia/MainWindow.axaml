@@ -86,6 +86,7 @@
                        VerticalAlignment="Center" />
                 <TextBlock Inlines="{Binding DisplayInlines}"
                            VerticalAlignment="Center"
+                           Margin="{Binding DataContext.TreeTextMargin, RelativeSource={RelativeSource AncestorType=TreeView}}"
                            FontFamily="{Binding DataContext.SelectedFontFamily, RelativeSource={RelativeSource AncestorType=TreeView}}"
                            FontSize="{Binding DataContext.TreeFontSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
                            Foreground="{DynamicResource AppTextBrush}" />

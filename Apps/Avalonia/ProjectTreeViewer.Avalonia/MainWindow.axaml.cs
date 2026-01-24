@@ -172,6 +172,8 @@ public partial class MainWindow : Window
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase)
             ?? new Dictionary<string, FontFamily>(StringComparer.OrdinalIgnoreCase);
 
+        _viewModel.FontFamilies.Add(FontFamily.Default);
+
         // Add only predefined fonts that exist on system
         foreach (var fontName in predefinedFonts)
         {
@@ -179,7 +181,7 @@ public partial class MainWindow : Window
                 _viewModel.FontFamilies.Add(font);
         }
 
-        if (_viewModel.FontFamilies.Count == 0)
+        if (_viewModel.FontFamilies.Count == 1)
         {
             foreach (var font in systemFonts.Values.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
                 _viewModel.FontFamilies.Add(font);
