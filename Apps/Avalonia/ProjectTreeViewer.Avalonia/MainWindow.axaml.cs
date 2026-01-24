@@ -1022,7 +1022,7 @@ public partial class MainWindow : Window
         RefreshTree();
     }
 
-    private void RefreshTree()
+    private async void RefreshTree()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
@@ -1044,7 +1044,8 @@ public partial class MainWindow : Window
         Cursor = new Cursor(StandardCursorType.Wait);
         try
         {
-            var result = _buildTree.Execute(new BuildTreeRequest(_currentPath, options));
+            // Build the tree off the UI thread to keep the window responsive on large folders.
+            var result = await Task.Run(() => _buildTree.Execute(new BuildTreeRequest(_currentPath, options)));
             _currentTree = result;
 
             if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
