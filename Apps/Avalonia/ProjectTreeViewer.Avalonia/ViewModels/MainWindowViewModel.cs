@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Media;
 using ProjectTreeViewer.Application.Services;
 
 namespace ProjectTreeViewer.Avalonia.ViewModels;
@@ -14,8 +16,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _searchQuery = string.Empty;
     private string _nameFilter = string.Empty;
 
-    private string? _selectedFontFamily;
-    private string? _pendingFontFamily;
+    private FontFamily? _selectedFontFamily;
+    private FontFamily? _pendingFontFamily;
 
     private double _treeFontSize = 12;
 
@@ -53,7 +55,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ObservableCollection<SelectionOptionViewModel> RootFolders { get; } = new();
     public ObservableCollection<SelectionOptionViewModel> Extensions { get; } = new();
     public ObservableCollection<IgnoreOptionViewModel> IgnoreOptions { get; } = new();
-    public ObservableCollection<string> FontFamilies { get; } = new();
+    public ObservableCollection<FontFamily> FontFamilies { get; } = new();
 
     public string Title
     {
@@ -346,7 +348,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     // Применённый шрифт (TreeView берет отсюда)
-    public string? SelectedFontFamily
+    public FontFamily? SelectedFontFamily
     {
         get => _selectedFontFamily;
         set
@@ -354,11 +356,13 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (_selectedFontFamily == value) return;
             _selectedFontFamily = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(TreeIconSize));
+            RaisePropertyChanged(nameof(TreeTextMargin));
         }
     }
 
     // Выбранный в ComboBox (как WinForms _pendingFontName)
-    public string? PendingFontFamily
+    public FontFamily? PendingFontFamily
     {
         get => _pendingFontFamily;
         set
@@ -381,7 +385,15 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public double TreeIconSize => Math.Max(12, Math.Round(TreeFontSize * 1.25, 0));
+    private double TreeIconScale =>
+        string.Equals(_selectedFontFamily?.Name, "Consolas", StringComparison.OrdinalIgnoreCase) ? 1.35 : 1.25;
+
+    public double TreeIconSize => Math.Max(12, Math.Round(TreeFontSize * TreeIconScale, 0));
+
+    public Thickness TreeTextMargin =>
+        string.Equals(_selectedFontFamily?.Name, "Consolas", StringComparison.OrdinalIgnoreCase)
+            ? new Thickness(0, 9, 0, 0)
+            : new Thickness(0);
 
     public bool AllExtensionsChecked
     {

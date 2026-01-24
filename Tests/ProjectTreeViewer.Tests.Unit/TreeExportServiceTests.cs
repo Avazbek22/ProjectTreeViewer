@@ -198,6 +198,78 @@ public sealed class TreeExportServiceTests
 		Assert.DoesNotContain("child", result);
 	}
 
+	// Verifies selecting both root and child includes the child output.
+	[Fact]
+	public void BuildSelectedTree_IncludesChildWhenRootAndChildSelected()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor("child", "/root/child", false, false, "text", new List<TreeNodeDescriptor>())
+			});
+
+		var service = new TreeExportService();
+		var selected = new HashSet<string> { "/root", "/root/child" };
+		var result = service.BuildSelectedTree("/root", root, selected);
+
+		Assert.Contains("child", result);
+	}
+
+	// Verifies selected tree retains nested indentation for descendants.
+	[Fact]
+	public void BuildSelectedTree_RendersNestedIndentForDescendant()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>
+			{
+				new TreeNodeDescriptor(
+					"src",
+					"/root/src",
+					true,
+					false,
+					"folder",
+					new List<TreeNodeDescriptor>
+					{
+						new TreeNodeDescriptor("main.cs", "/root/src/main.cs", false, false, "csharp", new List<TreeNodeDescriptor>())
+					})
+			});
+
+		var service = new TreeExportService();
+		var selected = new HashSet<string> { "/root/src/main.cs" };
+		var result = service.BuildSelectedTree("/root", root, selected);
+
+		Assert.Contains("└── src", result);
+		Assert.Contains("│       └── main.cs", result);
+	}
+
+	// Verifies full tree output handles root with no children.
+	[Fact]
+	public void BuildFullTree_ReturnsRootOnlyWhenNoChildren()
+	{
+		var root = new TreeNodeDescriptor(
+			DisplayName: "root",
+			FullPath: "/root",
+			IsDirectory: true,
+			IsAccessDenied: false,
+			IconKey: "folder",
+			Children: new List<TreeNodeDescriptor>());
+
+		var service = new TreeExportService();
+		var result = service.BuildFullTree("/root", root);
+
+		Assert.Contains("├── root", result);
+	}
+
 	// Verifies selection matching returns true when the node itself is selected.
 	[Fact]
 	public void HasSelectedDescendantOrSelf_ReturnsTrueWhenSelfSelected()

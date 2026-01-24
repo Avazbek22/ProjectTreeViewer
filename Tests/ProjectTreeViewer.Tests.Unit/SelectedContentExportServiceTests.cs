@@ -145,4 +145,44 @@ public sealed class SelectedContentExportServiceTests
 
 		Assert.Contains("header.txt:", result);
 	}
+
+	// Verifies null paths are ignored safely.
+	[Fact]
+	public void Build_IgnoresNullPaths()
+	{
+		var service = new SelectedContentExportService();
+		var result = service.Build(new string?[] { null }.Where(p => p is not null)!.Cast<string>());
+
+		Assert.Equal(string.Empty, result);
+	}
+
+	// Verifies sorting is case-insensitive.
+	[Fact]
+	public void Build_SortsPathsCaseInsensitive()
+	{
+		using var temp = new TemporaryDirectory();
+		var fileB = temp.CreateFile("B.txt", "B");
+		var fileA = temp.CreateFile("a.txt", "A");
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { fileB, fileA });
+
+		var firstIndex = result.IndexOf("a.txt:", StringComparison.OrdinalIgnoreCase);
+		var secondIndex = result.IndexOf("B.txt:", StringComparison.OrdinalIgnoreCase);
+		Assert.True(firstIndex < secondIndex);
+	}
+
+	// Verifies blank lines are not appended when only one file is written.
+	[Fact]
+	public void Build_DoesNotInsertSeparatorForSingleFile()
+	{
+		using var temp = new TemporaryDirectory();
+		var file = temp.CreateFile("single.txt", "One");
+
+		var service = new SelectedContentExportService();
+		var result = service.Build(new[] { file });
+
+		var nl = Environment.NewLine;
+		Assert.DoesNotContain($"\u00A0{nl}\u00A0{nl}", result);
+	}
 }
