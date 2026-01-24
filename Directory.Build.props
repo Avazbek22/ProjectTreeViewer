@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup Condition="'$(Configuration)'=='ReleaseStore'">
+    <DefineConstants>$(DefineConstants);PTW_STORE</DefineConstants>
+  </PropertyGroup>
+</Project>

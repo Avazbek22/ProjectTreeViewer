@@ -23,6 +23,7 @@ using ThemePreset = ProjectTreeViewer.Infrastructure.ThemePresets.ThemePreset;
 using ThemePresetVariant = ProjectTreeViewer.Infrastructure.ThemePresets.ThemeVariant;
 using ThemePresetEffect = ProjectTreeViewer.Infrastructure.ThemePresets.ThemeEffectMode;
 using ProjectTreeViewer.Kernel.Abstractions;
+using ProjectTreeViewer.Kernel;
 using ProjectTreeViewer.Kernel.Contracts;
 using ProjectTreeViewer.Kernel.Models;
 
@@ -968,7 +969,8 @@ public partial class MainWindow : Window
             if (TryElevateAndRestart(path))
                 return;
 
-            _ = ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
+            if (BuildFlags.AllowElevation)
+                _ = ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
             return;
         }
 
@@ -983,6 +985,13 @@ public partial class MainWindow : Window
 
     private bool TryElevateAndRestart(string path)
     {
+        // In Store builds, show a localized hint instead of attempting elevation.
+        if (!BuildFlags.AllowElevation)
+        {
+            _ = ShowErrorAsync(_localization["Msg.AccessDeniedElevationRequired"]);
+            return false;
+        }
+
         if (_elevation.IsAdministrator) return false;
         if (_elevationAttempted) return false;
 
