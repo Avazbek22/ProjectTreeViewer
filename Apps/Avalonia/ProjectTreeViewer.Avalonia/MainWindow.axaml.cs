@@ -17,6 +17,11 @@ using ProjectTreeViewer.Avalonia.Coordinators;
 using ProjectTreeViewer.Avalonia.Services;
 using ProjectTreeViewer.Avalonia.Views;
 using ProjectTreeViewer.Avalonia.ViewModels;
+using ThemePresetStore = ProjectTreeViewer.Infrastructure.ThemePresets.ThemePresetStore;
+using ThemePresetDb = ProjectTreeViewer.Infrastructure.ThemePresets.ThemePresetDb;
+using ThemePreset = ProjectTreeViewer.Infrastructure.ThemePresets.ThemePreset;
+using ThemePresetVariant = ProjectTreeViewer.Infrastructure.ThemePresets.ThemeVariant;
+using ThemePresetEffect = ProjectTreeViewer.Infrastructure.ThemePresets.ThemeEffectMode;
 using ProjectTreeViewer.Kernel.Abstractions;
 using ProjectTreeViewer.Kernel.Contracts;
 using ProjectTreeViewer.Kernel.Models;
@@ -42,6 +47,7 @@ public partial class MainWindow : Window
     private readonly TreeAndContentExportService _treeAndContentExport;
     private readonly IconCache _iconCache;
     private readonly IElevationService _elevation;
+    private readonly ThemePresetStore _themePresetStore;
 
     private readonly MainWindowViewModel _viewModel;
     private readonly TreeSearchCoordinator _searchCoordinator;
@@ -52,6 +58,10 @@ public partial class MainWindow : Window
     private BuildTreeResult? _currentTree;
     private string? _currentPath;
     private bool _elevationAttempted;
+    private bool _wasThemePopoverOpen;
+    private ThemePresetDb _themePresetDb = new();
+    private ThemePresetVariant _currentThemeVariant = ThemePresetVariant.Dark;
+    private ThemePresetEffect _currentEffectMode = ThemePresetEffect.Transparent;
 
     private TreeView? _treeView;
     private TopMenuBarView? _topMenuBar;
@@ -72,11 +82,14 @@ public partial class MainWindow : Window
         _treeAndContentExport = services.TreeAndContentExportService;
         _iconCache = new IconCache(services.IconStore);
         _elevation = services.Elevation;
+        _themePresetStore = services.ThemePresetStore;
 
         _viewModel = new MainWindowViewModel(_localization, services.HelpContentProvider);
         DataContext = _viewModel;
 
         InitializeComponent();
+
+        InitializeThemePresets();
 
         _viewModel.UpdateHelpPopoverMaxSize(Bounds.Size);
         PropertyChanged += OnWindowPropertyChanged;
@@ -136,6 +149,8 @@ public partial class MainWindow : Window
                 _themeBrushCoordinator.UpdateDynamicThemeBrushes();
             else if (args.PropertyName == nameof(MainWindowViewModel.BlurRadius))
                 _themeBrushCoordinator.UpdateTransparencyEffect();
+            else if (args.PropertyName == nameof(MainWindowViewModel.ThemePopoverOpen))
+                HandleThemePopoverStateChange();
         };
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
@@ -173,24 +188,127 @@ public partial class MainWindow : Window
 
     private async void OnOpened(object? sender, EventArgs e)
     {
-        // Set default to Dark theme + Transparent mode
-        SetDefaultTheme();
+        ApplyStartupThemePreset();
 
         if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
             TryOpenFolder(_startupOptions.Path!, fromDialog: false);
     }
 
-    private void SetDefaultTheme()
+    private void ApplyStartupThemePreset()
     {
         var app = global::Avalonia.Application.Current;
         if (app is null) return;
 
-        // Set dark theme by default
-        app.RequestedThemeVariant = ThemeVariant.Dark;
-        _viewModel.IsDarkTheme = true;
+        app.RequestedThemeVariant = _currentThemeVariant == ThemePresetVariant.Dark
+            ? ThemeVariant.Dark
+            : ThemeVariant.Light;
 
-        // Set transparent mode by default (already set in ViewModel, ensure transparency hint)
+        _viewModel.IsDarkTheme = _currentThemeVariant == ThemePresetVariant.Dark;
+        ApplyEffectMode(_currentEffectMode);
+        ApplyPresetValues(_themePresetStore.GetPreset(_themePresetDb, _currentThemeVariant, _currentEffectMode));
         _themeBrushCoordinator.UpdateTransparencyEffect();
+    }
+
+    private void InitializeThemePresets()
+    {
+        _themePresetDb = _themePresetStore.Load();
+
+        if (!_themePresetStore.TryParseKey(_themePresetDb.LastSelected, out var theme, out var effect))
+        {
+            theme = ThemePresetVariant.Dark;
+            effect = ThemePresetEffect.Transparent;
+        }
+
+        _currentThemeVariant = theme;
+        _currentEffectMode = effect;
+        _viewModel.IsDarkTheme = theme == ThemePresetVariant.Dark;
+        ApplyEffectMode(effect);
+        ApplyPresetValues(_themePresetStore.GetPreset(_themePresetDb, theme, effect));
+        _wasThemePopoverOpen = _viewModel.ThemePopoverOpen;
+    }
+
+    private void ApplyEffectMode(ThemePresetEffect effect)
+    {
+        switch (effect)
+        {
+            case ThemePresetEffect.Mica:
+                _viewModel.IsMicaEnabled = true;
+                break;
+            case ThemePresetEffect.Acrylic:
+                _viewModel.IsAcrylicEnabled = true;
+                break;
+            default:
+                _viewModel.IsTransparentEnabled = true;
+                break;
+        }
+    }
+
+    private void ApplyPresetValues(ThemePreset preset)
+    {
+        _viewModel.MaterialIntensity = preset.MaterialIntensity;
+        _viewModel.BlurRadius = preset.BlurRadius;
+        _viewModel.PanelContrast = preset.PanelContrast;
+        _viewModel.MenuChildIntensity = preset.MenuChildIntensity;
+        _viewModel.BorderStrength = preset.BorderStrength;
+    }
+
+    private void ApplyPresetForSelection(ThemePresetVariant theme, ThemePresetEffect effect)
+    {
+        _currentThemeVariant = theme;
+        _currentEffectMode = effect;
+        ApplyPresetValues(_themePresetStore.GetPreset(_themePresetDb, theme, effect));
+    }
+
+    private void HandleThemePopoverStateChange()
+    {
+        if (_wasThemePopoverOpen && !_viewModel.ThemePopoverOpen)
+            SaveCurrentThemePreset();
+
+        _wasThemePopoverOpen = _viewModel.ThemePopoverOpen;
+    }
+
+    private void SaveCurrentThemePreset()
+    {
+        var theme = GetSelectedThemeVariant();
+        var effect = GetEffectModeForSave();
+
+        _currentThemeVariant = theme;
+        _currentEffectMode = effect;
+
+        var preset = new ThemePreset
+        {
+            Theme = theme,
+            Effect = effect,
+            MaterialIntensity = _viewModel.MaterialIntensity,
+            BlurRadius = _viewModel.BlurRadius,
+            PanelContrast = _viewModel.PanelContrast,
+            MenuChildIntensity = _viewModel.MenuChildIntensity,
+            BorderStrength = _viewModel.BorderStrength
+        };
+
+        _themePresetStore.SetPreset(_themePresetDb, theme, effect, preset);
+        _themePresetDb.LastSelected = $"{theme}.{effect}";
+        _themePresetStore.Save(_themePresetDb);
+    }
+
+    private ThemePresetVariant GetSelectedThemeVariant()
+        => _viewModel.IsDarkTheme ? ThemePresetVariant.Dark : ThemePresetVariant.Light;
+
+    private ThemePresetEffect GetSelectedEffectMode()
+    {
+        if (_viewModel.IsMicaEnabled)
+            return ThemePresetEffect.Mica;
+        if (_viewModel.IsAcrylicEnabled)
+            return ThemePresetEffect.Acrylic;
+        return ThemePresetEffect.Transparent;
+    }
+
+    private ThemePresetEffect GetEffectModeForSave()
+    {
+        if (_viewModel.HasAnyEffect)
+            return GetSelectedEffectMode();
+
+        return _currentEffectMode;
     }
 
     private void InitializeFonts()
@@ -380,6 +498,7 @@ public partial class MainWindow : Window
 
         app.RequestedThemeVariant = ThemeVariant.Light;
         _viewModel.IsDarkTheme = false;
+        ApplyPresetForSelection(ThemePresetVariant.Light, GetSelectedEffectMode());
         _searchCoordinator.UpdateHighlights(_viewModel.SearchQuery);
         _searchCoordinator.UpdateHighlights(_viewModel.NameFilter);
         _themeBrushCoordinator.UpdateDynamicThemeBrushes();
@@ -392,6 +511,7 @@ public partial class MainWindow : Window
 
         app.RequestedThemeVariant = ThemeVariant.Dark;
         _viewModel.IsDarkTheme = true;
+        ApplyPresetForSelection(ThemePresetVariant.Dark, GetSelectedEffectMode());
         _searchCoordinator.UpdateHighlights(_viewModel.SearchQuery);
         _searchCoordinator.UpdateHighlights(_viewModel.NameFilter);
         _themeBrushCoordinator.UpdateDynamicThemeBrushes();
@@ -443,6 +563,8 @@ public partial class MainWindow : Window
     {
         _viewModel.ToggleTransparent();
         _themeBrushCoordinator.UpdateTransparencyEffect();
+        if (_viewModel.IsTransparentEnabled)
+            ApplyPresetForSelection(GetSelectedThemeVariant(), ThemePresetEffect.Transparent);
         e.Handled = true;
     }
 
@@ -450,6 +572,8 @@ public partial class MainWindow : Window
     {
         _viewModel.ToggleMica();
         _themeBrushCoordinator.UpdateTransparencyEffect();
+        if (_viewModel.IsMicaEnabled)
+            ApplyPresetForSelection(GetSelectedThemeVariant(), ThemePresetEffect.Mica);
         e.Handled = true;
     }
 
@@ -457,6 +581,8 @@ public partial class MainWindow : Window
     {
         _viewModel.ToggleAcrylic();
         _themeBrushCoordinator.UpdateTransparencyEffect();
+        if (_viewModel.IsAcrylicEnabled)
+            ApplyPresetForSelection(GetSelectedThemeVariant(), ThemePresetEffect.Acrylic);
         e.Handled = true;
     }
 
