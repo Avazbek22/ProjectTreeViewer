@@ -18,10 +18,18 @@ public partial class ThemePopoverView : UserControl
     }
 
     private void OnSetLightThemeCheckbox(object? sender, RoutedEventArgs e)
-        => SetLightThemeRequested?.Invoke(sender, e);
+    {
+        SetLightThemeRequested?.Invoke(sender, e);
+        if (sender is CheckBox checkBox)
+            checkBox.IsChecked = true;
+    }
 
     private void OnSetDarkThemeCheckbox(object? sender, RoutedEventArgs e)
-        => SetDarkThemeRequested?.Invoke(sender, e);
+    {
+        SetDarkThemeRequested?.Invoke(sender, e);
+        if (sender is CheckBox checkBox)
+            checkBox.IsChecked = true;
+    }
 
     private void OnSetTransparentMode(object? sender, RoutedEventArgs e)
         => SetTransparentModeRequested?.Invoke(sender, e);
