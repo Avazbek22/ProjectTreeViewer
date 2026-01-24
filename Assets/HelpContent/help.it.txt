@@ -15,17 +15,17 @@ Scorciatoie:
 * Ctrl+W — comprimi tutto (la radice resta aperta)
 
 ## 3) File
-* Open folder… — apri la cartella radice (Ctrl+O)
-* Refresh — rileggi e ricostruisci l’albero (F5)
+* Apri cartella… — apri la cartella radice (Ctrl+O)
+* Aggiorna — rileggi e ricostruisci l’albero (F5)
 
-## 4) Copy
-### Copy full tree
+## 4) Copia
+### Copia albero completo
 Copia l’albero ASCII completo. Ctrl+Shift+C.
 
-### Copy selected tree
+### Copia albero selezionato
 Copia l’albero dei nodi selezionati. Se non c’è selezione, appare un messaggio. Ctrl+Alt+C.
 
-### Copy selected content
+### Copia contenuto dei file selezionati
 Copia il contenuto dei soli file di testo selezionati:
 * il file deve esistere;
 * i file binari vengono ignorati (controllo byte nulli);
@@ -33,7 +33,7 @@ Copia il contenuto dei soli file di testo selezionati:
 
 Ctrl+Alt+V.
 
-### Copy tree + content
+### Copia albero completo e contenuto
 Combina albero e contenuto:
 * l’albero è costruito dalla selezione; se non valida, si usa l’albero completo;
 * il contenuto è aggiunto solo per file di testo;
@@ -41,7 +41,7 @@ Combina albero e contenuto:
 
 Ctrl+Shift+V.
 
-## 5) View
+## 5) Visualizza
 ### Zoom
 * Ctrl++ / Ctrl+= — aumenta
 * Ctrl+- — riduci
@@ -50,10 +50,10 @@ Ctrl+Shift+V.
 
 Intervallo: 6–28, reset: 12.
 
-### Compact Mode
+### Modalità compatta
 Rende l’interfaccia più densa: spazi più piccoli nell’albero e nelle impostazioni.
 
-## 6) Search (albero)
+## 6) Ricerca nell’albero
 Apre la ricerca, evidenzia le corrispondenze e permette la navigazione.
 * Ctrl+F — mostra/nascondi
 * Enter — risultato successivo
@@ -62,19 +62,19 @@ Apre la ricerca, evidenzia le corrispondenze e permette la navigazione.
 
 La ricerca apre solo i rami necessari; svuotando la query l’albero si richiude (tranne la radice).
 
-## 7) Filter (per nome)
+## 7) Filtra per nome
 Mostra solo i nodi che corrispondono al filtro e i loro genitori. Aggiornamento con debounce.
 * Ctrl+Shift+N — mostra/nascondi filtro
 * Esc — chiudi filtro
 
-## 8) Options (Pannello impostazioni)
+## 8) Opzioni
 Liste a destra:
-* Font (font dell’albero) — applica con Apply
-* Ignore options
-* Extensions
-* Root folders
+* Font albero — applica con Applica
+* Ignora
+* Tipi di file
+* Cartelle di primo livello
 
-Ogni lista ha il toggle All.
+Ogni lista ha il toggle Tutti.
 
 Ctrl+P — mostra/nascondi pannello.
 
@@ -87,34 +87,34 @@ Esclusioni “intelligenti” (cartelle VCS/IDE e file spazzatura). Le regole fr
 
 ## 10) Come si costruisce l’albero
 Il risultato dipende da:
-* Root folders selezionate
-* Extensions selezionate
-* Ignore rules
-* Filter attivo
+* cartelle di primo livello selezionate
+* tipi di file selezionati
+* regole di esclusione
+* filtro attivo
 
-Se l’accesso è negato, il nodo è marcato Access denied.
+Se l’accesso è negato, il nodo è marcato Accesso negato.
 
 ## 11) Icone
 Ordine di scelta:
 1) tipo nodo (cartella/file)
 2) nome esatto (se esiste una regola)
 3) estensione
-4) altrimenti — unknown
+4) altrimenti — sconosciuto
 
 ## 12) Tema ed effetti
 Il popover del tema permette di scegliere:
 * tema chiaro/scuro
-* Transparent / Mica / Acrylic
+* Trasparente / Mica / Acrylic
 * intensità, blur, contrasto, bordi
 
 Gli elementi [Beta] possono cambiare tra versioni.
 
-## 13) Help → About (Informazioni)
+## 13) Aiuto → Informazioni
 Apre un popover con info app e link al repository.
 * Esc — chiudi popover
 
 ## 14) Lingue
-La lingua si seleziona dal menu Language.
+La lingua si seleziona dal menu Lingua.
 
 ## 15) Note
 * Per impostazione predefinita, tema scuro ed effetti di trasparenza sono attivi (se supportati).

@@ -14,18 +14,18 @@ Raccourcis :
 * Ctrl+E — tout déplier
 * Ctrl+W — tout replier (la racine reste ouverte)
 
-## 3) File (Fichier)
-* Open folder… — ouvrir le dossier racine (Ctrl+O)
-* Refresh — relire et reconstruire l’arborescence (F5)
+## 3) Fichier
+* Ouvrir le dossier… — ouvrir le dossier racine (Ctrl+O)
+* Actualiser — relire et reconstruire l’arborescence (F5)
 
-## 4) Copy (Copier)
-### Copy full tree
+## 4) Copier
+### Copier l'arborescence complète
 Copie l’arborescence ASCII complète. Ctrl+Shift+C.
 
-### Copy selected tree
+### Copier l'arborescence sélectionnée
 Copie l’arborescence pour les nœuds cochés. Si rien n’est sélectionné, un message s’affiche. Ctrl+Alt+C.
 
-### Copy selected content
+### Copier le contenu des fichiers sélectionnés
 Copie le contenu des fichiers texte sélectionnés :
 * le fichier doit exister ;
 * les fichiers binaires sont ignorés (test de bytes nuls) ;
@@ -33,7 +33,7 @@ Copie le contenu des fichiers texte sélectionnés :
 
 Ctrl+Alt+V.
 
-### Copy tree + content
+### Copier l'arborescence complète et le contenu
 Combine arborescence et contenu :
 * l’arborescence est basée sur la sélection ; si elle est invalide, l’arborescence complète est utilisée ;
 * le contenu est ajouté uniquement pour les fichiers texte ;
@@ -41,7 +41,7 @@ Combine arborescence et contenu :
 
 Ctrl+Shift+V.
 
-## 5) View (Affichage)
+## 5) Affichage
 ### Zoom
 * Ctrl++ / Ctrl+= — agrandir
 * Ctrl+- — réduire
@@ -50,10 +50,10 @@ Ctrl+Shift+V.
 
 Plage : 6–28, reset : 12.
 
-### Compact Mode
+### Mode compact
 Rend l’interface plus dense : moins d’espaces dans l’arbre et les paramètres.
 
-## 6) Search (Recherche dans l’arbre)
+## 6) Recherche dans l’arbre
 Ouvre la recherche, met en évidence les correspondances et permet la navigation.
 * Ctrl+F — afficher/masquer
 * Enter — résultat suivant
@@ -62,19 +62,19 @@ Ouvre la recherche, met en évidence les correspondances et permet la navigation
 
 La recherche n’ouvre que les branches nécessaires ; en effaçant la requête, l’arbre se replie (sauf la racine).
 
-## 7) Filter (Filtre par nom)
+## 7) Filtrer par nom
 Affiche uniquement les nœuds correspondant au filtre et leurs parents. Mise à jour avec délai (debounce).
 * Ctrl+Shift+N — afficher/masquer le filtre
 * Esc — fermer le filtre
 
-## 8) Options (Panneau de réglages)
+## 8) Options
 Listes à droite :
-* Font (police de l’arbre) — appliquer avec Apply
-* Ignore options
-* Extensions
-* Root folders
+* Police de l’arborescence — appliquer avec Appliquer
+* Ignorer
+* Types de fichiers
+* Dossiers de premier niveau
 
-Chaque liste a un bouton All.
+Chaque liste a un bouton Tous.
 
 Ctrl+P — afficher/masquer le panneau.
 
@@ -87,19 +87,19 @@ Exclusions « intelligentes » (dossiers VCS/IDE, fichiers indésirables). Les
 
 ## 10) Construction de l’arbre
 Le résultat dépend de :
-* Root folders sélectionnés
-* Extensions sélectionnés
-* Ignore rules
-* Filter actif
+* dossiers de premier niveau sélectionnés
+* types de fichiers sélectionnés
+* règles d’exclusion
+* filtre actif
 
-Si l’accès est refusé, le nœud est marqué Access denied.
+Si l’accès est refusé, le nœud est marqué Accès refusé.
 
 ## 11) Icônes
 Ordre de sélection :
 1) type de nœud (dossier/fichier)
 2) nom exact (s’il existe une règle)
 3) extension
-4) sinon — unknown
+4) sinon — inconnu
 
 ## 12) Thème et effets
 Le popover de thème permet :
@@ -109,12 +109,12 @@ Le popover de thème permet :
 
 Les éléments [Beta] peuvent évoluer entre versions.
 
-## 13) Help → About (À propos)
+## 13) Aide → À propos
 Ouvre un popover avec les infos de l’app et un lien vers le dépôt.
 * Esc — fermer le popover
 
 ## 14) Langues
-La langue se choisit via le menu Language.
+La langue se choisit via le menu Langue.
 
 ## 15) Notes
 * Par défaut, le thème sombre et les effets de transparence sont activés (si supportés).
