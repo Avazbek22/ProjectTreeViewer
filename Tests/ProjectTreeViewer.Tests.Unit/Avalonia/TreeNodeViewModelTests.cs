@@ -285,7 +285,7 @@ public sealed class TreeNodeViewModelTests
         var root = CreateTree();
 
         root.Children[0].IsChecked = true;
-        root.IsChecked = null;
+        root.IsChecked = false;
 
         Assert.All(root.Children, child => Assert.True(child.IsChecked is false));
         Assert.True(root.IsChecked is false);

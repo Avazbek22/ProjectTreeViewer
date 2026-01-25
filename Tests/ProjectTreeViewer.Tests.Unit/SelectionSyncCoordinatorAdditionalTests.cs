@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
@@ -118,16 +119,50 @@ public sealed class SelectionSyncCoordinatorAdditionalTests
 		Assert.Single(viewModel.IgnoreOptions);
 	}
 
+	[Fact]
+	public void PopulateExtensionsForRootSelectionAsync_DoesNotDropCachedSelections()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", false));
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".md", true));
+
+		var coordinator = CreateCoordinator(viewModel);
+		coordinator.UpdateExtensionsSelectionCache();
+
+		coordinator.ApplyExtensionScan(new[] { ".cs" });
+		coordinator.ApplyExtensionScan(new[] { ".cs", ".md" });
+
+		var md = viewModel.Extensions.Single(option => option.Name == ".md");
+		Assert.True(md.IsChecked);
+	}
+
+	[Fact]
+	public void PopulateExtensionsForRootSelectionAsync_EmptyRoots_DoesNotClearCachedSelections()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", false));
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".md", true));
+
+		var coordinator = CreateCoordinator(viewModel);
+		coordinator.UpdateExtensionsSelectionCache();
+
+		coordinator.ApplyExtensionScan(Array.Empty<string>());
+		coordinator.ApplyExtensionScan(new[] { ".cs", ".md" });
+
+		var md = viewModel.Extensions.Single(option => option.Name == ".md");
+		Assert.True(md.IsChecked);
+	}
+
 	private static MainWindowViewModel CreateViewModel()
 	{
 		var localization = new LocalizationService(CreateCatalog(), AppLanguage.En);
 		return new MainWindowViewModel(localization, new HelpContentProvider());
 	}
 
-	private static SelectionSyncCoordinator CreateCoordinator(MainWindowViewModel viewModel)
+	private static SelectionSyncCoordinator CreateCoordinator(MainWindowViewModel viewModel, StubFileSystemScanner? scanner = null)
 	{
 		var localization = new LocalizationService(CreateCatalog(), AppLanguage.En);
-		var scanner = new StubFileSystemScanner();
+		scanner ??= new StubFileSystemScanner();
 		var scanOptions = new ScanOptionsUseCase(scanner);
 		var filterService = new FilterOptionSelectionService();
 		var ignoreService = new IgnoreOptionsService(localization);

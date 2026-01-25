@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using ProjectTreeViewer.Application.Services;
+using ProjectTreeViewer.Application.Models;
 using ProjectTreeViewer.Application.UseCases;
 using ProjectTreeViewer.Avalonia.ViewModels;
 using ProjectTreeViewer.Kernel.Contracts;
@@ -27,6 +28,7 @@ public sealed class SelectionSyncCoordinator
     private HashSet<IgnoreOptionId> _ignoreSelectionCache = new();
     private bool _ignoreSelectionInitialized;
     private HashSet<string> _extensionsSelectionCache = new(StringComparer.OrdinalIgnoreCase);
+    private bool _extensionsSelectionInitialized;
 
     private bool _suppressRootAllCheck;
     private bool _suppressRootItemCheck;
@@ -93,6 +95,7 @@ public sealed class SelectionSyncCoordinator
     {
         if (_suppressExtensionAllCheck) return;
 
+        _extensionsSelectionInitialized = true;
         _suppressExtensionAllCheck = true;
         _viewModel.AllExtensionsChecked = isChecked;
         _suppressExtensionAllCheck = false;
@@ -155,19 +158,7 @@ public sealed class SelectionSyncCoordinator
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 if (version != _extensionScanVersion) return;
-                _viewModel.Extensions.Clear();
-
-                _suppressExtensionItemCheck = true;
-                foreach (var option in options)
-                    _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
-                _suppressExtensionItemCheck = false;
-
-                if (_viewModel.AllExtensionsChecked)
-                    SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
-
-                SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
-                    value => _viewModel.AllExtensionsChecked = value);
-                UpdateExtensionsSelectionCache();
+                ApplyExtensionOptions(options);
             });
         });
     }
@@ -302,9 +293,21 @@ public sealed class SelectionSyncCoordinator
         if (_viewModel.Extensions.Count == 0)
             return;
 
+        _extensionsSelectionInitialized = true;
         _extensionsSelectionCache = new HashSet<string>(
             _viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
             StringComparer.OrdinalIgnoreCase);
+    }
+
+    internal void ApplyExtensionScan(IReadOnlyCollection<string> extensions)
+    {
+        var prev = _extensionsSelectionCache.Count > 0
+            ? new HashSet<string>(_extensionsSelectionCache, StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(_viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
+                StringComparer.OrdinalIgnoreCase);
+
+        var options = _filterSelectionService.BuildExtensionOptions(extensions, prev);
+        ApplyExtensionOptions(options);
     }
 
     public void UpdateIgnoreSelectionCache()
@@ -340,6 +343,7 @@ public sealed class SelectionSyncCoordinator
         {
             if (_suppressExtensionItemCheck) return;
 
+            _extensionsSelectionInitialized = true;
             SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
                 value => _viewModel.AllExtensionsChecked = value);
 
@@ -386,6 +390,27 @@ public sealed class SelectionSyncCoordinator
         finally
         {
             suppressFlag = false;
+        }
+    }
+
+    private void ApplyExtensionOptions(IReadOnlyList<SelectionOption> options)
+    {
+        _viewModel.Extensions.Clear();
+
+        _suppressExtensionItemCheck = true;
+        foreach (var option in options)
+            _viewModel.Extensions.Add(new SelectionOptionViewModel(option.Name, option.IsChecked));
+        _suppressExtensionItemCheck = false;
+
+        if (_viewModel.AllExtensionsChecked)
+            SetAllChecked(_viewModel.Extensions, true, ref _suppressExtensionItemCheck);
+
+        SyncAllCheckbox(_viewModel.Extensions, ref _suppressExtensionAllCheck,
+            value => _viewModel.AllExtensionsChecked = value);
+        if (!_extensionsSelectionInitialized)
+        {
+            _extensionsSelectionInitialized = true;
+            UpdateExtensionsSelectionCache();
         }
     }
 
