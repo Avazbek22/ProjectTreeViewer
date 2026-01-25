@@ -11,11 +11,11 @@ namespace ProjectTreeViewer.Tests.Unit;
 public sealed class FilterOptionSelectionServiceAdditionalTests
 {
 	[Theory]
-	// Verifies default extensions are selected when no previous selections exist.
-	[InlineData(".cs", true)]
-	[InlineData(".sln", true)]
-	[InlineData(".csproj", true)]
-	[InlineData(".designer", true)]
+	// Verifies no extensions are selected when no previous selections exist.
+	[InlineData(".cs", false)]
+	[InlineData(".sln", false)]
+	[InlineData(".csproj", false)]
+	[InlineData(".designer", false)]
 	[InlineData(".txt", false)]
 	[InlineData(".md", false)]
 	[InlineData(".json", false)]
