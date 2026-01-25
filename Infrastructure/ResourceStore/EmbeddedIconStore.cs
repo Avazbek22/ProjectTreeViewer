@@ -30,7 +30,7 @@ public sealed class EmbeddedIconStore : IIconStore
 	private static IconPack LoadPack()
 	{
 		var assembly = typeof(ProjectTreeViewer.Assets.Marker).Assembly;
-		var manifestResource = "ProjectTreeViewer.Assets.IconPacks.Default.manifest.json";
+		var manifestResource = "ProjectTreeViewer.Assets.IconPacks.Configuration.manifest.json";
 		using var stream = assembly.GetManifestResourceStream(manifestResource)
 			?? throw new InvalidOperationException($"Icon manifest not found: {manifestResource}");
 
