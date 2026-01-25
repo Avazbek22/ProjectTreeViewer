@@ -61,6 +61,7 @@
             </ResourceDictionary.ThemeDictionaries>
 
             <!-- Compact mode uses the Fluent CheckBox template with a scale transform. -->
+            <Geometry x:Key="CheckBoxIndeterminateMarkGeometry">M3,6 L9,6</Geometry>
         </ResourceDictionary>
     </Styles.Resources>
 

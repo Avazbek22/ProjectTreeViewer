@@ -1140,7 +1140,7 @@ public partial class MainWindow : Window
 
     private static void CollectChecked(TreeNodeViewModel node, HashSet<string> selected)
     {
-        if (node.IsChecked)
+        if (node.IsChecked == true)
             selected.Add(node.FullPath);
 
         foreach (var child in node.Children)

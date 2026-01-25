@@ -89,7 +89,9 @@
               <StackPanel Grid.Column="1"
                           Orientation="Horizontal"
                           Spacing="{Binding DataContext.TreeItemSpacing, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center" />
+                <CheckBox IsThreeState="True"
+                          IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                          VerticalAlignment="Center" />
                 <Image Source="{Binding Icon}"
                        Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
                        Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
