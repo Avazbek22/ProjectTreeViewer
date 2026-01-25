@@ -5,10 +5,10 @@
              x:DataType="vm:MainWindowViewModel">
   <Border Classes="theme-popover"
           Padding="14"
-          Width="500"
-          MinWidth="380"
+          Width="600"
+          MinWidth="456"
           MaxWidth="{Binding AboutPopoverMaxWidth}"
-          MinHeight="240"
+          MinHeight="288"
           MaxHeight="{Binding AboutPopoverMaxHeight}">
     <Grid RowDefinitions="Auto,*,Auto">
       <Grid ColumnDefinitions="*,Auto">
@@ -29,8 +29,8 @@
       </ScrollViewer>
 
       <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-        <Button Content="{Binding HelpAboutOpenLink}" Click="OnOpenLink" />
-        <Button Content="{Binding HelpAboutCopyLink}" Click="OnCopyLink" />
+        <Button Content="{Binding HelpAboutOpenLink}" Classes="primary-action" Click="OnOpenLink" />
+        <Button Content="{Binding HelpAboutCopyLink}" Classes="primary-action" Click="OnCopyLink" />
       </StackPanel>
     </Grid>
   </Border>

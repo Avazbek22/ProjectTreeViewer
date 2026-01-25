@@ -378,8 +378,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         const double padding = 16;
         var maxHelpWidth = Math.Max(260, Math.Min(800, (bounds.Width - padding) * 0.8));
         var maxHelpHeight = Math.Max(220, Math.Min(680, (bounds.Height - padding) * 0.9));
-        var maxAboutWidth = Math.Min(520, (bounds.Width - padding) * 0.7);
-        var maxAboutHeight = Math.Min(380, (bounds.Height - padding) * 0.7);
+        var maxAboutWidth = Math.Min(624, (bounds.Width - padding) * 0.7);
+        var maxAboutHeight = Math.Min(456, (bounds.Height - padding) * 0.7);
 
         HelpPopoverMaxWidth = maxHelpWidth;
         HelpPopoverMaxHeight = maxHelpHeight;

@@ -23,6 +23,7 @@ using ThemePreset = ProjectTreeViewer.Infrastructure.ThemePresets.ThemePreset;
 using ThemePresetVariant = ProjectTreeViewer.Infrastructure.ThemePresets.ThemeVariant;
 using ThemePresetEffect = ProjectTreeViewer.Infrastructure.ThemePresets.ThemeEffectMode;
 using ProjectTreeViewer.Kernel.Abstractions;
+using ProjectTreeViewer.Kernel;
 using ProjectTreeViewer.Kernel.Contracts;
 using ProjectTreeViewer.Kernel.Models;
 
@@ -389,7 +390,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            ReloadProject();
+            await ReloadProjectAsync();
         }
         catch (Exception ex)
         {
@@ -702,7 +703,7 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
-        RefreshTree();
+        _ = RefreshTreeAsync();
         _searchCoordinator.UpdateHighlights(_viewModel.NameFilter);
 
         // Auto-expand folders with matching items
@@ -947,7 +948,7 @@ public partial class MainWindow : Window
                 _viewModel.SelectedFontFamily = pending;
             }
 
-            RefreshTree();
+            _ = RefreshTreeAsync();
         }
         catch (Exception ex)
         {
@@ -968,7 +969,8 @@ public partial class MainWindow : Window
             if (TryElevateAndRestart(path))
                 return;
 
-            _ = ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
+            if (BuildFlags.AllowElevation)
+                _ = ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
             return;
         }
 
@@ -978,11 +980,18 @@ public partial class MainWindow : Window
         _viewModel.SearchVisible = false;
         UpdateTitle();
 
-        ReloadProject();
+        _ = ReloadProjectAsync();
     }
 
     private bool TryElevateAndRestart(string path)
     {
+        // In Store builds, show a localized hint instead of attempting elevation.
+        if (!BuildFlags.AllowElevation)
+        {
+            _ = ShowErrorAsync(_localization["Msg.AccessDeniedElevationRequired"]);
+            return false;
+        }
+
         if (_elevation.IsAdministrator) return false;
         if (_elevationAttempted) return false;
 
@@ -1004,16 +1013,16 @@ public partial class MainWindow : Window
         return false;
     }
 
-    private void ReloadProject()
+    private async Task ReloadProjectAsync()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
-        _selectionCoordinator.PopulateRootFolders(_currentPath);
-        _selectionCoordinator.UpdateLiveOptionsFromRootSelection(_currentPath);
-        RefreshTree();
+        // Keep root/extension scans sequenced to avoid inconsistent UI states.
+        await _selectionCoordinator.RefreshRootAndDependentsAsync(_currentPath);
+        await RefreshTreeAsync();
     }
 
-    private void RefreshTree()
+    private async Task RefreshTreeAsync()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
@@ -1035,7 +1044,8 @@ public partial class MainWindow : Window
         Cursor = new Cursor(StandardCursorType.Wait);
         try
         {
-            var result = _buildTree.Execute(new BuildTreeRequest(_currentPath, options));
+            // Build the tree off the UI thread to keep the window responsive on large folders.
+            var result = await Task.Run(() => _buildTree.Execute(new BuildTreeRequest(_currentPath, options)));
             _currentTree = result;
 
             if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
