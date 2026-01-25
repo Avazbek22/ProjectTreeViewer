@@ -51,6 +51,7 @@
     ".xslt": "xml",
     ".xsl": "xml",
     ".xaml": "xaml",
+    ".axaml": "xaml",
     ".sql": "sql",
     ".md": "md",
     ".markdown": "md",
