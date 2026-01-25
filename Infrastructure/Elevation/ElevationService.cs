@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Principal;
 using ProjectTreeViewer.Kernel.Abstractions;
+using ProjectTreeViewer.Kernel;
 using ProjectTreeViewer.Kernel.Models;
 
 namespace ProjectTreeViewer.Infrastructure.Elevation;
@@ -22,6 +23,8 @@ public sealed class ElevationService : IElevationService
 
 	public bool TryRelaunchAsAdministrator(CommandLineOptions options)
 	{
+		// Store builds must never trigger UAC or relaunch with elevation.
+		if (!BuildFlags.AllowElevation) return false;
 		if (!OperatingSystem.IsWindows()) return false;
 
 		try
