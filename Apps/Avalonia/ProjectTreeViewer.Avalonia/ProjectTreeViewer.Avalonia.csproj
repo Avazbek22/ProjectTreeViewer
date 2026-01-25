@@ -13,6 +13,11 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
   </ItemGroup>
 
+  <!--  Do not remove ref to Test for correct testing-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProjectTreeViewer.Tests.Unit" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
     <ProjectReference Include="..\..\..\Infrastructure\Infrastructure.csproj" />

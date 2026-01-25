@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using ProjectTreeViewer.Application;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
@@ -103,8 +104,8 @@ public partial class MainWindow : Window
         if (_treeView is not null)
         {
             _treeView.PointerEntered += OnTreePointerEntered;
-            _treeView.PointerWheelChanged += OnTreePointerWheelChanged;
         }
+        AddHandler(PointerWheelChangedEvent, OnWindowPointerWheelChanged, RoutingStrategies.Tunnel, true);
 
         _searchCoordinator = new TreeSearchCoordinator(_viewModel, _treeView ?? throw new InvalidOperationException());
         _filterCoordinator = new NameFilterCoordinator(ApplyFilterRealtime);
@@ -883,17 +884,24 @@ public partial class MainWindow : Window
         _treeView?.Focus();
     }
 
-    private void OnTreePointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    private void OnWindowPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
-        if (!e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        if (!TreeZoomWheelHandler.TryGetZoomStep(e.KeyModifiers, e.Delta, IsPointerOverTree(e.Source), out var step))
             return;
 
-        if (e.Delta.Y > 0)
-            AdjustTreeFontSize(1);
-        else if (e.Delta.Y < 0)
-            AdjustTreeFontSize(-1);
+        AdjustTreeFontSize(step);
+        e.Handled = true;
+    }
 
-        // В WinForms нельзя "handled", поэтому оставляем скролл как есть (бесшовно по ощущению).
+    private bool IsPointerOverTree(object? source)
+    {
+        if (_treeView is null)
+            return false;
+
+        if (ReferenceEquals(source, _treeView))
+            return true;
+
+        return source is Visual visual && visual.GetVisualAncestors().Contains(_treeView);
     }
 
     private void ShowSearch()
