@@ -220,7 +220,7 @@ public sealed class ThemeBrushCoordinator
         _currentBorderBrush = new SolidColorBrush(borderColor);
         UpdateResource("AppBorderBrush", _currentBorderBrush);
 
-        var accentColor = isDark ? Color.Parse("#4CC2FF") : Color.Parse("#0078D4");
+        var accentColor = isDark ? Color.Parse("#2D8CFF") : Color.Parse("#0078D4");
         UpdateResource("AppAccentBrush", new SolidColorBrush(accentColor));
 
         ApplyMenuBrushesDirect();

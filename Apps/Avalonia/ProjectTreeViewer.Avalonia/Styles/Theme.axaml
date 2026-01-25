@@ -36,7 +36,7 @@
     <Color x:Key="AppBackgroundColor">#121214</Color>
     <Color x:Key="AppPanelColor">#17171A</Color>
     <Color x:Key="AppBorderColor">#2B2F36</Color>
-    <Color x:Key="AppAccentColor">#4CC2FF</Color>
+    <Color x:Key="AppAccentColor">#2D8CFF</Color>
     <Color x:Key="AppTextColor">#E7E9EF</Color>
     <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
     <Color x:Key="TreeSelectionColor">#254861</Color>
@@ -219,6 +219,22 @@
 
     <Style Selector="Button:pointerover">
         <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
+    </Style>
+
+    <Style Selector="Button.primary-action">
+        <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+    </Style>
+
+    <Style Selector="Button.primary-action:pointerover">
+        <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="Opacity" Value="0.9" />
+    </Style>
+
+    <Style Selector="Button.primary-action:pressed">
+        <Setter Property="Opacity" Value="0.85" />
     </Style>
 
     <Style Selector="ScrollViewer">
