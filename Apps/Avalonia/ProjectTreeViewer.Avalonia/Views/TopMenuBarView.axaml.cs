@@ -78,6 +78,10 @@ public partial class TopMenuBarView : UserControl
             helpPopover.CopyLinkRequested += (_, e) => AboutCopyLinkRequested?.Invoke(this, e);
         }
 
+        var themePopup = ThemePopup;
+        if (themePopup is not null)
+            themePopup.Opened += OnThemePopupOpened;
+
         var helpPopup = HelpPopup;
         if (helpPopup is not null)
         {
@@ -156,6 +160,12 @@ public partial class TopMenuBarView : UserControl
     private void OnHelp(object? sender, RoutedEventArgs e) => HelpRequested?.Invoke(sender, e);
 
     private void OnAbout(object? sender, RoutedEventArgs e) => AboutRequested?.Invoke(sender, e);
+
+    private void OnThemePopupOpened(object? sender, EventArgs e)
+    {
+        ThemePopover?.Focus();
+        ApplyPopupBackdrop(ThemePopup);
+    }
 
     private void OnHelpPopupOpened(object? sender, EventArgs e)
     {

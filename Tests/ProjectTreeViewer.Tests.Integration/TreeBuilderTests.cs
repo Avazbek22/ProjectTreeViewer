@@ -135,4 +135,153 @@ public sealed class TreeBuilderTests
 
 		Assert.Contains(result.Root.Children, child => child.Name == "note.txt");
 	}
+
+	// Verifies name filter keeps matching root files and matching descendants only.
+	[Fact]
+	public void Build_NameFilter_FiltersFilesAndDirectoriesBySubstring()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("order.cs", "class Order {}");
+		temp.CreateFile("other.txt", "other");
+		temp.CreateFile("src/order.handler.cs", "class Handler {}");
+		temp.CreateFile("src/note.md", "note");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".cs", ".txt", ".md" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "order");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		var rootNames = result.Root.Children.Select(c => c.Name).ToList();
+		Assert.Contains("order.cs", rootNames);
+		Assert.Contains("src", rootNames);
+		Assert.DoesNotContain("other.txt", rootNames);
+
+		var src = result.Root.Children.First(c => c.Name == "src");
+		Assert.Single(src.Children);
+		Assert.Equal("order.handler.cs", src.Children[0].Name);
+	}
+
+	// Verifies name filter keeps directories that contain matching children.
+	[Fact]
+	public void Build_NameFilter_IncludesDirectoryWhenChildMatches()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("domain/invoice.txt", "invoice");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "domain" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "invoice");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		var domain = result.Root.Children.Single(c => c.Name == "domain");
+		Assert.Single(domain.Children);
+		Assert.Equal("invoice.txt", domain.Children[0].Name);
+	}
+
+	// Verifies name filter drops directories without matching descendants.
+	[Fact]
+	public void Build_NameFilter_ExcludesDirectoryWithoutMatches()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("services/service.txt", "service");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "services" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "order");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.DoesNotContain(result.Root.Children, child => child.Name == "services");
+	}
+
+	// Verifies name filter keeps a matching directory even if it is empty.
+	[Fact]
+	public void Build_NameFilter_IncludesEmptyDirectoryWhenNameMatches()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateDirectory("orders");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "orders" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "orders");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		var orders = result.Root.Children.Single(c => c.Name == "orders");
+		Assert.Empty(orders.Children);
+	}
+
+	// Verifies name filter respects allowed extensions for matching files.
+	[Fact]
+	public void Build_NameFilter_RespectsAllowedExtensions()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("src/order.bin", "bin");
+		temp.CreateFile("src/order.txt", "text");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "order");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		var src = result.Root.Children.Single(c => c.Name == "src");
+		Assert.Single(src.Children);
+		Assert.Equal("order.txt", src.Children[0].Name);
+	}
+
+	// Verifies root folder filtering still applies when a name filter matches.
+	[Fact]
+	public void Build_NameFilter_DoesNotOverrideRootFolderFiltering()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("orders/order.txt", "order");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src" },
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "order");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.DoesNotContain(result.Root.Children, child => child.Name == "orders");
+	}
+
+	// Verifies name filter does not include root files without a match.
+	[Fact]
+	public void Build_NameFilter_ExcludesRootFilesWithoutMatch()
+	{
+		using var temp = new TemporaryDirectory();
+		temp.CreateFile("root.txt", "root");
+
+		var options = new TreeFilterOptions(
+			AllowedExtensions: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt" },
+			AllowedRootFolders: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+			IgnoreRules: new IgnoreRules(false, false, false, false, false, false, new HashSet<string>(), new HashSet<string>()),
+			NameFilter: "order");
+
+		var builder = new TreeBuilder();
+		var result = builder.Build(temp.Path, options);
+
+		Assert.DoesNotContain(result.Root.Children, child => child.Name == "root.txt");
+	}
 }
