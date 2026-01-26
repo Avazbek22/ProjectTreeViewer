@@ -1146,12 +1146,20 @@ public partial class MainWindow : Window
             // Check if this operation was superseded by a newer one
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Clear references to old tree BEFORE replacing to allow GC
+            _searchCoordinator.ClearSearchState();
+            if (_treeView is not null)
+                _treeView.SelectedItem = null;
+
+            // Clear old tree nodes and their InlineCollections
+            foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
+                node.DisplayInlines.Clear();
+            _viewModel.TreeNodes.Clear();
+
             _currentTree = result;
 
             if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))
                 return;
-
-            _viewModel.TreeNodes.Clear();
 
             var root = BuildTreeViewModel(result.Root, null);
 

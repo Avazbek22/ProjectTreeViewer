@@ -23,13 +23,15 @@ public sealed class TreeNodePresentationService
 	private TreeNodeDescriptor BuildNode(FileSystemNode node, bool isRoot)
 	{
 		var displayName = node.IsAccessDenied
-			? (isRoot ? _localization["Tree.AccessDeniedRoot"] : _localization["Tree.AccessDenied"]) 
+			? (isRoot ? _localization["Tree.AccessDeniedRoot"] : _localization["Tree.AccessDenied"])
 			: node.Name;
 
 		var iconKey = _iconMapper.GetIconKey(node);
-		var children = node.Children
-			.Select(child => BuildNode(child, isRoot: false))
-			.ToList();
+
+		// Pre-allocate capacity to avoid list resizing
+		var children = new List<TreeNodeDescriptor>(node.Children.Count);
+		foreach (var child in node.Children)
+			children.Add(BuildNode(child, isRoot: false));
 
 		return new TreeNodeDescriptor(
 			DisplayName: displayName,

@@ -24,13 +24,15 @@ public sealed class TreeNodeViewModel : ViewModelBase
         Parent = parent;
         _displayName = descriptor.DisplayName;
         Icon = icon;
+        // Pre-allocate capacity based on descriptor children count
+        Children = new List<TreeNodeViewModel>(descriptor.Children.Count);
     }
 
     public TreeNodeDescriptor Descriptor { get; }
 
     public TreeNodeViewModel? Parent { get; }
 
-    public IList<TreeNodeViewModel> Children { get; } = new List<TreeNodeViewModel>();
+    public IList<TreeNodeViewModel> Children { get; }
 
     public IImage? Icon { get; set; }
 

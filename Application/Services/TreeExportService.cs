@@ -8,10 +8,10 @@ public sealed class TreeExportService
 	public string BuildFullTree(string rootPath, TreeNodeDescriptor root)
 	{
 		var sb = new StringBuilder();
-		sb.AppendLine($"{rootPath}:");
+		sb.Append(rootPath).AppendLine(":");
 		sb.AppendLine();
 
-		sb.AppendLine($"├── {root.DisplayName}");
+		sb.Append("├── ").AppendLine(root.DisplayName);
 		AppendAscii(root, "│   ", sb);
 
 		return sb.ToString();
@@ -23,10 +23,10 @@ public sealed class TreeExportService
 			return string.Empty;
 
 		var sb = new StringBuilder();
-		sb.AppendLine($"{rootPath}:");
+		sb.Append(rootPath).AppendLine(":");
 		sb.AppendLine();
 
-		sb.AppendLine($"├── {root.DisplayName}");
+		sb.Append("├── ").AppendLine(root.DisplayName);
 		AppendSelectedAscii(root, selectedPaths, "│   ", sb);
 
 		return sb.ToString();
@@ -56,7 +56,7 @@ public sealed class TreeExportService
 
 			if (child.Children.Count > 0)
 			{
-				var nextIndent = indent + (last ? "    " : "│   ");
+				var nextIndent = string.Concat(indent, last ? "    " : "│   ");
 				AppendAscii(child, nextIndent, sb);
 			}
 		}
@@ -64,20 +64,28 @@ public sealed class TreeExportService
 
 	private static void AppendSelectedAscii(TreeNodeDescriptor node, IReadOnlySet<string> selectedPaths, string indent, StringBuilder sb)
 	{
-		var visible = node.Children
-			.Where(child => HasSelectedDescendantOrSelf(child, selectedPaths))
-			.ToList();
-
-		for (int i = 0; i < visible.Count; i++)
+		// Count visible children without allocating a list
+		int visibleCount = 0;
+		foreach (var child in node.Children)
 		{
-			var child = visible[i];
-			bool last = i == visible.Count - 1;
+			if (HasSelectedDescendantOrSelf(child, selectedPaths))
+				visibleCount++;
+		}
+
+		int currentIndex = 0;
+		foreach (var child in node.Children)
+		{
+			if (!HasSelectedDescendantOrSelf(child, selectedPaths))
+				continue;
+
+			currentIndex++;
+			bool last = currentIndex == visibleCount;
 
 			sb.Append(indent).Append(last ? "└── " : "├── ").AppendLine(child.DisplayName);
 
 			if (child.Children.Count > 0)
 			{
-				var nextIndent = indent + (last ? "    " : "│   ");
+				var nextIndent = string.Concat(indent, last ? "    " : "│   ");
 				AppendSelectedAscii(child, selectedPaths, nextIndent, sb);
 			}
 		}

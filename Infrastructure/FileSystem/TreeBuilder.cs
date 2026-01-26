@@ -118,7 +118,7 @@ public sealed class TreeBuilder : ITreeBuilder
 					fullPath: entry.FullName,
 					isDirectory: false,
 					isAccessDenied: false,
-					children: new List<FileSystemNode>()));
+					children: FileSystemNode.EmptyChildren));
 			}
 		}
 	}

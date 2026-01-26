@@ -60,8 +60,8 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 			foreach (var sd in subDirs)
 			{
-				var dirInfo = new DirectoryInfo(sd);
-				if (ShouldSkipDirectory(dirInfo, rules))
+				var dirName = Path.GetFileName(sd);
+				if (ShouldSkipDirectoryByName(dirName, sd, rules))
 					continue;
 
 				pending.Push(sd);
@@ -85,10 +85,9 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 			foreach (var file in files)
 			{
-				var fileInfo = new FileInfo(file);
-				var name = fileInfo.Name;
+				var name = Path.GetFileName(file);
 
-				if (ShouldSkipFile(fileInfo, rules))
+				if (ShouldSkipFileByName(name, file, rules))
 					continue;
 
 				var ext = Path.GetExtension(name);
@@ -128,11 +127,11 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 		foreach (var file in files)
 		{
-			var fileInfo = new FileInfo(file);
-			if (ShouldSkipFile(fileInfo, rules))
+			var name = Path.GetFileName(file);
+			if (ShouldSkipFileByName(name, file, rules))
 				continue;
 
-			var ext = Path.GetExtension(fileInfo.Name);
+			var ext = Path.GetExtension(name);
 			if (!string.IsNullOrWhiteSpace(ext))
 				exts.Add(ext);
 		}
@@ -163,21 +162,23 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
 		foreach (var dir in dirs)
 		{
-			var dirInfo = new DirectoryInfo(dir);
-			if (ShouldSkipDirectory(dirInfo, rules))
+			var dirName = Path.GetFileName(dir);
+			if (ShouldSkipDirectoryByName(dirName, dir, rules))
 				continue;
 
-			names.Add(dirInfo.Name);
+			names.Add(dirName);
 		}
 
 		names.Sort(StringComparer.OrdinalIgnoreCase);
 		return new ScanResult<List<string>>(names, false, false);
 	}
 
-	private static bool ShouldSkipDirectory(DirectoryInfo dirInfo, IgnoreRules rules)
+	/// <summary>
+	/// Optimized version that avoids DirectoryInfo allocation when possible.
+	/// Only creates DirectoryInfo when checking Hidden attribute.
+	/// </summary>
+	private static bool ShouldSkipDirectoryByName(string name, string fullPath, IgnoreRules rules)
 	{
-		var name = dirInfo.Name;
-
 		if (rules.SmartIgnoredFolders.Contains(name))
 			return true;
 
@@ -194,12 +195,11 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		{
 			try
 			{
-				if (dirInfo.Attributes.HasFlag(FileAttributes.Hidden))
+				if (File.GetAttributes(fullPath).HasFlag(FileAttributes.Hidden))
 					return true;
 			}
 			catch (IOException)
 			{
-				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
 				return true;
 			}
 			catch (UnauthorizedAccessException)
@@ -211,10 +211,12 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		return false;
 	}
 
-	private static bool ShouldSkipFile(FileInfo fileInfo, IgnoreRules rules)
+	/// <summary>
+	/// Optimized version that avoids FileInfo allocation when possible.
+	/// Only checks attributes when necessary.
+	/// </summary>
+	private static bool ShouldSkipFileByName(string name, string fullPath, IgnoreRules rules)
 	{
-		var name = fileInfo.Name;
-
 		if (rules.SmartIgnoredFiles.Contains(name))
 			return true;
 
@@ -225,12 +227,11 @@ public sealed class FileSystemScanner : IFileSystemScanner
 		{
 			try
 			{
-				if (fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
+				if (File.GetAttributes(fullPath).HasFlag(FileAttributes.Hidden))
 					return true;
 			}
 			catch (IOException)
 			{
-				// Reserved Windows device names (nul, con, prn, etc.) throw IOException
 				return true;
 			}
 			catch (UnauthorizedAccessException)
