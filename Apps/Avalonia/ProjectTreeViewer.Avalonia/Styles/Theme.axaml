@@ -306,7 +306,7 @@
     <Style Selector="CheckBox.section-all">
         <Setter Property="VerticalAlignment" Value="Bottom" />
         <Setter Property="HorizontalAlignment" Value="Right" />
-        <Setter Property="Margin" Value="0,6,4,0" />
+        <Setter Property="Margin" Value="0,6,4,-6" />
     </Style>
 
     <!-- Compact overrides after base checkbox styles to ensure precedence. -->
@@ -342,8 +342,9 @@
 
     <!-- "All" checkboxes: same scale as list items, but text is compensated below. -->
     <Style Selector="Window.compact-mode CheckBox.section-all">
-        <Setter Property="Margin" Value="0,4,4,0" />
+        <Setter Property="Margin" Value="0,4,2,-9" />
         <Setter Property="Padding" Value="0" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="RenderTransformOrigin" Value="0,0.5" />
         <Setter Property="RenderTransform">
             <!-- Keep checkbox visuals consistent with list items. -->
@@ -356,6 +357,7 @@
     <!-- Increase these scale values to make "All" label font larger in compact mode. -->
     <Style Selector="Window.compact-mode CheckBox.section-all /template/ ContentPresenter">
         <Setter Property="Margin" Value="6,0,0,0" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="RenderTransformOrigin" Value="0,0.5" />
         <Setter Property="RenderTransform">
             <ScaleTransform ScaleX="1.136" ScaleY="1.136" />
