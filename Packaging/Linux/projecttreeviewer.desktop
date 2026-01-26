@@ -1,0 +1,30 @@
+[Desktop Entry]
+Type=Application
+Name=Project Tree Viewer
+GenericName=Project Structure Viewer
+Comment=View and export project directory structures with filtering and ignore rules
+Exec=projecttreeviewer %F
+Icon=projecttreeviewer
+Terminal=false
+Categories=Development;Utility;
+Keywords=project;tree;directory;structure;viewer;export;
+StartupWMClass=ProjectTreeViewer.Avalonia
+MimeType=inode/directory;
+
+# Installation notes:
+# -------------------
+# 1. Copy the executable to /usr/local/bin/ or ~/.local/bin/
+#
+# 2. Copy this .desktop file to:
+#    - System-wide: /usr/share/applications/
+#    - User only:   ~/.local/share/applications/
+#
+# 3. Copy icons to hicolor theme:
+#    - /usr/share/icons/hicolor/128x128/apps/projecttreeviewer.png
+#    - /usr/share/icons/hicolor/256x256/apps/projecttreeviewer.png
+#    - /usr/share/icons/hicolor/512x512/apps/projecttreeviewer.png
+#    - /usr/share/icons/hicolor/scalable/apps/projecttreeviewer.svg
+#
+#    Source icons are in: Assets/AppIcon/Linux/png/ and Assets/AppIcon/Linux/appicon-master.svg
+#
+# 4. Update icon cache: gtk-update-icon-cache /usr/share/icons/hicolor
