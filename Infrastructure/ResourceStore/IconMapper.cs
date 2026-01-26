@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.ResourceStore;
+namespace DevProjex.Infrastructure.ResourceStore;
 
 public sealed class IconMapper : IIconMapper
 {
@@ -42,8 +42,8 @@ public sealed class IconMapper : IIconMapper
 
 	private static IconMapping LoadMapping()
 	{
-		var assembly = typeof(ProjectTreeViewer.Assets.Marker).Assembly;
-		var resourceName = "ProjectTreeViewer.Assets.IconPacks.Configuration.mapping.json";
+		var assembly = typeof(DevProjex.Assets.Marker).Assembly;
+		var resourceName = "DevProjex.Assets.IconPacks.Configuration.mapping.json";
 		using var stream = assembly.GetManifestResourceStream(resourceName)
 			?? throw new InvalidOperationException($"Icon mapping not found: {resourceName}");
 

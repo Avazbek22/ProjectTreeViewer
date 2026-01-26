@@ -1,6 +1,6 @@
-# Contributing to ProjectTreeViewer
+# Contributing to DevProjex
 
-Thanks for your interest in improving ProjectTreeViewer! This guide is intentionally lightweight.
+Thanks for your interest in improving DevProjex! This guide is intentionally lightweight.
 
 ## Build and run
 
@@ -11,7 +11,7 @@ dotnet restore
 
 dotnet build
 
-dotnet run --project Apps/Avalonia/ProjectTreeViewer.Avalonia.csproj
+dotnet run --project Apps/Avalonia/DevProjex.Avalonia.csproj
 ```
 
 ## Run tests

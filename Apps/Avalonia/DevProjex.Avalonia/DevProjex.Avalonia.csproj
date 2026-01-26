@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>DevProjex.Avalonia</RootNamespace>
+    <!-- Windows .exe icon (shown in Explorer, taskbar, Alt+Tab) -->
+    <ApplicationIcon Condition="Exists('..\..\..\Assets\AppIcon\Windows\app.ico')">..\..\..\Assets\AppIcon\Windows\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+  </ItemGroup>
+
+  <!--  Do not remove ref to Test for correct testing-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="DevProjex.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Application\Application.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Update="Views\FilterBarView.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="..\..\..\Assets\IconPacks\Default\UIFilter.png">
+      <Link>IconPacks\Default\UIFilter.png</Link>
+    </AvaloniaResource>
+    <!-- Application window icon (cross-platform, used by Avalonia Window.Icon) -->
+    <AvaloniaResource Include="..\..\..\Assets\AppIcon\Linux\png\256.png">
+      <Link>AppIcon\icon-256.png</Link>
+    </AvaloniaResource>
+  </ItemGroup>
+
+  <!-- ВАЖНО: НЕ добавляйте .axaml как AvaloniaResource -->
+</Project>

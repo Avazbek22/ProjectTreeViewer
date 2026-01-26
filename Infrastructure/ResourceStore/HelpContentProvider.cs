@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text;
 using System.Linq;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.ResourceStore;
+namespace DevProjex.Infrastructure.ResourceStore;
 
 public sealed class HelpContentProvider
 {
@@ -22,7 +22,7 @@ public sealed class HelpContentProvider
 
     private static IReadOnlyDictionary<AppLanguage, string> LoadAll()
     {
-        var assembly = typeof(ProjectTreeViewer.Assets.Marker).Assembly;
+        var assembly = typeof(DevProjex.Assets.Marker).Assembly;
         return new Dictionary<AppLanguage, string>
         {
             [AppLanguage.Ru] = Load(assembly, "ru"),
@@ -38,7 +38,7 @@ public sealed class HelpContentProvider
 
     private static string Load(Assembly assembly, string code)
     {
-        var resourceName = $"ProjectTreeViewer.Assets.HelpContent.help.{code}.txt";
+        var resourceName = $"DevProjex.Assets.HelpContent.help.{code}.txt";
         var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream is null)
         {

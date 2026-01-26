@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.ResourceStore;
+namespace DevProjex.Infrastructure.ResourceStore;
 
 public sealed class JsonLocalizationCatalog : ILocalizationCatalog
 {
@@ -22,7 +22,7 @@ public sealed class JsonLocalizationCatalog : ILocalizationCatalog
 
 	private static IReadOnlyDictionary<AppLanguage, IReadOnlyDictionary<string, string>> LoadAll()
 	{
-		var assembly = typeof(ProjectTreeViewer.Assets.Marker).Assembly;
+		var assembly = typeof(DevProjex.Assets.Marker).Assembly;
 		return new Dictionary<AppLanguage, IReadOnlyDictionary<string, string>>
 		{
 			[AppLanguage.Ru] = Load(assembly, "ru"),
@@ -38,7 +38,7 @@ public sealed class JsonLocalizationCatalog : ILocalizationCatalog
 
 	private static IReadOnlyDictionary<string, string> Load(Assembly assembly, string code)
 	{
-		var resourceName = $"ProjectTreeViewer.Assets.Localization.{code}.json";
+		var resourceName = $"DevProjex.Assets.Localization.{code}.json";
 		using var stream = assembly.GetManifestResourceStream(resourceName)
 			?? throw new InvalidOperationException($"Localization resource not found: {resourceName}");
 

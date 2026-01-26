@@ -1,6 +1,6 @@
 # macOS Packaging
 
-This folder contains information for packaging ProjectTreeViewer on macOS.
+This folder contains information for packaging DevProjex on macOS.
 
 ## Icon Assets
 
@@ -62,40 +62,40 @@ For distribution on macOS, you need to create an `.app` bundle:
 
 ```bash
 # Build for macOS
-dotnet publish Apps/Avalonia/ProjectTreeViewer.Avalonia/ProjectTreeViewer.Avalonia.csproj \
+dotnet publish Apps/Avalonia/DevProjex.Avalonia/DevProjex.Avalonia.csproj \
     -c Release \
     -r osx-x64 \
     --self-contained true \
     -o ./publish/macos
 
 # Create app bundle structure
-mkdir -p "ProjectTreeViewer.app/Contents/MacOS"
-mkdir -p "ProjectTreeViewer.app/Contents/Resources"
+mkdir -p "DevProjex.app/Contents/MacOS"
+mkdir -p "DevProjex.app/Contents/Resources"
 
 # Copy executable
-cp ./publish/macos/* "ProjectTreeViewer.app/Contents/MacOS/"
+cp ./publish/macos/* "DevProjex.app/Contents/MacOS/"
 
 # Copy icon
-cp Assets/AppIcon/MacOS/app.icns "ProjectTreeViewer.app/Contents/Resources/app.icns"
+cp Assets/AppIcon/MacOS/app.icns "DevProjex.app/Contents/Resources/app.icns"
 
 # Create Info.plist (example - customize as needed)
-cat > "ProjectTreeViewer.app/Contents/Info.plist" << 'EOF'
+cat > "DevProjex.app/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Project Tree Viewer</string>
+    <string>DevProjex</string>
     <key>CFBundleDisplayName</key>
-    <string>Project Tree Viewer</string>
+    <string>DevProjex</string>
     <key>CFBundleIdentifier</key>
-    <string>com.projecttreeviewer.app</string>
+    <string>com.devprojex.app</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0.0</string>
     <key>CFBundleExecutable</key>
-    <string>ProjectTreeViewer.Avalonia</string>
+    <string>DevProjex.Avalonia</string>
     <key>CFBundleIconFile</key>
     <string>app.icns</string>
     <key>CFBundlePackageType</key>
@@ -117,18 +117,18 @@ For distribution outside the Mac App Store, the app must be signed and notarized
 # Sign the app (requires Apple Developer certificate)
 codesign --deep --force --verify --verbose \
     --sign "Developer ID Application: Your Name (TEAMID)" \
-    "ProjectTreeViewer.app"
+    "DevProjex.app"
 
 # Create ZIP for notarization
-ditto -c -k --keepParent "ProjectTreeViewer.app" "ProjectTreeViewer.zip"
+ditto -c -k --keepParent "DevProjex.app" "DevProjex.zip"
 
 # Submit for notarization
-xcrun notarytool submit "ProjectTreeViewer.zip" \
+xcrun notarytool submit "DevProjex.zip" \
     --apple-id "your@email.com" \
     --team-id "TEAMID" \
     --password "app-specific-password" \
     --wait
 
 # Staple the notarization ticket
-xcrun stapler staple "ProjectTreeViewer.app"
+xcrun stapler staple "DevProjex.app"
 ```

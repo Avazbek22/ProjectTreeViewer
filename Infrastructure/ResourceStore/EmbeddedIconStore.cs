@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Text.Json;
-using ProjectTreeViewer.Kernel.Abstractions;
+using DevProjex.Kernel.Abstractions;
 
-namespace ProjectTreeViewer.Infrastructure.ResourceStore;
+namespace DevProjex.Infrastructure.ResourceStore;
 
 public sealed class EmbeddedIconStore : IIconStore
 {
@@ -29,8 +29,8 @@ public sealed class EmbeddedIconStore : IIconStore
 
 	private static IconPack LoadPack()
 	{
-		var assembly = typeof(ProjectTreeViewer.Assets.Marker).Assembly;
-		var manifestResource = "ProjectTreeViewer.Assets.IconPacks.Configuration.manifest.json";
+		var assembly = typeof(DevProjex.Assets.Marker).Assembly;
+		var manifestResource = "DevProjex.Assets.IconPacks.Configuration.manifest.json";
 		using var stream = assembly.GetManifestResourceStream(manifestResource)
 			?? throw new InvalidOperationException($"Icon manifest not found: {manifestResource}");
 
@@ -43,7 +43,7 @@ public sealed class EmbeddedIconStore : IIconStore
 		var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		foreach (var entry in manifest.Icons)
 		{
-			var resourceName = $"ProjectTreeViewer.Assets.IconPacks.Default.{entry.Value}";
+			var resourceName = $"DevProjex.Assets.IconPacks.Default.{entry.Value}";
 			map[entry.Key] = resourceName;
 		}
 

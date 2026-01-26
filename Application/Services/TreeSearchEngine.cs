@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public static class TreeSearchEngine
 {

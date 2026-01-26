@@ -1,4 +1,4 @@
-namespace ProjectTreeViewer.Kernel.Contracts;
+namespace DevProjex.Kernel.Contracts;
 
 public sealed record ScanOptionsResult(
 	IReadOnlyList<string> Extensions,

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public sealed class SelectedContentExportService
 {

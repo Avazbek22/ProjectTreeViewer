@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public sealed class IgnoreOptionsService
 {

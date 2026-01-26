@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.SmartIgnore;
+namespace DevProjex.Infrastructure.SmartIgnore;
 
 public sealed class CommonSmartIgnoreRule : ISmartIgnoreRule
 {
