@@ -502,7 +502,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public double TreeItemSpacing => _isCompactMode ? 2 : 6;
 
     // TreeViewItem padding follows the same compact flag to keep row height tight.
-    public Thickness TreeItemPadding => _isCompactMode ? new Thickness(0, 0) : new Thickness(4, 1);
+    // Negative vertical padding in compact mode for tighter rows.
+    public Thickness TreeItemPadding => _isCompactMode ? new Thickness(0, -20) : new Thickness(4, 1);
 
     // Settings lists use an ItemsPanel with explicit Spacing (can go negative to tighten).
     public double SettingsListSpacing => _isCompactMode ? -7 : -3;

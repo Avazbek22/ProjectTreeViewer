@@ -105,6 +105,22 @@
     <!-- Compact mode - reduce tree row height without touching selection/hover behavior. -->
     <Style Selector="Window.compact-mode TreeViewItem">
         <Setter Property="Padding" Value="0,0" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <!-- Reduce internal padding in TreeViewItem template for compact mode -->
+    <Style Selector="Window.compact-mode TreeViewItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,-1" />
+    </Style>
+
+    <Style Selector="Window.compact-mode TreeViewItem /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Margin" Value="0,-1" />
+    </Style>
+
+    <!-- Add horizontal gap between icon and text in compact mode -->
+    <Style Selector="Window.compact-mode TreeView Image">
+        <Setter Property="Margin" Value="0,0,4,0" />
     </Style>
 
     <Style Selector="Window.compact-mode TextBlock.section-title">
