@@ -1,10 +1,10 @@
 # Linux Packaging
 
-This folder contains resources for packaging ProjectTreeViewer on Linux.
+This folder contains resources for packaging DevProjex on Linux.
 
 ## Files
 
-- `projecttreeviewer.desktop` - Desktop entry file for application launchers
+- `devprojex.desktop` - Desktop entry file for application launchers
 - Icons are located in `Assets/AppIcon/Linux/`
 
 ## Manual Installation
@@ -12,7 +12,7 @@ This folder contains resources for packaging ProjectTreeViewer on Linux.
 ### 1. Build the application
 
 ```bash
-dotnet publish Apps/Avalonia/ProjectTreeViewer.Avalonia/ProjectTreeViewer.Avalonia.csproj \
+dotnet publish Apps/Avalonia/DevProjex.Avalonia/DevProjex.Avalonia.csproj \
     -c Release \
     -r linux-x64 \
     --self-contained true \
@@ -23,24 +23,24 @@ dotnet publish Apps/Avalonia/ProjectTreeViewer.Avalonia/ProjectTreeViewer.Avalon
 
 ```bash
 # System-wide
-sudo cp ./publish/linux/ProjectTreeViewer.Avalonia /usr/local/bin/projecttreeviewer
-sudo chmod +x /usr/local/bin/projecttreeviewer
+sudo cp ./publish/linux/DevProjex.Avalonia /usr/local/bin/devprojex
+sudo chmod +x /usr/local/bin/devprojex
 
 # Or user-only
 mkdir -p ~/.local/bin
-cp ./publish/linux/ProjectTreeViewer.Avalonia ~/.local/bin/projecttreeviewer
-chmod +x ~/.local/bin/projecttreeviewer
+cp ./publish/linux/DevProjex.Avalonia ~/.local/bin/devprojex
+chmod +x ~/.local/bin/devprojex
 ```
 
 ### 3. Install the desktop entry
 
 ```bash
 # System-wide
-sudo cp Packaging/Linux/projecttreeviewer.desktop /usr/share/applications/
+sudo cp Packaging/Linux/devprojex.desktop /usr/share/applications/
 
 # Or user-only
 mkdir -p ~/.local/share/applications
-cp Packaging/Linux/projecttreeviewer.desktop ~/.local/share/applications/
+cp Packaging/Linux/devprojex.desktop ~/.local/share/applications/
 ```
 
 ### 4. Install icons
@@ -49,10 +49,10 @@ cp Packaging/Linux/projecttreeviewer.desktop ~/.local/share/applications/
 # System-wide installation
 sudo mkdir -p /usr/share/icons/hicolor/{128x128,256x256,512x512,scalable}/apps
 
-sudo cp Assets/AppIcon/Linux/png/128.png /usr/share/icons/hicolor/128x128/apps/projecttreeviewer.png
-sudo cp Assets/AppIcon/Linux/png/256.png /usr/share/icons/hicolor/256x256/apps/projecttreeviewer.png
-sudo cp Assets/AppIcon/Linux/png/512.png /usr/share/icons/hicolor/512x512/apps/projecttreeviewer.png
-sudo cp Assets/AppIcon/Linux/appicon-master.svg /usr/share/icons/hicolor/scalable/apps/projecttreeviewer.svg
+sudo cp Assets/AppIcon/Linux/png/128.png /usr/share/icons/hicolor/128x128/apps/devprojex.png
+sudo cp Assets/AppIcon/Linux/png/256.png /usr/share/icons/hicolor/256x256/apps/devprojex.png
+sudo cp Assets/AppIcon/Linux/png/512.png /usr/share/icons/hicolor/512x512/apps/devprojex.png
+sudo cp Assets/AppIcon/Linux/appicon-master.svg /usr/share/icons/hicolor/scalable/apps/devprojex.svg
 
 # Update icon cache
 sudo gtk-update-icon-cache /usr/share/icons/hicolor

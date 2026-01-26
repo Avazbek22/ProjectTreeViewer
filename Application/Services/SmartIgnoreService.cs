@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 using System.Linq;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public sealed class SmartIgnoreService
 {

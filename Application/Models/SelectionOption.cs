@@ -1,3 +1,3 @@
-namespace ProjectTreeViewer.Application.Models;
+namespace DevProjex.Application.Models;
 
 public sealed record SelectionOption(string Name, bool IsChecked);

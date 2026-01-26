@@ -1,6 +1,6 @@
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Kernel.Contracts;
+namespace DevProjex.Kernel.Contracts;
 
 public sealed record BuildTreeRequest(
 	string RootPath,

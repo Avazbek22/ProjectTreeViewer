@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Principal;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.Elevation;
+namespace DevProjex.Infrastructure.Elevation;
 
 public sealed class ElevationService : IElevationService
 {

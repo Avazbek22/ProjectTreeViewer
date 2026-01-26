@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Contracts;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Contracts;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Application.UseCases;
+namespace DevProjex.Application.UseCases;
 
 public sealed class ScanOptionsUseCase
 {

@@ -1,5 +1,5 @@
 ## 1) Qu’est‑ce que c’est et pourquoi
-ProjectTreeViewer prépare rapidement le contexte d’un projet : affiche la structure dossiers/fichiers, permet de sélectionner des éléments et de copier l’arborescence et/ou le contenu des fichiers dans le presse‑papiers. Utile pour code review, support, formation et partage de structure avec un assistant IA.
+DevProjex prépare rapidement le contexte d’un projet : affiche la structure dossiers/fichiers, permet de sélectionner des éléments et de copier l’arborescence et/ou le contenu des fichiers dans le presse‑papiers. Utile pour code review, support, formation et partage de structure avec un assistant IA.
 
 Important : l’application est en lecture seule et ne modifie jamais les fichiers.
 

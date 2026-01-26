@@ -4,12 +4,12 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ProjectTreeViewer.Infrastructure.ThemePresets;
+namespace DevProjex.Infrastructure.ThemePresets;
 
 public sealed class ThemePresetStore
 {
     private const int CurrentSchemaVersion = 1;
-    private const string FolderName = "ProjectTreeViewer";
+    private const string FolderName = "DevProjex";
     private const string FileName = "theme-presets.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()

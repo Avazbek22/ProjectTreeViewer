@@ -1,8 +1,8 @@
 using System.IO;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.FileSystem;
+namespace DevProjex.Infrastructure.FileSystem;
 
 public sealed class FileSystemScanner : IFileSystemScanner
 {

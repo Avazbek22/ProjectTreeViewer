@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>ProjectTreeViewer.Application</RootNamespace>
+    <RootNamespace>DevProjex.Application</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

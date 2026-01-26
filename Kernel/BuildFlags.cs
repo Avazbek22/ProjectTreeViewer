@@ -1,4 +1,4 @@
-namespace ProjectTreeViewer.Kernel;
+namespace DevProjex.Kernel;
 
 public static class BuildFlags
 {

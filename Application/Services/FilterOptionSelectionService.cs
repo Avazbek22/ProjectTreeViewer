@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ProjectTreeViewer.Application.Models;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Application.Models;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public sealed class FilterOptionSelectionService
 {

@@ -1,0 +1,57 @@
+using DevProjex.Application.Services;
+using DevProjex.Application.UseCases;
+using DevProjex.Infrastructure.Elevation;
+using DevProjex.Infrastructure.FileSystem;
+using DevProjex.Infrastructure.ResourceStore;
+using DevProjex.Infrastructure.SmartIgnore;
+using DevProjex.Infrastructure.ThemePresets;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
+
+namespace DevProjex.Avalonia.Services;
+
+public static class AvaloniaCompositionRoot
+{
+    public static AvaloniaAppServices CreateDefault(CommandLineOptions options)
+    {
+        var localizationCatalog = new JsonLocalizationCatalog();
+        var localization = new LocalizationService(localizationCatalog, options.Language ?? CommandLineOptions.DetectSystemLanguage());
+        var helpContentProvider = new HelpContentProvider();
+        var iconStore = new EmbeddedIconStore();
+        var iconMapper = new IconMapper();
+        var treePresenter = new TreeNodePresentationService(localization, iconMapper);
+        var scanner = new FileSystemScanner();
+        var treeBuilder = new TreeBuilder();
+        var scanOptionsUseCase = new ScanOptionsUseCase(scanner);
+        var buildTreeUseCase = new BuildTreeUseCase(treeBuilder, treePresenter);
+        var smartIgnoreRules = new ISmartIgnoreRule[]
+        {
+            new CommonSmartIgnoreRule(),
+            new FrontendArtifactsIgnoreRule()
+        };
+        var smartIgnoreService = new SmartIgnoreService(smartIgnoreRules);
+        var ignoreOptionsService = new IgnoreOptionsService(localization);
+        var ignoreRulesService = new IgnoreRulesService(smartIgnoreService);
+        var filterSelectionService = new FilterOptionSelectionService();
+        var treeExportService = new TreeExportService();
+        var contentExportService = new SelectedContentExportService();
+        var treeAndContentExportService = new TreeAndContentExportService(treeExportService, contentExportService);
+        var elevation = new ElevationService();
+        var themePresetStore = new ThemePresetStore();
+
+        return new AvaloniaAppServices(
+            Localization: localization,
+            HelpContentProvider: helpContentProvider,
+            ThemePresetStore: themePresetStore,
+            Elevation: elevation,
+            ScanOptionsUseCase: scanOptionsUseCase,
+            BuildTreeUseCase: buildTreeUseCase,
+            IgnoreOptionsService: ignoreOptionsService,
+            IgnoreRulesService: ignoreRulesService,
+            FilterOptionSelectionService: filterSelectionService,
+            TreeExportService: treeExportService,
+            ContentExportService: contentExportService,
+            TreeAndContentExportService: treeAndContentExportService,
+            IconStore: iconStore);
+    }
+}

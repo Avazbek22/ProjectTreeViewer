@@ -1,0 +1,16 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:DevProjex.Avalonia.Converters"
+             x:Class="DevProjex.Avalonia.App">
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://DevProjex.Avalonia/Styles/Theme.axaml" />
+    </Application.Styles>
+
+    <Application.Resources>
+        <converters:TreeIndentConverter x:Key="TreeIndentConverter" IndentSize="16" />
+    </Application.Resources>
+
+    <Application.RequestedThemeVariant>Default</Application.RequestedThemeVariant>
+
+</Application>

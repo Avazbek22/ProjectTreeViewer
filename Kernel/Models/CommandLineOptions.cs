@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace ProjectTreeViewer.Kernel.Models;
+namespace DevProjex.Kernel.Models;
 
 public sealed record CommandLineOptions(
 	string? Path,

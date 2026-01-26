@@ -1,7 +1,7 @@
 using System.Text;
-using ProjectTreeViewer.Kernel.Contracts;
+using DevProjex.Kernel.Contracts;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public sealed class TreeExportService
 {

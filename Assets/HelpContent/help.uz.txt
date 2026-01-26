@@ -1,5 +1,5 @@
 ## 1) Nima va nima uchun
-ProjectTreeViewer loyiha kontekstini tez tayyorlaydi: papka/fayl tuzilmasini ko‘rsatadi, elementlarni belgilash va daraxtni va/yoki fayl mazmunini buferga nusxalash imkonini beradi. Code review, qo‘llab‑quvvatlash, o‘qitish va loyiha tuzilmasini AI‑yordamchiga berish uchun qulay.
+DevProjex loyiha kontekstini tez tayyorlaydi: papka/fayl tuzilmasini ko‘rsatadi, elementlarni belgilash va daraxtni va/yoki fayl mazmunini buferga nusxalash imkonini beradi. Code review, qo‘llab‑quvvatlash, o‘qitish va loyiha tuzilmasini AI‑yordamchiga berish uchun qulay.
 
 Muhim: ilova faqat o‘qish rejimida ishlaydi va fayllarni o‘zgartirmaydi.
 

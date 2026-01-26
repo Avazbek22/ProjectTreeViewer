@@ -1,8 +1,8 @@
-using ProjectTreeViewer.Application.Services;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Contracts;
+using DevProjex.Application.Services;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Contracts;
 
-namespace ProjectTreeViewer.Application.UseCases;
+namespace DevProjex.Application.UseCases;
 
 public sealed class BuildTreeUseCase
 {
