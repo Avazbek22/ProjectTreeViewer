@@ -12,10 +12,18 @@
       <!-- Font section - Auto height -->
       <StackPanel Grid.Row="0" Spacing="6">
         <TextBlock Classes="section-title" Text="{Binding SettingsFont}" FontSize="15"/>
-        <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding PendingFontFamily, Mode=TwoWay}">
+        <ComboBox Name="FontComboBox" ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding PendingFontFamily, Mode=TwoWay}"
+                  Tag="{Binding SettingsFontDefault}">
           <ComboBox.ItemTemplate>
             <DataTemplate>
-              <TextBlock Text="{Binding Converter={StaticResource FontFamilyDisplayNameConverter}}" />
+              <TextBlock>
+                <TextBlock.Text>
+                  <MultiBinding Converter="{StaticResource FontFamilyDisplayNameConverter}">
+                    <Binding />
+                    <Binding Path="Tag" ElementName="FontComboBox" />
+                  </MultiBinding>
+                </TextBlock.Text>
+              </TextBlock>
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>

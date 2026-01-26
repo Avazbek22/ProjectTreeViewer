@@ -58,6 +58,7 @@
   "Settings.Extensions": "Типы файлов:",
   "Settings.RootFolders": "Папки верхнего уровня:",
   "Settings.Font": "Шрифт дерева:",
+  "Settings.Font.Default": "По умолчанию",
   "Settings.Apply": "Применить настройки",
   "Msg.ErrorTitle": "Ошибка",
   "Msg.InfoTitle": "Информация",

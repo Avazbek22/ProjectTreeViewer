@@ -58,6 +58,7 @@
   "Settings.Extensions": "Dateitypen:",
   "Settings.RootFolders": "Ordner der obersten Ebene:",
   "Settings.Font": "Baum-Schrift:",
+  "Settings.Font.Default": "Standard",
   "Settings.Apply": "Anwenden",
   "Msg.ErrorTitle": "Fehler",
   "Msg.InfoTitle": "Info",

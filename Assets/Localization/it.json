@@ -58,6 +58,7 @@
   "Settings.Extensions": "Tipi di file:",
   "Settings.RootFolders": "Cartelle di primo livello:",
   "Settings.Font": "Font albero:",
+  "Settings.Font.Default": "Predefinito",
   "Settings.Apply": "Applica",
   "Msg.ErrorTitle": "Errore",
   "Msg.InfoTitle": "Info",

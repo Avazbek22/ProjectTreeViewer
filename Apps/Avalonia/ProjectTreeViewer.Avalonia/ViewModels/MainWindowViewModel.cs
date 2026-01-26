@@ -595,6 +595,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string SettingsExtensions { get; private set; } = string.Empty;
     public string SettingsRootFolders { get; private set; } = string.Empty;
     public string SettingsFont { get; private set; } = string.Empty;
+    public string SettingsFontDefault { get; private set; } = string.Empty;
     public string SettingsApply { get; private set; } = string.Empty;
     public string MenuSearch { get; private set; } = string.Empty;
     public string FilterByNamePlaceholder { get; private set; } = string.Empty;
@@ -641,6 +642,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         SettingsExtensions = _localization["Settings.Extensions"];
         SettingsRootFolders = _localization["Settings.RootFolders"];
         SettingsFont = _localization["Settings.Font"];
+        SettingsFontDefault = _localization["Settings.Font.Default"];
         SettingsApply = _localization["Settings.Apply"];
         MenuSearch = _localization["Menu.Search"];
         FilterByNamePlaceholder = _localization["Filter.ByName"];
@@ -699,6 +701,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(SettingsExtensions));
         RaisePropertyChanged(nameof(SettingsRootFolders));
         RaisePropertyChanged(nameof(SettingsFont));
+        RaisePropertyChanged(nameof(SettingsFontDefault));
         RaisePropertyChanged(nameof(SettingsApply));
         RaisePropertyChanged(nameof(MenuSearch));
         RaisePropertyChanged(nameof(FilterByNamePlaceholder));

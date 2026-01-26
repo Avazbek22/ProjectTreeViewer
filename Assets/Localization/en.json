@@ -58,6 +58,7 @@
   "Settings.Extensions": "File types:",
   "Settings.RootFolders": "Top-level folders:",
   "Settings.Font": "Tree font:",
+  "Settings.Font.Default": "Default",
   "Settings.Apply": "Apply settings",
   "Msg.ErrorTitle": "Error",
   "Msg.InfoTitle": "Info",
