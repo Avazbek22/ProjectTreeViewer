@@ -829,4 +829,603 @@ public sealed class MainWindowViewModelTests
         Assert.Equal(12, viewModel.TreeIconSize);
     }
 
+    #region SettingsAllCheckboxLabels Tests
+
+    [Fact]
+    public void SettingsAllIgnore_WhenEmpty_ReturnsBaseText()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        Assert.Equal("All", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_WhenEmpty_ReturnsBaseText()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        Assert.Equal("All", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_WhenEmpty_ReturnsBaseText()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        Assert.Equal("All", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_WhenHasItems_ReturnsTextWithCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.ObjFolders, "obj", true));
+
+        Assert.Equal("All (2)", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_WhenHasItems_ReturnsTextWithCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".js", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".ts", true));
+
+        Assert.Equal("All (3)", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_WhenHasItems_ReturnsTextWithCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+
+        Assert.Equal("All (1)", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_WhenItemRemoved_UpdatesCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.ObjFolders, "obj", true));
+
+        viewModel.IgnoreOptions.RemoveAt(0);
+
+        Assert.Equal("All (1)", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_WhenItemRemoved_UpdatesCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".js", true));
+
+        viewModel.Extensions.RemoveAt(0);
+
+        Assert.Equal("All (1)", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_WhenItemRemoved_UpdatesCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("tests", true));
+
+        viewModel.RootFolders.RemoveAt(0);
+
+        Assert.Equal("All (1)", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_WhenCleared_ReturnsBaseText()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+
+        viewModel.IgnoreOptions.Clear();
+
+        Assert.Equal("All", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_WhenCleared_ReturnsBaseText()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+
+        viewModel.Extensions.Clear();
+
+        Assert.Equal("All", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_WhenCleared_ReturnsBaseText()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+
+        viewModel.RootFolders.Clear();
+
+        Assert.Equal("All", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllLabels_AreIndependent()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".js", true));
+        // RootFolders stays empty
+
+        Assert.Equal("All (1)", viewModel.SettingsAllIgnore);
+        Assert.Equal("All (2)", viewModel.SettingsAllExtensions);
+        Assert.Equal("All", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllLabels_WithRussianLocalization()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "Все"
+        });
+
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".js", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".ts", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".py", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".go", true));
+
+        Assert.Equal("Все (5)", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_RaisesPropertyChanged_WhenCollectionChanges()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        var raised = false;
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllIgnore))
+                raised = true;
+        };
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_RaisesPropertyChanged_WhenCollectionChanges()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        var raised = false;
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllExtensions))
+                raised = true;
+        };
+
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_RaisesPropertyChanged_WhenCollectionChanges()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        var raised = false;
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllRootFolders))
+                raised = true;
+        };
+
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_MultipleAdds_UpdatesCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+        Assert.Equal("All (1)", viewModel.SettingsAllIgnore);
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.ObjFolders, "obj", true));
+        Assert.Equal("All (2)", viewModel.SettingsAllIgnore);
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.HiddenFolders, "hidden", true));
+        Assert.Equal("All (3)", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_MultipleAdds_UpdatesCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        for (var i = 1; i <= 10; i++)
+        {
+            viewModel.Extensions.Add(new SelectionOptionViewModel($".ext{i}", true));
+            Assert.Equal($"All ({i})", viewModel.SettingsAllExtensions);
+        }
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_MultipleAdds_UpdatesCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("tests", true));
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("docs", true));
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("lib", true));
+
+        Assert.Equal("All (4)", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void UpdateAllCheckboxLabels_ManualCall_UpdatesAllLabels()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+
+        viewModel.UpdateAllCheckboxLabels();
+
+        Assert.Equal("All (1)", viewModel.SettingsAllIgnore);
+        Assert.Equal("All (1)", viewModel.SettingsAllExtensions);
+        Assert.Equal("All (1)", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_WhenAddAndRemove_UpdatesCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        var item1 = new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true);
+        var item2 = new IgnoreOptionViewModel(IgnoreOptionId.ObjFolders, "obj", true);
+
+        viewModel.IgnoreOptions.Add(item1);
+        viewModel.IgnoreOptions.Add(item2);
+        Assert.Equal("All (2)", viewModel.SettingsAllIgnore);
+
+        viewModel.IgnoreOptions.Remove(item1);
+        Assert.Equal("All (1)", viewModel.SettingsAllIgnore);
+
+        viewModel.IgnoreOptions.Remove(item2);
+        Assert.Equal("All", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_WhenAddAndRemove_UpdatesCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        var item1 = new SelectionOptionViewModel(".cs", true);
+        var item2 = new SelectionOptionViewModel(".js", true);
+
+        viewModel.Extensions.Add(item1);
+        viewModel.Extensions.Add(item2);
+        Assert.Equal("All (2)", viewModel.SettingsAllExtensions);
+
+        viewModel.Extensions.Remove(item1);
+        Assert.Equal("All (1)", viewModel.SettingsAllExtensions);
+
+        viewModel.Extensions.Remove(item2);
+        Assert.Equal("All", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_WhenAddAndRemove_UpdatesCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        var item1 = new SelectionOptionViewModel("src", true);
+        var item2 = new SelectionOptionViewModel("tests", true);
+
+        viewModel.RootFolders.Add(item1);
+        viewModel.RootFolders.Add(item2);
+        Assert.Equal("All (2)", viewModel.SettingsAllRootFolders);
+
+        viewModel.RootFolders.Remove(item1);
+        Assert.Equal("All (1)", viewModel.SettingsAllRootFolders);
+
+        viewModel.RootFolders.Remove(item2);
+        Assert.Equal("All", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAllLabels_LargeCount_FormatsCorrectly()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        for (var i = 0; i < 100; i++)
+        {
+            viewModel.Extensions.Add(new SelectionOptionViewModel($".ext{i}", true));
+        }
+
+        Assert.Equal("All (100)", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_InsertAtIndex_UpdatesCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+
+        viewModel.IgnoreOptions.Insert(0, new IgnoreOptionViewModel(IgnoreOptionId.ObjFolders, "obj", true));
+
+        Assert.Equal("All (2)", viewModel.SettingsAllIgnore);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_InsertAtIndex_UpdatesCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+
+        viewModel.Extensions.Insert(0, new SelectionOptionViewModel(".js", true));
+
+        Assert.Equal("All (2)", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_InsertAtIndex_UpdatesCount()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.RootFolders.Add(new SelectionOptionViewModel("src", true));
+
+        viewModel.RootFolders.Insert(0, new SelectionOptionViewModel("tests", true));
+
+        Assert.Equal("All (2)", viewModel.SettingsAllRootFolders);
+    }
+
+    [Fact]
+    public void SettingsAll_BaseProperty_StillExists()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "TestAll"
+        });
+
+        Assert.Equal("TestAll", viewModel.SettingsAll);
+    }
+
+    [Fact]
+    public void SettingsAllLabels_EmptyLocalizationKey_FallsBackGracefully()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>());
+
+        viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+
+        // Should not throw and should handle empty string gracefully
+        Assert.Contains("(1)", viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void SettingsAllIgnore_RaisesPropertyChanged_OnClear()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+
+        var raised = false;
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllIgnore))
+                raised = true;
+        };
+
+        viewModel.IgnoreOptions.Clear();
+
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public void SettingsAllExtensions_RaisesPropertyChanged_OnRemove()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+        var item = new SelectionOptionViewModel(".cs", true);
+        viewModel.Extensions.Add(item);
+
+        var raised = false;
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllExtensions))
+                raised = true;
+        };
+
+        viewModel.Extensions.Remove(item);
+
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public void SettingsAllRootFolders_RaisesPropertyChanged_OnInsert()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        var raised = false;
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllRootFolders))
+                raised = true;
+        };
+
+        viewModel.RootFolders.Insert(0, new SelectionOptionViewModel("src", true));
+
+        Assert.True(raised);
+    }
+
+    [Theory]
+    [InlineData(1, "All (1)")]
+    [InlineData(5, "All (5)")]
+    [InlineData(10, "All (10)")]
+    [InlineData(50, "All (50)")]
+    public void SettingsAllIgnore_VariousCounts_FormatsCorrectly(int count, string expected)
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        for (var i = 0; i < count; i++)
+        {
+            viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, $"item{i}", true));
+        }
+
+        Assert.Equal(expected, viewModel.SettingsAllIgnore);
+    }
+
+    [Theory]
+    [InlineData(1, "Все (1)")]
+    [InlineData(3, "Все (3)")]
+    [InlineData(7, "Все (7)")]
+    public void SettingsAllExtensions_RussianVariousCounts_FormatsCorrectly(int count, string expected)
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "Все"
+        });
+
+        for (var i = 0; i < count; i++)
+        {
+            viewModel.Extensions.Add(new SelectionOptionViewModel($".ext{i}", true));
+        }
+
+        Assert.Equal(expected, viewModel.SettingsAllExtensions);
+    }
+
+    [Fact]
+    public void AllThreeLabels_IndependentPropertyChangedEvents()
+    {
+        var viewModel = CreateViewModel(new Dictionary<string, string>
+        {
+            ["Settings.All"] = "All"
+        });
+
+        var ignoreRaised = false;
+        var extensionsRaised = false;
+        var rootFoldersRaised = false;
+
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.SettingsAllIgnore)) ignoreRaised = true;
+            if (e.PropertyName == nameof(viewModel.SettingsAllExtensions)) extensionsRaised = true;
+            if (e.PropertyName == nameof(viewModel.SettingsAllRootFolders)) rootFoldersRaised = true;
+        };
+
+        viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+
+        // All three should be raised because UpdateAllCheckboxLabels updates all
+        Assert.True(ignoreRaised);
+        Assert.True(extensionsRaised);
+        Assert.True(rootFoldersRaised);
+    }
+
+    #endregion
 }

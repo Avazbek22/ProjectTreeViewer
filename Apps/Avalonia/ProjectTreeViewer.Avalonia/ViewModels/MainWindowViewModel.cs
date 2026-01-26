@@ -61,6 +61,11 @@ public sealed class MainWindowViewModel : ViewModelBase
         _allRootFoldersChecked = true;
         _allIgnoreChecked = true;
         UpdateLocalization();
+
+        // Subscribe to collection changes to update "All" checkbox labels with counts
+        IgnoreOptions.CollectionChanged += (_, _) => UpdateAllCheckboxLabels();
+        Extensions.CollectionChanged += (_, _) => UpdateAllCheckboxLabels();
+        RootFolders.CollectionChanged += (_, _) => UpdateAllCheckboxLabels();
     }
 
     public ObservableCollection<TreeNodeViewModel> TreeNodes { get; } = new();
@@ -583,6 +588,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string ThemeMenuChildIntensity { get; private set; } = string.Empty;
     public string SettingsIgnoreTitle { get; private set; } = string.Empty;
     public string SettingsAll { get; private set; } = string.Empty;
+    public string SettingsAllIgnore { get; private set; } = string.Empty;
+    public string SettingsAllExtensions { get; private set; } = string.Empty;
+    public string SettingsAllRootFolders { get; private set; } = string.Empty;
     public string SettingsExtensions { get; private set; } = string.Empty;
     public string SettingsRootFolders { get; private set; } = string.Empty;
     public string SettingsFont { get; private set; } = string.Empty;
@@ -628,6 +636,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         HelpAboutCopyLink = _localization["Help.About.CopyLink"];
         SettingsIgnoreTitle = _localization["Settings.IgnoreTitle"];
         SettingsAll = _localization["Settings.All"];
+        UpdateAllCheckboxLabels();
         SettingsExtensions = _localization["Settings.Extensions"];
         SettingsRootFolders = _localization["Settings.RootFolders"];
         SettingsFont = _localization["Settings.Font"];
@@ -708,5 +717,24 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(ThemePanelContrast));
         RaisePropertyChanged(nameof(ThemeBorderStrength));
         RaisePropertyChanged(nameof(ThemeMenuChildIntensity));
+    }
+
+    /// <summary>
+    /// Updates the "All" checkbox labels with item counts.
+    /// Shows "Все (N)" if count > 0, otherwise just "Все".
+    /// </summary>
+    public void UpdateAllCheckboxLabels()
+    {
+        var baseText = SettingsAll;
+        if (string.IsNullOrEmpty(baseText))
+            baseText = _localization["Settings.All"];
+
+        SettingsAllIgnore = IgnoreOptions.Count > 0 ? $"{baseText} ({IgnoreOptions.Count})" : baseText;
+        SettingsAllExtensions = Extensions.Count > 0 ? $"{baseText} ({Extensions.Count})" : baseText;
+        SettingsAllRootFolders = RootFolders.Count > 0 ? $"{baseText} ({RootFolders.Count})" : baseText;
+
+        RaisePropertyChanged(nameof(SettingsAllIgnore));
+        RaisePropertyChanged(nameof(SettingsAllExtensions));
+        RaisePropertyChanged(nameof(SettingsAllRootFolders));
     }
 }
