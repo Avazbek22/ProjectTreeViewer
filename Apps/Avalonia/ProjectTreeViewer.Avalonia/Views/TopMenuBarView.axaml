@@ -52,12 +52,16 @@
     </Menu>
     <Button Grid.Column="1"
             Classes="menu-icon-button"
-            Content="🔍"
-            FontSize="14"
             Click="OnToggleFilter"
             IsEnabled="{Binding IsProjectLoaded}"
+            IsVisible="{Binding IsProjectLoaded}"
             ToolTip.Tip="{Binding FilterTooltip}"
-            ToolTip.Placement="Left" />
+            ToolTip.Placement="Left">
+      <Image Source="avares://ProjectTreeViewer.Avalonia/IconPacks/Default/UIFilter.png"
+             Width="16"
+             Height="16"
+             Stretch="Uniform" />
+    </Button>
 
     <!-- Theme Popover -->
     <Popup Name="ThemePopup"

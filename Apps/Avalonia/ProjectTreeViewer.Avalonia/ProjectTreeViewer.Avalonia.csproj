@@ -27,5 +27,11 @@
     <AvaloniaXaml Update="Views\FilterBarView.axaml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AvaloniaResource Include="..\..\..\Assets\IconPacks\Default\UIFilter.png">
+      <Link>IconPacks\Default\UIFilter.png</Link>
+    </AvaloniaResource>
+  </ItemGroup>
+
   <!-- ВАЖНО: НЕ добавляйте .axaml как AvaloniaResource -->
 </Project>
