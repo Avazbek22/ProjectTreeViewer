@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -71,6 +72,7 @@ public partial class MainWindow : Window
     private FilterBarView? _filterBar;
     private HashSet<string>? _filterExpansionSnapshot;
     private int _filterApplyVersion;
+    private CancellationTokenSource? _refreshCts;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -125,6 +127,8 @@ public partial class MainWindow : Window
         {
             PropertyChanged -= OnWindowPropertyChanged;
             _filterCoordinator.Dispose();
+            _refreshCts?.Cancel();
+            _refreshCts?.Dispose();
         };
         Deactivated += OnDeactivated;
 
@@ -192,10 +196,17 @@ public partial class MainWindow : Window
 
     private async void OnOpened(object? sender, EventArgs e)
     {
-        ApplyStartupThemePreset();
+        try
+        {
+            ApplyStartupThemePreset();
 
-        if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
-            TryOpenFolder(_startupOptions.Path!, fromDialog: false);
+            if (!string.IsNullOrWhiteSpace(_startupOptions.Path))
+                await TryOpenFolderAsync(_startupOptions.Path!, fromDialog: false);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
     }
 
     private void ApplyStartupThemePreset()
@@ -374,19 +385,26 @@ public partial class MainWindow : Window
 
     private async void OnOpenFolder(object? sender, RoutedEventArgs e)
     {
-        var options = new FolderPickerOpenOptions
+        try
         {
-            AllowMultiple = false,
-            Title = _viewModel.MenuFileOpen
-        };
+            var options = new FolderPickerOpenOptions
+            {
+                AllowMultiple = false,
+                Title = _viewModel.MenuFileOpen
+            };
 
-        var folders = await StorageProvider.OpenFolderPickerAsync(options);
-        var folder = folders.FirstOrDefault();
-        var path = folder?.TryGetLocalPath();
-        if (string.IsNullOrWhiteSpace(path))
-            return;
+            var folders = await StorageProvider.OpenFolderPickerAsync(options);
+            var folder = folders.FirstOrDefault();
+            var path = folder?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(path))
+                return;
 
-        TryOpenFolder(path, fromDialog: true);
+            await TryOpenFolderAsync(path, fromDialog: true);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
     }
 
     private async void OnRefresh(object? sender, RoutedEventArgs e)
@@ -405,60 +423,90 @@ public partial class MainWindow : Window
 
     private async void OnCopyFullTree(object? sender, RoutedEventArgs e)
     {
-        if (!EnsureTreeReady()) return;
+        try
+        {
+            if (!EnsureTreeReady()) return;
 
-        var content = _treeExport.BuildFullTree(_currentPath!, _currentTree!.Root);
-        await SetClipboardTextAsync(content);
+            var content = _treeExport.BuildFullTree(_currentPath!, _currentTree!.Root);
+            await SetClipboardTextAsync(content);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
     }
 
     private async void OnCopySelectedTree(object? sender, RoutedEventArgs e)
     {
-        if (!EnsureTreeReady()) return;
-
-        var selected = GetCheckedPaths();
-        var content = _treeExport.BuildSelectedTree(_currentPath!, _currentTree!.Root, selected);
-        if (string.IsNullOrWhiteSpace(content))
+        try
         {
-            await ShowInfoAsync(_localization["Msg.NoCheckedTree"]);
-            return;
-        }
+            if (!EnsureTreeReady()) return;
 
-        await SetClipboardTextAsync(content);
+            var selected = GetCheckedPaths();
+            var content = _treeExport.BuildSelectedTree(_currentPath!, _currentTree!.Root, selected);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                await ShowInfoAsync(_localization["Msg.NoCheckedTree"]);
+                return;
+            }
+
+            await SetClipboardTextAsync(content);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
     }
 
     private async void OnCopySelectedContent(object? sender, RoutedEventArgs e)
     {
-        if (!EnsureTreeReady()) return;
-
-        var selected = GetCheckedPaths();
-        var files = selected.Where(File.Exists)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        if (files.Count == 0)
+        try
         {
-            await ShowInfoAsync(_localization["Msg.NoCheckedFiles"]);
-            return;
-        }
+            if (!EnsureTreeReady()) return;
 
-        var content = _contentExport.Build(files);
-        if (string.IsNullOrWhiteSpace(content))
+            var selected = GetCheckedPaths();
+            var files = selected.Where(File.Exists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (files.Count == 0)
+            {
+                await ShowInfoAsync(_localization["Msg.NoCheckedFiles"]);
+                return;
+            }
+
+            // Run file reading off UI thread
+            var content = await Task.Run(() => _contentExport.BuildAsync(files, CancellationToken.None));
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                await ShowInfoAsync(_localization["Msg.NoTextContent"]);
+                return;
+            }
+
+            await SetClipboardTextAsync(content);
+        }
+        catch (Exception ex)
         {
-            await ShowInfoAsync(_localization["Msg.NoTextContent"]);
-            return;
+            await ShowErrorAsync(ex.Message);
         }
-
-        await SetClipboardTextAsync(content);
     }
 
     private async void OnCopyTreeAndContent(object? sender, RoutedEventArgs e)
     {
-        if (!EnsureTreeReady()) return;
+        try
+        {
+            if (!EnsureTreeReady()) return;
 
-        var selected = GetCheckedPaths();
-        var content = _treeAndContentExport.Build(_currentPath!, _currentTree!.Root, selected);
-        await SetClipboardTextAsync(content);
+            var selected = GetCheckedPaths();
+            // Run file reading off UI thread
+            var content = await Task.Run(() => _treeAndContentExport.BuildAsync(_currentPath!, _currentTree!.Root, selected, CancellationToken.None));
+            await SetClipboardTextAsync(content);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
     }
 
     private void OnExpandAll(object? sender, RoutedEventArgs e) => ExpandCollapseTree(expand: true);
@@ -636,7 +684,14 @@ public partial class MainWindow : Window
 
     private async void OnAboutCopyLink(object? sender, RoutedEventArgs e)
     {
-        await SetClipboardTextAsync(ProjectLinks.RepositoryUrl);
+        try
+        {
+            await SetClipboardTextAsync(ProjectLinks.RepositoryUrl);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
+        }
         e.Handled = true;
     }
 
@@ -704,33 +759,44 @@ public partial class MainWindow : Window
 
     private async void ApplyFilterRealtime()
     {
-        if (string.IsNullOrEmpty(_currentPath)) return;
-
-        var query = _viewModel.NameFilter?.Trim();
-        bool hasQuery = !string.IsNullOrWhiteSpace(query);
-        var version = Interlocked.Increment(ref _filterApplyVersion);
-
-        if (hasQuery && _filterExpansionSnapshot is null)
-            _filterExpansionSnapshot = CaptureExpandedNodes();
-
-        await RefreshTreeAsync();
-        if (version != _filterApplyVersion)
-            return;
-        _searchCoordinator.UpdateHighlights(query);
-
-        if (hasQuery)
+        try
         {
-            TreeSearchEngine.ApplySmartExpandForFilter(
-                _viewModel.TreeNodes,
-                query!,
-                node => node.DisplayName,
-                node => node.Children,
-                (node, expanded) => node.IsExpanded = expanded);
+            if (string.IsNullOrEmpty(_currentPath)) return;
+
+            var query = _viewModel.NameFilter?.Trim();
+            bool hasQuery = !string.IsNullOrWhiteSpace(query);
+            var version = Interlocked.Increment(ref _filterApplyVersion);
+
+            if (hasQuery && _filterExpansionSnapshot is null)
+                _filterExpansionSnapshot = CaptureExpandedNodes();
+
+            await RefreshTreeAsync();
+            if (version != _filterApplyVersion)
+                return;
+            _searchCoordinator.UpdateHighlights(query);
+
+            if (hasQuery)
+            {
+                TreeSearchEngine.ApplySmartExpandForFilter(
+                    _viewModel.TreeNodes,
+                    query!,
+                    node => node.DisplayName,
+                    node => node.Children,
+                    (node, expanded) => node.IsExpanded = expanded);
+            }
+            else if (_filterExpansionSnapshot is not null)
+            {
+                RestoreExpandedNodes(_filterExpansionSnapshot);
+                _filterExpansionSnapshot = null;
+            }
         }
-        else if (_filterExpansionSnapshot is not null)
+        catch (OperationCanceledException)
         {
-            RestoreExpandedNodes(_filterExpansionSnapshot);
-            _filterExpansionSnapshot = null;
+            // Filter was superseded by a newer request - expected behavior
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync(ex.Message);
         }
     }
 
@@ -971,7 +1037,7 @@ public partial class MainWindow : Window
                 _viewModel.SelectedFontFamily = pending;
             }
 
-            _ = RefreshTreeAsync();
+            await RefreshTreeAsync();
         }
         catch (Exception ex)
         {
@@ -979,11 +1045,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private void TryOpenFolder(string path, bool fromDialog)
+    private async Task TryOpenFolderAsync(string path, bool fromDialog)
     {
         if (!Directory.Exists(path))
         {
-            _ = ShowErrorAsync(_localization.Format("Msg.PathNotFound", path));
+            await ShowErrorAsync(_localization.Format("Msg.PathNotFound", path));
             return;
         }
 
@@ -993,7 +1059,7 @@ public partial class MainWindow : Window
                 return;
 
             if (BuildFlags.AllowElevation)
-                _ = ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
+                await ShowErrorAsync(_localization["Msg.AccessDeniedRoot"]);
             return;
         }
 
@@ -1003,12 +1069,13 @@ public partial class MainWindow : Window
         _viewModel.SearchVisible = false;
         UpdateTitle();
 
-        _ = ReloadProjectAsync();
+        await ReloadProjectAsync();
     }
 
     private bool TryElevateAndRestart(string path)
     {
         // In Store builds, show a localized hint instead of attempting elevation.
+        // Note: fire-and-forget here is acceptable as this is a terminal state (window closing or showing info)
         if (!BuildFlags.AllowElevation)
         {
             _ = ShowErrorAsync(_localization["Msg.AccessDeniedElevationRequired"]);
@@ -1049,6 +1116,12 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
+        // Cancel any previous refresh operation to avoid race conditions
+        _refreshCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _refreshCts = cts;
+        var cancellationToken = cts.Token;
+
         var allowedExt = new HashSet<string>(_viewModel.Extensions.Where(o => o.IsChecked).Select(o => o.Name),
             StringComparer.OrdinalIgnoreCase);
         var allowedRoot = new HashSet<string>(_viewModel.RootFolders.Where(o => o.IsChecked).Select(o => o.Name),
@@ -1068,7 +1141,11 @@ public partial class MainWindow : Window
         try
         {
             // Build the tree off the UI thread to keep the window responsive on large folders.
-            var result = await Task.Run(() => _buildTree.Execute(new BuildTreeRequest(_currentPath, options)));
+            var result = await Task.Run(() => _buildTree.Execute(new BuildTreeRequest(_currentPath, options)), cancellationToken);
+
+            // Check if this operation was superseded by a newer one
+            cancellationToken.ThrowIfCancellationRequested();
+
             _currentTree = result;
 
             if (result.RootAccessDenied && TryElevateAndRestart(_currentPath))

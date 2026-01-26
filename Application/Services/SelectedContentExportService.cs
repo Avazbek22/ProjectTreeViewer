@@ -6,7 +6,9 @@ public sealed class SelectedContentExportService
 {
 	private const string ClipboardBlankLine = "\u00A0"; // NBSP: looks empty but won't collapse on paste
 
-	public string Build(IEnumerable<string> filePaths)
+	public string Build(IEnumerable<string> filePaths) => BuildAsync(filePaths, CancellationToken.None).GetAwaiter().GetResult();
+
+	public async Task<string> BuildAsync(IEnumerable<string> filePaths, CancellationToken cancellationToken)
 	{
 		var files = filePaths
 			.Where(p => !string.IsNullOrWhiteSpace(p))
@@ -22,7 +24,10 @@ public sealed class SelectedContentExportService
 
 		foreach (var file in files)
 		{
-			if (!TryReadFileTextForClipboard(file, out var text))
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var (success, text) = await TryReadFileTextForClipboardAsync(file, cancellationToken).ConfigureAwait(false);
+			if (!success)
 				continue;
 
 			if (anyWritten)
@@ -41,48 +46,51 @@ public sealed class SelectedContentExportService
 		return anyWritten ? sb.ToString().TrimEnd('\r', '\n') : string.Empty;
 	}
 
-	private bool TryReadFileTextForClipboard(string path, out string text)
+	private static async Task<(bool Success, string Text)> TryReadFileTextForClipboardAsync(string path, CancellationToken cancellationToken)
 	{
-		text = string.Empty;
-
 		try
 		{
 			if (!File.Exists(path))
-				return false;
+				return (false, string.Empty);
 
 			var fi = new FileInfo(path);
 			if (fi.Length == 0)
-				return false;
+				return (false, string.Empty);
 
-			using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			// Check for binary content (first 8KB)
+			await using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize: 4096, useAsync: true))
 			{
 				int toRead = (int)Math.Min(8192, fs.Length);
 				var buffer = new byte[toRead];
-				int read = fs.Read(buffer, 0, toRead);
+				int read = await fs.ReadAsync(buffer.AsMemory(0, toRead), cancellationToken).ConfigureAwait(false);
 
 				for (int i = 0; i < read; i++)
 				{
 					if (buffer[i] == 0)
-						return false;
+						return (false, string.Empty);
 				}
 			}
 
 			string raw;
 			using (var reader = new StreamReader(path, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
-				raw = reader.ReadToEnd();
+				raw = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(raw))
-				return false;
+				return (false, string.Empty);
 
 			if (raw.IndexOf('\0') >= 0)
-				return false;
+				return (false, string.Empty);
 
-			text = raw.TrimEnd('\r', '\n');
-			return !string.IsNullOrWhiteSpace(text);
+			var text = raw.TrimEnd('\r', '\n');
+			return string.IsNullOrWhiteSpace(text) ? (false, string.Empty) : (true, text);
 		}
-		catch (Exception)
+		catch (OperationCanceledException)
 		{
-			return false;
+			throw;
+		}
+		catch
+		{
+			return (false, string.Empty);
 		}
 	}
 

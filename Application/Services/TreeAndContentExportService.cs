@@ -18,6 +18,9 @@ public sealed class TreeAndContentExportService
 	}
 
 	public string Build(string rootPath, TreeNodeDescriptor root, IReadOnlySet<string> selectedPaths)
+		=> BuildAsync(rootPath, root, selectedPaths, CancellationToken.None).GetAwaiter().GetResult();
+
+	public async Task<string> BuildAsync(string rootPath, TreeNodeDescriptor root, IReadOnlySet<string> selectedPaths, CancellationToken cancellationToken)
 	{
 		bool hasSelection = selectedPaths.Count > 0 && TreeExportService.HasSelectedDescendantOrSelf(root, selectedPaths);
 
@@ -32,7 +35,7 @@ public sealed class TreeAndContentExportService
 			? GetSelectedFiles(selectedPaths)
 			: GetAllFilePaths(root);
 
-		var content = _contentExport.Build(files);
+		var content = await _contentExport.BuildAsync(files, cancellationToken).ConfigureAwait(false);
 		if (string.IsNullOrWhiteSpace(content))
 			return tree;
 

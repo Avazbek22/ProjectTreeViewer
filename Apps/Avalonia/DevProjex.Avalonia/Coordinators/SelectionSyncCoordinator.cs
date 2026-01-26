@@ -38,6 +38,7 @@ public sealed class SelectionSyncCoordinator
     private bool _suppressIgnoreItemCheck;
     private int _rootScanVersion;
     private int _extensionScanVersion;
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
     public SelectionSyncCoordinator(
         MainWindowViewModel viewModel,
@@ -88,7 +89,7 @@ public sealed class SelectionSyncCoordinator
         _suppressRootAllCheck = false;
 
         SetAllChecked(_viewModel.RootFolders, isChecked, ref _suppressRootItemCheck);
-        _ = UpdateLiveOptionsFromRootSelectionAsync(currentPath);
+        FireAndForgetSafe(UpdateLiveOptionsFromRootSelectionAsync(currentPath));
     }
 
     public void HandleExtensionsAllChanged(bool isChecked)
@@ -118,7 +119,7 @@ public sealed class SelectionSyncCoordinator
         UpdateIgnoreSelectionCache();
         if (!string.IsNullOrEmpty(currentPath))
         {
-            _ = RefreshRootAndDependentsAsync(currentPath);
+            FireAndForgetSafe(RefreshRootAndDependentsAsync(currentPath));
         }
     }
 
@@ -258,9 +259,18 @@ public sealed class SelectionSyncCoordinator
 
     public async Task RefreshRootAndDependentsAsync(string currentPath)
     {
-        // Run in order so root folders are ready before extensions/ignore lists refresh.
-        await PopulateRootFoldersAsync(currentPath);
-        await UpdateLiveOptionsFromRootSelectionAsync(currentPath);
+        // Serialize refresh operations to prevent race conditions
+        await _refreshLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            // Run in order so root folders are ready before extensions/ignore lists refresh.
+            await PopulateRootFoldersAsync(currentPath);
+            await UpdateLiveOptionsFromRootSelectionAsync(currentPath);
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
     }
 
     public IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()
@@ -365,7 +375,7 @@ public sealed class SelectionSyncCoordinator
         var currentPath = _currentPathProvider();
         if (!string.IsNullOrEmpty(currentPath))
         {
-            _ = RefreshRootAndDependentsAsync(currentPath);
+            FireAndForgetSafe(RefreshRootAndDependentsAsync(currentPath));
         }
     }
 
@@ -439,6 +449,26 @@ public sealed class SelectionSyncCoordinator
         finally
         {
             suppressFlag = false;
+        }
+    }
+
+    /// <summary>
+    /// Fire-and-forget wrapper that suppresses exceptions.
+    /// Used for background refresh triggered by UI events where errors are non-critical.
+    /// </summary>
+    private static async void FireAndForgetSafe(Task task)
+    {
+        try
+        {
+            await task.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when operation is superseded
+        }
+        catch
+        {
+            // Log or handle if needed; suppressed to not crash UI
         }
     }
 }
