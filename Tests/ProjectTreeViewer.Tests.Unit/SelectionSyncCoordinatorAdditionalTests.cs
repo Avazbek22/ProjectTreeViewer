@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
@@ -118,16 +119,135 @@ public sealed class SelectionSyncCoordinatorAdditionalTests
 		Assert.Single(viewModel.IgnoreOptions);
 	}
 
+	[Fact]
+	public void PopulateExtensionsForRootSelectionAsync_DoesNotDropCachedSelections()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", false));
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".md", true));
+
+		var coordinator = CreateCoordinator(viewModel);
+		coordinator.UpdateExtensionsSelectionCache();
+
+		coordinator.ApplyExtensionScan(new[] { ".cs" });
+		coordinator.ApplyExtensionScan(new[] { ".cs", ".md" });
+
+		var md = viewModel.Extensions.Single(option => option.Name == ".md");
+		Assert.True(md.IsChecked);
+	}
+
+	[Fact]
+	public void PopulateExtensionsForRootSelectionAsync_EmptyRoots_DoesNotClearCachedSelections()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", false));
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".md", true));
+
+		var coordinator = CreateCoordinator(viewModel);
+		coordinator.UpdateExtensionsSelectionCache();
+
+		coordinator.ApplyExtensionScan(Array.Empty<string>());
+		coordinator.ApplyExtensionScan(new[] { ".cs", ".md" });
+
+		var md = viewModel.Extensions.Single(option => option.Name == ".md");
+		Assert.True(md.IsChecked);
+	}
+
+	[Fact]
+	public void ApplyExtensionScan_UpdatesExtensionsFromScanResults()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".old", true));
+
+		var coordinator = CreateCoordinator(viewModel);
+
+		coordinator.ApplyExtensionScan(new[] { ".cs", ".md", ".root" });
+
+		var names = viewModel.Extensions.Select(option => option.Name).ToList();
+		Assert.Contains(".root", names);
+		Assert.Contains(".cs", names);
+		Assert.Contains(".md", names);
+		Assert.DoesNotContain(".old", names);
+	}
+
+	[Fact]
+	public void ApplyExtensionScan_PreservesCachedExtensionSelections()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".md", true));
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".txt", false));
+		viewModel.AllExtensionsChecked = false;
+
+		var coordinator = CreateCoordinator(viewModel);
+		coordinator.UpdateExtensionsSelectionCache();
+
+		coordinator.ApplyExtensionScan(new[] { ".md", ".txt" });
+
+		var md = viewModel.Extensions.Single(option => option.Name == ".md");
+		var txt = viewModel.Extensions.Single(option => option.Name == ".txt");
+		Assert.True(md.IsChecked);
+		Assert.False(txt.IsChecked);
+	}
+
+	[Fact]
+	public void ApplyExtensionScan_EmptyScan_ClearsExtensionsAndAllFlag()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.Extensions.Add(new SelectionOptionViewModel(".cs", true));
+		viewModel.AllExtensionsChecked = true;
+
+		var coordinator = CreateCoordinator(viewModel);
+
+		coordinator.ApplyExtensionScan(Array.Empty<string>());
+
+		Assert.Empty(viewModel.Extensions);
+		Assert.False(viewModel.AllExtensionsChecked);
+	}
+
+	[Fact]
+	public void PopulateIgnoreOptionsForRootSelection_EmptyRoots_ClearsIgnoreOptionsAndAllFlag()
+	{
+		var viewModel = CreateViewModel();
+		viewModel.IgnoreOptions.Add(new IgnoreOptionViewModel(IgnoreOptionId.BinFolders, "bin", true));
+		viewModel.AllIgnoreChecked = true;
+
+		var coordinator = CreateCoordinator(viewModel);
+
+		coordinator.PopulateIgnoreOptionsForRootSelection(Array.Empty<string>());
+
+		Assert.Empty(viewModel.IgnoreOptions);
+		Assert.False(viewModel.AllIgnoreChecked);
+	}
+
+	[Fact]
+	public void PopulateIgnoreOptionsForRootSelection_PreservesIgnoreSelections()
+	{
+		var viewModel = CreateViewModel();
+		var coordinator = CreateCoordinator(viewModel);
+		coordinator.PopulateIgnoreOptionsForRootSelection(new[] { "src" });
+		coordinator.HandleIgnoreAllChanged(false, currentPath: null);
+		viewModel.IgnoreOptions[0].IsChecked = true;
+		viewModel.IgnoreOptions[1].IsChecked = false;
+		coordinator.UpdateIgnoreSelectionCache();
+
+		coordinator.PopulateIgnoreOptionsForRootSelection(new[] { "src" });
+
+		var bin = viewModel.IgnoreOptions.Single(option => option.Id == IgnoreOptionId.BinFolders);
+		var obj = viewModel.IgnoreOptions.Single(option => option.Id == IgnoreOptionId.ObjFolders);
+		Assert.True(bin.IsChecked);
+		Assert.False(obj.IsChecked);
+	}
+
 	private static MainWindowViewModel CreateViewModel()
 	{
 		var localization = new LocalizationService(CreateCatalog(), AppLanguage.En);
 		return new MainWindowViewModel(localization, new HelpContentProvider());
 	}
 
-	private static SelectionSyncCoordinator CreateCoordinator(MainWindowViewModel viewModel)
+	private static SelectionSyncCoordinator CreateCoordinator(MainWindowViewModel viewModel, StubFileSystemScanner? scanner = null)
 	{
 		var localization = new LocalizationService(CreateCatalog(), AppLanguage.En);
-		var scanner = new StubFileSystemScanner();
+		scanner ??= new StubFileSystemScanner();
 		var scanOptions = new ScanOptionsUseCase(scanner);
 		var filterService = new FilterOptionSelectionService();
 		var ignoreService = new IgnoreOptionsService(localization);

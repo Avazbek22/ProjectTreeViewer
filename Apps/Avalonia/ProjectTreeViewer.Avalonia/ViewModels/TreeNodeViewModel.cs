@@ -9,7 +9,7 @@ namespace ProjectTreeViewer.Avalonia.ViewModels;
 
 public sealed class TreeNodeViewModel : ViewModelBase
 {
-    private bool _isChecked;
+    private bool? _isChecked = false;
     private bool _isExpanded;
     private bool _isSelected;
     private string _displayName;
@@ -60,12 +60,17 @@ public sealed class TreeNodeViewModel : ViewModelBase
 
     public string FullPath => Descriptor.FullPath;
 
-    public bool IsChecked
+    public bool? IsChecked
     {
         get => _isChecked;
         set
         {
             if (_isChecked == value) return;
+            if (value is null)
+            {
+                SetChecked(false, updateChildren: true, updateParent: true);
+                return;
+            }
             SetChecked(value, updateChildren: true, updateParent: true);
         }
     }
@@ -170,15 +175,15 @@ public sealed class TreeNodeViewModel : ViewModelBase
         RaisePropertyChanged(nameof(DisplayInlines));
     }
 
-    private void SetChecked(bool value, bool updateChildren, bool updateParent)
+    private void SetChecked(bool? value, bool updateChildren, bool updateParent)
     {
         _isChecked = value;
         RaisePropertyChanged(nameof(IsChecked));
 
-        if (updateChildren)
+        if (updateChildren && value.HasValue)
         {
             foreach (var child in Children)
-                child.SetChecked(value, updateChildren: true, updateParent: false);
+                child.SetChecked(value.Value, updateChildren: true, updateParent: false);
         }
 
         if (updateParent)
@@ -187,10 +192,16 @@ public sealed class TreeNodeViewModel : ViewModelBase
 
     private void UpdateCheckedFromChildren()
     {
-        bool allChecked = Children.Count > 0 && Children.All(child => child.IsChecked);
-        if (_isChecked != allChecked)
+        if (Children.Count == 0)
+            return;
+
+        bool allChecked = Children.All(child => child.IsChecked == true);
+        bool anyChecked = Children.Any(child => child.IsChecked != false);
+        bool? next = allChecked ? true : anyChecked ? null : false;
+
+        if (_isChecked != next)
         {
-            _isChecked = allChecked;
+            _isChecked = next;
             RaisePropertyChanged(nameof(IsChecked));
         }
 

@@ -43,7 +43,7 @@ public sealed class IconMapper : IIconMapper
 	private static IconMapping LoadMapping()
 	{
 		var assembly = typeof(ProjectTreeViewer.Assets.Marker).Assembly;
-		var resourceName = "ProjectTreeViewer.Assets.IconPacks.Default.mapping.json";
+		var resourceName = "ProjectTreeViewer.Assets.IconPacks.Configuration.mapping.json";
 		using var stream = assembly.GetManifestResourceStream(resourceName)
 			?? throw new InvalidOperationException($"Icon mapping not found: {resourceName}");
 

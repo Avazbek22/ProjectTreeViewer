@@ -8,26 +8,15 @@ namespace ProjectTreeViewer.Application.Services;
 
 public sealed class FilterOptionSelectionService
 {
-	private static readonly HashSet<string> DefaultExtensions = new(StringComparer.OrdinalIgnoreCase)
-	{
-		".cs",
-		".sln",
-		".csproj",
-		".designer"
-	};
-
 	public IReadOnlyList<SelectionOption> BuildExtensionOptions(
 		IEnumerable<string> extensions,
 		IReadOnlySet<string> previousSelections)
 	{
 		var list = new List<SelectionOption>();
 		var ordered = extensions.OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
-		bool hasPrevious = previousSelections.Count > 0 && ordered.Any(previousSelections.Contains);
-
 		foreach (var ext in ordered)
 		{
-			bool isChecked = previousSelections.Contains(ext) ||
-				(!hasPrevious && DefaultExtensions.Contains(ext));
+			bool isChecked = previousSelections.Contains(ext);
 
 			list.Add(new SelectionOption(ext, isChecked));
 		}

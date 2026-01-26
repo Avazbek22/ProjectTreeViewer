@@ -166,7 +166,7 @@ public sealed class TreeNodeViewModelTests
 
         root.IsChecked = true;
 
-        Assert.All(root.Children, child => Assert.True(child.IsChecked));
+        Assert.All(root.Children, child => Assert.True(child.IsChecked is true));
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public sealed class TreeNodeViewModelTests
 
         root.Children[0].IsChecked = true;
 
-        Assert.False(root.IsChecked);
+        Assert.Null(root.IsChecked);
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public sealed class TreeNodeViewModelTests
         root.Children[0].IsChecked = true;
         root.Children[1].IsChecked = true;
 
-        Assert.True(root.IsChecked);
+        Assert.True(root.IsChecked is true);
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public sealed class TreeNodeViewModelTests
 
         root.Children[0].IsChecked = false;
 
-        Assert.False(root.IsChecked);
+        Assert.Null(root.IsChecked);
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public sealed class TreeNodeViewModelTests
         foreach (var child in root.Children)
             child.IsChecked = true;
 
-        Assert.True(root.IsChecked);
+        Assert.True(root.IsChecked is true);
     }
 
     [Fact]
@@ -222,8 +222,8 @@ public sealed class TreeNodeViewModelTests
         leaf.IsChecked = true;
         root.Children[1].IsChecked = true;
 
-        Assert.True(root.Children[0].IsChecked);
-        Assert.True(root.IsChecked);
+        Assert.True(root.Children[0].IsChecked is true);
+        Assert.True(root.IsChecked is true);
     }
 
     [Fact]
@@ -255,7 +255,40 @@ public sealed class TreeNodeViewModelTests
 
         node.IsChecked = true;
 
-        Assert.True(node.IsChecked);
+        Assert.True(node.IsChecked is true);
+    }
+
+    [Fact]
+    public void IsChecked_PartialSelection_SetsParentIndeterminate()
+    {
+        var root = CreateTree();
+
+        root.Children[0].IsChecked = true;
+
+        Assert.Null(root.IsChecked);
+    }
+
+    [Fact]
+    public void IsChecked_ChildUnchecked_AfterAllChecked_MakesParentIndeterminate()
+    {
+        var root = CreateTree();
+
+        root.IsChecked = true;
+        root.Children[0].IsChecked = false;
+
+        Assert.Null(root.IsChecked);
+    }
+
+    [Fact]
+    public void IsChecked_ParentIndeterminate_ClickSetsChildrenUnchecked()
+    {
+        var root = CreateTree();
+
+        root.Children[0].IsChecked = true;
+        root.IsChecked = false;
+
+        Assert.All(root.Children, child => Assert.True(child.IsChecked is false));
+        Assert.True(root.IsChecked is false);
     }
 
     [Fact]

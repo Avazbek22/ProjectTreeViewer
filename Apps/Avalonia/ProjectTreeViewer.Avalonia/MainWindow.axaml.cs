@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using ProjectTreeViewer.Application;
 using ProjectTreeViewer.Application.Services;
 using ProjectTreeViewer.Application.UseCases;
@@ -68,6 +69,8 @@ public partial class MainWindow : Window
     private TopMenuBarView? _topMenuBar;
     private SearchBarView? _searchBar;
     private FilterBarView? _filterBar;
+    private HashSet<string>? _filterExpansionSnapshot;
+    private int _filterApplyVersion;
 
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
@@ -103,8 +106,8 @@ public partial class MainWindow : Window
         if (_treeView is not null)
         {
             _treeView.PointerEntered += OnTreePointerEntered;
-            _treeView.PointerWheelChanged += OnTreePointerWheelChanged;
         }
+        AddHandler(PointerWheelChangedEvent, OnWindowPointerWheelChanged, RoutingStrategies.Tunnel, true);
 
         _searchCoordinator = new TreeSearchCoordinator(_viewModel, _treeView ?? throw new InvalidOperationException());
         _filterCoordinator = new NameFilterCoordinator(ApplyFilterRealtime);
@@ -699,22 +702,35 @@ public partial class MainWindow : Window
         _treeView?.Focus();
     }
 
-    private void ApplyFilterRealtime()
+    private async void ApplyFilterRealtime()
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
-        _ = RefreshTreeAsync();
-        _searchCoordinator.UpdateHighlights(_viewModel.NameFilter);
+        var query = _viewModel.NameFilter?.Trim();
+        bool hasQuery = !string.IsNullOrWhiteSpace(query);
+        var version = Interlocked.Increment(ref _filterApplyVersion);
 
-        // Auto-expand folders with matching items
-        if (!string.IsNullOrWhiteSpace(_viewModel.NameFilter))
+        if (hasQuery && _filterExpansionSnapshot is null)
+            _filterExpansionSnapshot = CaptureExpandedNodes();
+
+        await RefreshTreeAsync();
+        if (version != _filterApplyVersion)
+            return;
+        _searchCoordinator.UpdateHighlights(query);
+
+        if (hasQuery)
         {
             TreeSearchEngine.ApplySmartExpandForFilter(
                 _viewModel.TreeNodes,
-                _viewModel.NameFilter,
+                query!,
                 node => node.DisplayName,
                 node => node.Children,
                 (node, expanded) => node.IsExpanded = expanded);
+        }
+        else if (_filterExpansionSnapshot is not null)
+        {
+            RestoreExpandedNodes(_filterExpansionSnapshot);
+            _filterExpansionSnapshot = null;
         }
     }
 
@@ -883,17 +899,24 @@ public partial class MainWindow : Window
         _treeView?.Focus();
     }
 
-    private void OnTreePointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    private void OnWindowPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
-        if (!e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        if (!TreeZoomWheelHandler.TryGetZoomStep(e.KeyModifiers, e.Delta, IsPointerOverTree(e.Source), out var step))
             return;
 
-        if (e.Delta.Y > 0)
-            AdjustTreeFontSize(1);
-        else if (e.Delta.Y < 0)
-            AdjustTreeFontSize(-1);
+        AdjustTreeFontSize(step);
+        e.Handled = true;
+    }
 
-        // В WinForms нельзя "handled", поэтому оставляем скролл как есть (бесшовно по ощущению).
+    private bool IsPointerOverTree(object? source)
+    {
+        if (_treeView is null)
+            return false;
+
+        if (ReferenceEquals(source, _treeView))
+            return true;
+
+        return source is Visual visual && visual.GetVisualAncestors().Contains(_treeView);
     }
 
     private void ShowSearch()
@@ -1132,11 +1155,29 @@ public partial class MainWindow : Window
 
     private static void CollectChecked(TreeNodeViewModel node, HashSet<string> selected)
     {
-        if (node.IsChecked)
+        if (node.IsChecked == true)
             selected.Add(node.FullPath);
 
         foreach (var child in node.Children)
             CollectChecked(child, selected);
+    }
+
+    private HashSet<string> CaptureExpandedNodes()
+    {
+        return _viewModel.TreeNodes
+            .SelectMany(node => node.Flatten())
+            .Where(node => node.IsExpanded)
+            .Select(node => node.FullPath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void RestoreExpandedNodes(HashSet<string> expandedPaths)
+    {
+        foreach (var node in _viewModel.TreeNodes.SelectMany(item => item.Flatten()))
+            node.IsExpanded = expandedPaths.Contains(node.FullPath);
+
+        if (_viewModel.TreeNodes.FirstOrDefault() is { } root && !root.IsExpanded)
+            root.IsExpanded = true;
     }
 
 }

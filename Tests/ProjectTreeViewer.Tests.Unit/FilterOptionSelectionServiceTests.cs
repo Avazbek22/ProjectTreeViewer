@@ -9,17 +9,17 @@ namespace ProjectTreeViewer.Tests.Unit;
 
 public sealed class FilterOptionSelectionServiceTests
 {
-	// Verifies default extensions are pre-selected when there are no prior selections.
+	// Verifies no extensions are pre-selected when there are no prior selections.
 	[Fact]
-	public void BuildExtensionOptions_SelectsDefaultsWhenNoPrevious()
+	public void BuildExtensionOptions_DoesNotSelectWhenNoPrevious()
 	{
 		var service = new FilterOptionSelectionService();
 
 		var options = service.BuildExtensionOptions(new[] { ".txt", ".cs", ".sln" }, new HashSet<string>());
 
 		Assert.Equal(3, options.Count);
-		Assert.True(options.Single(o => o.Name == ".cs").IsChecked);
-		Assert.True(options.Single(o => o.Name == ".sln").IsChecked);
+		Assert.False(options.Single(o => o.Name == ".cs").IsChecked);
+		Assert.False(options.Single(o => o.Name == ".sln").IsChecked);
 		Assert.False(options.Single(o => o.Name == ".txt").IsChecked);
 	}
 
@@ -92,18 +92,6 @@ public sealed class FilterOptionSelectionServiceTests
 
 		Assert.True(options.Single(o => o.Name == "bin").IsChecked);
 		Assert.False(options.Single(o => o.Name == "src").IsChecked);
-	}
-
-	// Verifies designer extensions are included in the default selections.
-	[Fact]
-	public void BuildExtensionOptions_SelectsDesignerByDefault()
-	{
-		var service = new FilterOptionSelectionService();
-
-		var options = service.BuildExtensionOptions(new[] { ".designer", ".txt" }, new HashSet<string>());
-
-		Assert.True(options.Single(o => o.Name == ".designer").IsChecked);
-		Assert.False(options.Single(o => o.Name == ".txt").IsChecked);
 	}
 
 	// Verifies previous selections are applied case-insensitively.
@@ -191,7 +179,7 @@ public sealed class FilterOptionSelectionServiceTests
 		Assert.Empty(options);
 	}
 
-	// Verifies previous selections not present are ignored.
+	// Verifies previous selections not present do not auto-select new options.
 	[Fact]
 	public void BuildExtensionOptions_IgnoresPreviousSelectionsNotInList()
 	{
@@ -200,7 +188,7 @@ public sealed class FilterOptionSelectionServiceTests
 
 		var options = service.BuildExtensionOptions(new[] { ".cs" }, previous);
 
-		Assert.True(options.Single(o => o.Name == ".cs").IsChecked);
+		Assert.False(options.Single(o => o.Name == ".cs").IsChecked);
 	}
 
 	// Verifies smart ignored folders are excluded when no previous selection.

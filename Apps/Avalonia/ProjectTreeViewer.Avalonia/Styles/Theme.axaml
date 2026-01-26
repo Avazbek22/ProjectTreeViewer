@@ -12,7 +12,7 @@
     <Color x:Key="AppTextColor">#1A1A1A</Color>
     <Color x:Key="AppMutedTextColor">#5E5E5E</Color>
     <Color x:Key="TreeSelectionColor">#DCEEFF</Color>
-    <Color x:Key="TreeSearchHighlightColor">#FFF59D</Color>
+    <Color x:Key="TreeSearchHighlightColor">#F7C76B</Color>
     <Color x:Key="TreeSearchCurrentColor">#F9A825</Color>
 
     <!-- Brushes -->
@@ -40,7 +40,7 @@
     <Color x:Key="AppTextColor">#E7E9EF</Color>
     <Color x:Key="AppMutedTextColor">#9AA3B2</Color>
     <Color x:Key="TreeSelectionColor">#254861</Color>
-    <Color x:Key="TreeSearchHighlightColor">#FBC02D</Color>
+    <Color x:Key="TreeSearchHighlightColor">#E6A23A</Color>
     <Color x:Key="TreeSearchCurrentColor">#F39C12</Color>
 
     <!-- Brushes -->
@@ -61,6 +61,7 @@
             </ResourceDictionary.ThemeDictionaries>
 
             <!-- Compact mode uses the Fluent CheckBox template with a scale transform. -->
+            <Geometry x:Key="CheckBoxIndeterminateMarkGeometry">M3,6 L9,6</Geometry>
         </ResourceDictionary>
     </Styles.Resources>
 
