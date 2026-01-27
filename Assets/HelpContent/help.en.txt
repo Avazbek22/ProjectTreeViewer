@@ -1,5 +1,5 @@
 ## 1) What it is and why
-ProjectTreeViewer quickly prepares project context: shows the folder/file structure, lets you select items with checkboxes, and copy the tree and/or file contents to the clipboard. Useful for code review, support, learning, and sharing project structure with an AI assistant.
+DevProjex quickly prepares project context: shows the folder/file structure, lets you select items with checkboxes, and copy the tree and/or file contents to the clipboard. Useful for code review, support, learning, and sharing project structure with an AI assistant.
 
 Important: the app is read-only and never modifies files.
 

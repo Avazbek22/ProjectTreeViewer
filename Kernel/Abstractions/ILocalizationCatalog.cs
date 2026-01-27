@@ -1,6 +1,6 @@
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Kernel.Abstractions;
+namespace DevProjex.Kernel.Abstractions;
 
 public interface ILocalizationCatalog
 {

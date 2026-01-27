@@ -1,4 +1,4 @@
-namespace ProjectTreeViewer.Kernel.Abstractions;
+namespace DevProjex.Kernel.Abstractions;
 
 public interface IIconStore
 {

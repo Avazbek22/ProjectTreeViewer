@@ -1,7 +1,7 @@
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Application.Services;
+namespace DevProjex.Application.Services;
 
 public sealed class LocalizationService
 {

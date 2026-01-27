@@ -1,4 +1,4 @@
-# ProjectTreeViewer 📁🌳
+# DevProjex 📁🌳
 
 A lightweight **Windows desktop tool** for quickly visualizing a folder/project structure as a **TreeView**, selecting files with checkboxes, and copying:
 
@@ -9,7 +9,7 @@ A lightweight **Windows desktop tool** for quickly visualizing a folder/project 
 
 Designed for developers who frequently need to share project structure (e.g., for code reviews, documentation, support, mentoring, or AI-assisted debugging) without manually assembling lists.
 
-> ✅ **Read‑only by design**: ProjectTreeViewer does **not** modify your projects. It scans and reads files/folders and copies text to clipboard.
+> ✅ **Read‑only by design**: DevProjex does **not** modify your projects. It scans and reads files/folders and copies text to clipboard.
 
 ---
 
@@ -17,7 +17,7 @@ Designed for developers who frequently need to share project structure (e.g., fo
 
 Get the newest build here:
 
-* **Latest Release:** [https://github.com/Avazbek22/ProjectTreeViewer/releases/latest](https://github.com/Avazbek22/ProjectTreeViewer/releases/latest)
+* **Latest Release:** [https://github.com/Avazbek22/DevProjex/releases/latest](https://github.com/Avazbek22/DevProjex/releases/latest)
 
 > If you need a specific version, open the Releases page and select the tag you want.
 
@@ -38,7 +38,7 @@ Get the newest build here:
 
 ## Who is this for? 🎯
 
-ProjectTreeViewer is useful when you want to:
+DevProjex is useful when you want to:
 
 * quickly send someone your project structure
 * prepare bug reports with a clean tree snapshot
@@ -136,7 +136,7 @@ Important behavior:
 
 ## Localization 🌍
 
-ProjectTreeViewer supports multiple UI languages.
+DevProjex supports multiple UI languages.
 
 ### How language is chosen
 
@@ -153,7 +153,7 @@ ProjectTreeViewer supports multiple UI languages.
 
 1. Download from:
 
-   * [https://github.com/Avazbek22/ProjectTreeViewer/releases/latest](https://github.com/Avazbek22/ProjectTreeViewer/releases/latest)
+   * [https://github.com/Avazbek22/DevProjex/releases/latest](https://github.com/Avazbek22/DevProjex/releases/latest)
 2. Run the application
 3. **File → Open folder…**
 4. Use the **Copy** menu to export tree/content
@@ -174,7 +174,7 @@ dotnet restore
 
 dotnet build -c Release
 
-dotnet run --project Apps/Avalonia/ProjectTreeViewer.Avalonia.csproj
+dotnet run --project Apps/Avalonia/DevProjex.Avalonia.csproj
 ```
 
 > Project/paths may vary slightly depending on how the solution is structured.
@@ -208,7 +208,7 @@ dotnet run --project Apps/Avalonia/ProjectTreeViewer.Avalonia.csproj
 
 ### Does it modify my project files?
 
-No. ProjectTreeViewer is **read-only**. It scans folders and reads files only to display structure or copy text.
+No. DevProjex is **read-only**. It scans folders and reads files only to display structure or copy text.
 
 ### Can it break my repository or git state?
 
@@ -264,7 +264,7 @@ For details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License 📄
 
-ProjectTreeViewer is source-available under the Business Source License (BSL) 1.1.
+DevProjex is source-available under the Business Source License (BSL) 1.1.
 
 Non-commercial use and contributions are allowed, while commercial use is restricted until 2030-01-01. On that date, the license automatically changes to MIT.
 

@@ -1,4 +1,4 @@
-namespace ProjectTreeViewer.Kernel.Models;
+namespace DevProjex.Kernel.Models;
 
 public sealed record TreeBuildResult(
 	FileSystemNode Root,
@@ -7,6 +7,12 @@ public sealed record TreeBuildResult(
 
 public sealed class FileSystemNode
 {
+	/// <summary>
+	/// Shared empty list for file nodes (files have no children).
+	/// Avoids allocating a new List for each of potentially 100k+ files.
+	/// </summary>
+	public static readonly IReadOnlyList<FileSystemNode> EmptyChildren = Array.Empty<FileSystemNode>();
+
 	public FileSystemNode(
 		string name,
 		string fullPath,

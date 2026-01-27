@@ -1,4 +1,4 @@
-namespace ProjectTreeViewer.Assets;
+namespace DevProjex.Assets;
 
 public static class Marker
 {

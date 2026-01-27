@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ProjectTreeViewer.Infrastructure.ThemePresets;
+namespace DevProjex.Infrastructure.ThemePresets;
 
 public enum ThemeEffectMode
 {

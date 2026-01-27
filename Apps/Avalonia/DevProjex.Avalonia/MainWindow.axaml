@@ -1,0 +1,122 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DevProjex.Avalonia.ViewModels"
+        xmlns:views="using:DevProjex.Avalonia.Views"
+        x:Class="DevProjex.Avalonia.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Title}"
+        Icon="avares://DevProjex.Avalonia/AppIcon/icon-256.png"
+        Width="1200" Height="800"
+        MinWidth="800" MinHeight="600"
+        TransparencyLevelHint="Mica, AcrylicBlur, Blur"
+        Background="{DynamicResource AppBackgroundBrush}">
+  <Window.Styles>
+    <Style Selector="TreeViewItem">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+      <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+      <!-- Tree item padding is driven by the ViewModel for compact mode. -->
+      <Setter Property="Padding"
+              Value="{Binding DataContext.TreeItemPadding, RelativeSource={RelativeSource AncestorType=TreeView}}" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel LastChildFill="True">
+    <views:TopMenuBarView DockPanel.Dock="Top"
+                          Name="TopMenuBar"
+                          OpenFolderRequested="OnOpenFolder"
+                          RefreshRequested="OnRefresh"
+                          ExitRequested="OnExit"
+                          CopyFullTreeRequested="OnCopyFullTree"
+                          CopySelectedTreeRequested="OnCopySelectedTree"
+                          CopySelectedContentRequested="OnCopySelectedContent"
+                          CopyTreeAndContentRequested="OnCopyTreeAndContent"
+                          ExpandAllRequested="OnExpandAll"
+                          CollapseAllRequested="OnCollapseAll"
+                          ZoomInRequested="OnZoomIn"
+                          ZoomOutRequested="OnZoomOut"
+                          ZoomResetRequested="OnZoomReset"
+                          ToggleCompactModeRequested="OnToggleCompactMode"
+                          ToggleSearchRequested="OnToggleSearch"
+                          ToggleSettingsRequested="OnToggleSettings"
+                          ToggleFilterRequested="OnToggleFilter"
+                          ThemeMenuClickRequested="OnThemeMenuClick"
+                          HelpRequested="OnHelp"
+                          HelpCloseRequested="OnHelpClose"
+                          LanguageRuRequested="OnLangRu"
+                          LanguageEnRequested="OnLangEn"
+                          LanguageUzRequested="OnLangUz"
+                          LanguageTgRequested="OnLangTg"
+                          LanguageKkRequested="OnLangKk"
+                          LanguageFrRequested="OnLangFr"
+                          LanguageDeRequested="OnLangDe"
+                          LanguageItRequested="OnLangIt"
+                          AboutRequested="OnAbout"
+                          AboutCloseRequested="OnAboutClose"
+                          AboutOpenLinkRequested="OnAboutOpenLink"
+                          AboutCopyLinkRequested="OnAboutCopyLink"
+                          SetLightThemeRequested="OnSetLightThemeCheckbox"
+                          SetDarkThemeRequested="OnSetDarkThemeCheckbox"
+                          SetTransparentModeRequested="OnSetTransparentMode"
+                          SetMicaModeRequested="OnSetMicaMode"
+                          SetAcrylicModeRequested="OnSetAcrylicMode" />
+
+    <views:SearchBarView DockPanel.Dock="Top"
+                         Name="SearchBar"
+                         SearchKeyDown="OnSearchKeyDown"
+                         SearchPrevRequested="OnSearchPrev"
+                         SearchNextRequested="OnSearchNext"
+                         SearchCloseRequested="OnSearchClose" />
+
+    <views:FilterBarView DockPanel.Dock="Top"
+                         Name="FilterBar"
+                         FilterKeyDown="OnFilterKeyDown"
+                         FilterCloseRequested="OnFilterClose" />
+
+    <Grid ColumnDefinitions="*,Auto">
+      <TreeView Name="ProjectTree"
+                Grid.Column="0"
+                ItemsSource="{Binding TreeNodes}"
+                IsEnabled="{Binding IsProjectLoaded}"
+                FontFamily="{Binding SelectedFontFamily}"
+                FontSize="{Binding TreeFontSize}">
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate ItemsSource="{Binding Children}">
+            <Grid ColumnDefinitions="Auto,*">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding Level, RelativeSource={RelativeSource AncestorType=TreeViewItem}, Converter={StaticResource TreeIndentConverter}}" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <!-- Compact mode controls row spacing via the ViewModel to avoid template overrides. -->
+              <StackPanel Grid.Column="1"
+                          Orientation="Horizontal"
+                          Spacing="{Binding DataContext.TreeItemSpacing, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                <CheckBox IsThreeState="True"
+                          IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                          VerticalAlignment="Center" />
+                <Image Source="{Binding Icon}"
+                       Width="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                       Height="{Binding DataContext.TreeIconSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                       Stretch="Uniform"
+                       VerticalAlignment="Center" />
+                <TextBlock Inlines="{Binding DisplayInlines}"
+                           VerticalAlignment="Center"
+                           Margin="{Binding DataContext.TreeTextMargin, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                           FontFamily="{Binding DataContext.SelectedFontFamily, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                           FontSize="{Binding DataContext.TreeFontSize, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                           Foreground="{DynamicResource AppTextBrush}" />
+              </StackPanel>
+            </Grid>
+          </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+
+      <!-- Settings panel -->
+      <views:SettingsPanelView Grid.Column="1"
+                               Name="SettingsPanel"
+                               ApplySettingsRequested="OnApplySettings"
+                               IgnoreAllChanged="OnIgnoreAllChanged"
+                               ExtensionsAllChanged="OnExtensionsAllChanged"
+                               RootAllChanged="OnRootAllChanged" />
+    </Grid>
+  </DockPanel>
+</Window>

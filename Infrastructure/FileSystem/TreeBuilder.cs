@@ -1,8 +1,8 @@
 using System.IO;
-using ProjectTreeViewer.Kernel.Abstractions;
-using ProjectTreeViewer.Kernel.Models;
+using DevProjex.Kernel.Abstractions;
+using DevProjex.Kernel.Models;
 
-namespace ProjectTreeViewer.Infrastructure.FileSystem;
+namespace DevProjex.Infrastructure.FileSystem;
 
 public sealed class TreeBuilder : ITreeBuilder
 {
@@ -118,7 +118,7 @@ public sealed class TreeBuilder : ITreeBuilder
 					fullPath: entry.FullName,
 					isDirectory: false,
 					isAccessDenied: false,
-					children: new List<FileSystemNode>()));
+					children: FileSystemNode.EmptyChildren));
 			}
 		}
 	}

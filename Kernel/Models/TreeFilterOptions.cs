@@ -1,4 +1,4 @@
-namespace ProjectTreeViewer.Kernel.Models;
+namespace DevProjex.Kernel.Models;
 
 public sealed record TreeFilterOptions(
 	IReadOnlySet<string> AllowedExtensions,
