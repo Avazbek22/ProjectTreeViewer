@@ -1,279 +1,121 @@
 # DevProjex 📁🌳
 
-A lightweight **Windows desktop tool** for quickly visualizing a folder/project structure as a **TreeView**, selecting files with checkboxes, and copying:
+**Visual project context builder for humans and AI**
 
-* the **full tree**,
-* a **tree of selected items**,
-* the **content of selected text files**,
-* or **tree + content** in one shot.
+DevProjex is a cross-platform desktop application for **quickly exploring folder/project structures**, selecting what matters, and copying **clean, controlled context** (tree, file contents, or both) to the clipboard.
 
-Designed for developers who frequently need to share project structure (e.g., for code reviews, documentation, support, mentoring, or AI-assisted debugging) without manually assembling lists.
+It’s designed for real projects where CLI output is noisy, IDE tools are unavailable or limited, and you need **clarity, speed, and control**.
 
-> ✅ **Read‑only by design**: DevProjex does **not** modify your projects. It scans and reads files/folders and copies text to clipboard.
+> 🔒 Read-only by design — DevProjex never modifies your files.
 
 ---
 
 ## Download 🚀
 
-Get the newest build here:
+**Latest release:**
+👉 [https://github.com/Avazbek22/DevProjex/releases/latest](https://github.com/Avazbek22/DevProjex/releases/latest)
 
-* **Latest Release:** [https://github.com/Avazbek22/DevProjex/releases/latest](https://github.com/Avazbek22/DevProjex/releases/latest)
-
-> If you need a specific version, open the Releases page and select the tag you want.
-
----
-
-## Highlights ✨
-
-* **Fast TreeView rendering** with checkboxes
-* **Layer‑by‑layer expand behavior** (no forced “Expand All” on load)
-* **Live settings panel**: lists (extensions / root folders / ignore options) react instantly to changes
-* **Copy to clipboard** with clean formatting
-* **Search in tree** (Ctrl+F + menu)
-* **File‑type icons** for common dev stacks and formats
-* **Localization** (multi-language UI)
-* Architecture prepared for future **UI swaps** (now running on Avalonia UI)
+Older versions are available on the Releases page.
 
 ---
 
-## Who is this for? 🎯
+## App Screenshots 🖼️
 
-DevProjex is useful when you want to:
+> <img width="1981" height="1267" alt="image" src="https://github.com/user-attachments/assets/41daf582-aa7f-4c79-8c3b-ea750d6132ac" />
 
-* quickly send someone your project structure
-* prepare bug reports with a clean tree snapshot
-* extract selected file contents (only text formats)
-* share minimal reproducible context for an AI / mentor / teammate
-* teach Clean Architecture / DDD style structures by visualizing layers
-
-Typical users:
-
-* .NET developers
-* students/mentors
-* open-source maintainers
-* teams doing code review / refactoring
+> <img width="2000" height="1276" alt="image" src="https://github.com/user-attachments/assets/49699c5f-f39d-4924-865e-317f83b506a2" />
 
 ---
 
-## What it does (and does NOT do) ✅
+## Feature overview ✨
 
-### It **does**
+* **TreeView with checkbox selection**
+* **Multiple copy modes** (tree / content / combined)
+* **Search & name filtering** for large projects
+* **Smart Ignore** (stack-aware defaults + configurable rules)
+* **Modern appearance system**
 
-* scan a folder, build a hierarchical tree
-* show file/folder nodes with icons
-* let you check/uncheck nodes (propagates to children/parents)
-* copy tree and/or selected text content to clipboard
-* allow filtering via settings (extensions, root folders, ignore rules)
-
-### It **does NOT**
-
-* edit your files
-* rename/move/delete anything
-* run project code
-* change git state
-* install dependencies
+  * Light / Dark
+  * Transparency & blur where supported
+  * Presets stored locally
+* **Localization** (8 languages)
+* **Responsive async scanning** (UI stays smooth on big folders)
 
 ---
 
-## Screenshots 🖼️
+## Typical use cases 🎯
 
-> <img width="1203" height="835" alt="image" src="https://github.com/user-attachments/assets/14f78897-5947-4000-ac19-56e13da7c937" />
+* Share project structure in code reviews or chats
+* Prepare **clean input for AI assistants** (ChatGPT, Copilot, etc.)
+* Extract only relevant modules from large codebases
+* Teach or explain project architecture
+* Inspect large folders without CLI scripts
 
-
-
----
-
-## Features ✅
-
-### 1) Tree view
-
-* Visualize the folder structure in a classic **TreeView**.
-* **Checkbox selection** for files/folders.
-* Expand/collapse behavior optimized to keep navigation comfortable.
-
-### 2) Copy actions 📋
-
-From the **Copy** menu you can:
-
-* **Copy full tree**
-* **Copy selected tree**
-* **Copy selected content** (text files only)
-* **Copy tree + content** (single clipboard payload)
-
-> Binary formats (images, videos, executables, archives, many Office formats) are skipped for content export.
-
-### 3) Live settings panel ⚙️
-
-Settings panel controls:
-
-* **Ignore options** (filtering logic)
-* **File types** (extensions)
-* **Top-level folders**
-* **Tree font**
-
-Important behavior:
-
-* Settings lists update **immediately** to reflect what is available.
-* The tree itself updates **only when you apply settings** (to keep UI predictable).
-
-### 4) Search 🔎
-
-* Open search using **Ctrl+F** or the menu item.
-* Designed to feel like a browser-style find widget:
-
-  * type → matches highlight/select
-  * navigation via up/down actions
-  * close with a close button
+DevProjex is not tied to a specific language or IDE.
 
 ---
 
-## Tech Stack 🧩
+## What DevProjex does (short & honest)
+
+### ✅ Does
+
+* Builds a visual tree of any folder or project
+* Lets you select files/folders via checkboxes
+* Copies:
+
+  * full tree
+  * selected tree
+  * selected text file contents
+  * tree + content in one payload
+* Supports smart ignore rules (VCS, IDEs, build outputs)
+* Works well on large, layered projects
+
+### ❌ Does not
+
+* Edit, rename, move, or delete files
+* Run code or change git state
+* Export binary file contents
+
+---
+
+## Tech stack 🧩
 
 * **.NET 10**
-* **Avalonia UI** (dark theme by default)
-* Cleanly separated codebase (Core/Services/Infrastructure approach)
-* JSON-based resources (localization, icon mappings, etc.)
-
----
-
-## Localization 🌍
-
-DevProjex supports multiple UI languages.
-
-### How language is chosen
-
-* By default the app **detects the system UI culture** and selects the most appropriate language.
-* If a language is selected manually (menu), it should be used consistently afterwards (depending on your settings persistence implementation).
-
-> Implementation detail may differ by build. See the code in `LocalizationService` (e.g., `DetectSystemLanguage()`), plus `Program.cs` startup flow.
-
----
-
-## Quick Start ⚡
-
-### Option A — Use the prebuilt .exe
-
-1. Download from:
-
-   * [https://github.com/Avazbek22/DevProjex/releases/latest](https://github.com/Avazbek22/DevProjex/releases/latest)
-2. Run the application
-3. **File → Open folder…**
-4. Use the **Copy** menu to export tree/content
-
-### Option B — Build from source
-
-**Requirements**
-
-* Windows
-* .NET SDK **10**
-
-**Build & run**
-
-```bash
-# From the solution folder
-
-dotnet restore
-
-dotnet build -c Release
-
-dotnet run --project Apps/Avalonia/DevProjex.Avalonia.csproj
-```
-
-> Project/paths may vary slightly depending on how the solution is structured.
-
----
-
-## How to use (workflow examples) 🧠
-
-### Example 1: Share project structure with a teammate
-
-1. Open folder
-2. (Optionally) uncheck irrelevant folders/files
-3. Copy → **Copy selected tree**
-4. Paste into chat or issue
-
-### Example 2: Share structure + specific file contents
-
-1. Check only the files you want
-2. Copy → **Copy selected content**
-3. Paste into chat or documentation
-
-### Example 3: Prepare context for AI assistance
-
-1. Select key folders + relevant files
-2. Copy → **Copy tree + content**
-3. Paste into your AI prompt
-
----
-
-## FAQ ❓
-
-### Does it modify my project files?
-
-No. DevProjex is **read-only**. It scans folders and reads files only to display structure or copy text.
-
-### Can it break my repository or git state?
-
-No. It does not run git commands or change tracked files.
-
-### Why are some file contents not copied?
-
-Binary formats are intentionally skipped (e.g., `.dll`, `.png`, `.zip`, `.pdf`, many Office files). The app focuses on *text content*.
-
-### Why are icons missing sometimes?
-
-Ensure the icon pack/resources are included correctly in the build/publish pipeline. The intended approach is to package icons with the app so they are available after publish.
-
-### Can I use it on very large folders?
-
-Yes, but very large trees may still take time depending on disk speed and folder complexity.
-
-### Will there be a WPF/Web/CLI version?
-
-That’s part of the roadmap. The architecture is prepared for future UI layers.
-
----
-
-## Roadmap 🗺️
-
-Planned directions (high level):
-
-* smarter ignore detection (stack-aware candidates)
-* improved search UX (fast, stable, browser-like)
-* more export formats (Markdown, file, etc.)
-* alternative UIs (WPF / WebHost / CLI)
+* **Avalonia UI** (cross-platform)
+* Cleanly separated architecture (Core / Services / UI)
+* JSON-based resources (localization, icon mappings, presets)
+* ~700 automated tests (unit + integration)
 
 ---
 
 ## Contributing 🤝
 
-PRs and issues are welcome.
+Issues and pull requests are welcome.
 
-Suggested contributions:
+Good contribution areas:
 
-* Bug fixes
-* Documentation improvements (README, screenshots, store descriptions)
-* Performance improvements
-* Tests (unit and integration)
-* UI/UX improvements
-* Icon mappings
+* UX improvements
+* Performance tuning
+* Tests
 * Localization
+* Documentation & screenshots
 
-PRs and issues are welcome.  
-For details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+See `CONTRIBUTING.md` for details.
 
 ---
 
 ## License 📄
 
-DevProjex is source-available under the Business Source License (BSL) 1.1.
+DevProjex is **source-available** under the **Business Source License (BSL) 1.1**.
 
-Non-commercial use and contributions are allowed, while commercial use is restricted until 2030-01-01. On that date, the license automatically changes to MIT.
+* Free for non-commercial use
+* Commercial use restricted until **2030-01-01**
+* Automatically converts to **MIT** on that date
 
-See [LICENSE](LICENSE) for the current terms and [LICENSE-MIT](LICENSE-MIT) for the future change license.
+See `LICENSE` for details.
 
 ---
 
-## Keywords (for GitHub search) 🔎
+## Keywords 🔎
 
-project tree viewer, folder structure, tree export, clipboard export, avalonia, .net 10, codebase visualization, clean architecture, DDD, developer tool, repository structure, file selection, treeview search
+project tree viewer, folder structure, context builder, AI prompt preparation, clipboard export, avalonia ui, .net 10, cross-platform desktop app, repository visualization, developer tools
