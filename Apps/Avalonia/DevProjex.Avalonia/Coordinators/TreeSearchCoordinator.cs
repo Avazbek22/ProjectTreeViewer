@@ -19,6 +19,13 @@ public sealed class TreeSearchCoordinator
     private int _searchMatchIndex = -1;
     private TreeNodeViewModel? _currentSearchMatch;
 
+    // Cached brushes to avoid creating new objects for each node
+    private IBrush? _cachedHighlightBackground;
+    private IBrush? _cachedHighlightForeground;
+    private IBrush? _cachedNormalForeground;
+    private IBrush? _cachedCurrentBackground;
+    private ThemeVariant? _cachedTheme;
+
     public TreeSearchCoordinator(MainWindowViewModel viewModel, TreeView treeView)
     {
         _viewModel = viewModel;
@@ -71,11 +78,15 @@ public sealed class TreeSearchCoordinator
 
     public void ClearSearchState()
     {
-        _searchMatches.Clear();
-        _searchMatches.TrimExcess(); // Release allocated memory
+        // Clear current match reference first
+        _currentSearchMatch = null;
         _searchMatchIndex = -1;
-        UpdateCurrentSearchMatch(null);
-        UpdateHighlights(string.Empty);
+
+        // Clear and trim the matches list
+        _searchMatches.Clear();
+        _searchMatches.TrimExcess();
+
+        // Note: Don't call UpdateHighlights here - nodes may already be cleared
     }
 
     public void Navigate(int step)
@@ -168,28 +179,41 @@ public sealed class TreeSearchCoordinator
         var app = global::Avalonia.Application.Current;
         var theme = app?.ActualThemeVariant ?? ThemeVariant.Light;
 
-        IBrush highlightBackground = new SolidColorBrush(Color.Parse("#FFEB3B"));
-        IBrush highlightForeground = new SolidColorBrush(Color.Parse("#000000"));
-        IBrush normalForeground = theme == ThemeVariant.Dark
+        // Return cached brushes if theme hasn't changed
+        if (_cachedTheme == theme &&
+            _cachedHighlightBackground is not null &&
+            _cachedHighlightForeground is not null &&
+            _cachedNormalForeground is not null &&
+            _cachedCurrentBackground is not null)
+        {
+            return (_cachedHighlightBackground, _cachedHighlightForeground, _cachedNormalForeground, _cachedCurrentBackground);
+        }
+
+        // Create new brushes only when theme changes
+        _cachedTheme = theme;
+
+        _cachedHighlightBackground = new SolidColorBrush(Color.Parse("#FFEB3B"));
+        _cachedHighlightForeground = new SolidColorBrush(Color.Parse("#000000"));
+        _cachedNormalForeground = theme == ThemeVariant.Dark
             ? new SolidColorBrush(Color.Parse("#E7E9EF"))
             : new SolidColorBrush(Color.Parse("#1A1A1A"));
-        IBrush currentBackground = new SolidColorBrush(Color.Parse("#F9A825"));
+        _cachedCurrentBackground = new SolidColorBrush(Color.Parse("#F9A825"));
 
         if (app?.Resources.TryGetResource("TreeSearchHighlightBrush", theme, out var bg) == true &&
             bg is IBrush bgBrush)
-            highlightBackground = bgBrush;
+            _cachedHighlightBackground = bgBrush;
 
         if (app?.Resources.TryGetResource("TreeSearchHighlightTextBrush", theme, out var fg) == true &&
             fg is IBrush fgBrush)
-            highlightForeground = fgBrush;
+            _cachedHighlightForeground = fgBrush;
 
         if (app?.Resources.TryGetResource("TreeSearchCurrentBrush", theme, out var current) == true &&
             current is IBrush currentBrush)
-            currentBackground = currentBrush;
+            _cachedCurrentBackground = currentBrush;
 
         if (app?.Resources.TryGetResource("AppTextBrush", theme, out var textFg) == true && textFg is IBrush textBrush)
-            normalForeground = textBrush;
+            _cachedNormalForeground = textBrush;
 
-        return (highlightBackground, highlightForeground, normalForeground, currentBackground);
+        return (_cachedHighlightBackground, _cachedHighlightForeground, _cachedNormalForeground, _cachedCurrentBackground);
     }
 }

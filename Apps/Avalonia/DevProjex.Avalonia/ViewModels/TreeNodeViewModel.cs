@@ -28,9 +28,9 @@ public sealed class TreeNodeViewModel : ViewModelBase
         Children = new List<TreeNodeViewModel>(descriptor.Children.Count);
     }
 
-    public TreeNodeDescriptor Descriptor { get; }
+    public TreeNodeDescriptor Descriptor { get; private set; }
 
-    public TreeNodeViewModel? Parent { get; }
+    public TreeNodeViewModel? Parent { get; private set; }
 
     public IList<TreeNodeViewModel> Children { get; }
 
@@ -130,6 +130,30 @@ public sealed class TreeNodeViewModel : ViewModelBase
     {
         Icon = icon;
         RaisePropertyChanged(nameof(Icon));
+    }
+
+    /// <summary>
+    /// Recursively clears all children and releases references to help GC.
+    /// Call before removing from parent collection.
+    /// </summary>
+    public void ClearRecursive()
+    {
+        // Clear children recursively first
+        foreach (var child in Children)
+            child.ClearRecursive();
+
+        // Clear the children list
+        Children.Clear();
+        if (Children is List<TreeNodeViewModel> list)
+            list.TrimExcess();
+
+        // Clear UI-related objects
+        DisplayInlines.Clear();
+        Icon = null;
+
+        // Break circular references to help GC
+        Parent = null;
+        Descriptor = null!;
     }
 
     public void UpdateSearchHighlight(

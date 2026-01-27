@@ -29,6 +29,7 @@ public sealed class SelectionSyncCoordinator
     private bool _ignoreSelectionInitialized;
     private HashSet<string> _extensionsSelectionCache = new(StringComparer.OrdinalIgnoreCase);
     private bool _extensionsSelectionInitialized;
+    private string? _lastLoadedPath;
 
     private bool _suppressRootAllCheck;
     private bool _suppressRootItemCheck;
@@ -307,6 +308,13 @@ public sealed class SelectionSyncCoordinator
         await _refreshLock.WaitAsync().ConfigureAwait(false);
         try
         {
+            // Clear old caches when switching to a different folder
+            if (_lastLoadedPath is not null && !string.Equals(_lastLoadedPath, currentPath, StringComparison.OrdinalIgnoreCase))
+            {
+                ClearCachesForNewProject();
+            }
+            _lastLoadedPath = currentPath;
+
             // Run in order so root folders are ready before extensions/ignore lists refresh.
             await PopulateRootFoldersAsync(currentPath);
             await UpdateLiveOptionsFromRootSelectionAsync(currentPath);
@@ -315,6 +323,44 @@ public sealed class SelectionSyncCoordinator
         {
             _refreshLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Clears internal caches when switching to a new project folder.
+    /// This helps release memory from the previous project.
+    /// </summary>
+    private void ClearCachesForNewProject()
+    {
+        // Unsubscribe from old items before clearing to help GC
+        UnsubscribeFromOptionItems();
+
+        // Clear extension selection cache
+        _extensionsSelectionCache.Clear();
+        _extensionsSelectionCache.TrimExcess();
+        _extensionsSelectionInitialized = false;
+
+        // Clear ignore selection cache
+        _ignoreSelectionCache.Clear();
+        _ignoreSelectionCache.TrimExcess();
+        _ignoreSelectionInitialized = false;
+
+        // Clear ignore options
+        _ignoreOptions = Array.Empty<IgnoreOptionDescriptor>();
+    }
+
+    /// <summary>
+    /// Unsubscribes from CheckedChanged events on all option items.
+    /// </summary>
+    private void UnsubscribeFromOptionItems()
+    {
+        foreach (var item in _viewModel.RootFolders)
+            item.CheckedChanged -= OnOptionCheckedChanged;
+
+        foreach (var item in _viewModel.Extensions)
+            item.CheckedChanged -= OnOptionCheckedChanged;
+
+        foreach (var item in _viewModel.IgnoreOptions)
+            item.CheckedChanged -= OnIgnoreCheckedChanged;
     }
 
     public IReadOnlyCollection<IgnoreOptionId> GetSelectedIgnoreOptionIds()

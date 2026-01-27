@@ -1163,9 +1163,54 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
+        // Clear old state before loading new project to release memory
+        ClearPreviousProjectState();
+
         // Keep root/extension scans sequenced to avoid inconsistent UI states.
         await _selectionCoordinator.RefreshRootAndDependentsAsync(_currentPath);
         await RefreshTreeAsync();
+    }
+
+    /// <summary>
+    /// Clears state from previous project to release memory before loading a new one.
+    /// </summary>
+    private void ClearPreviousProjectState()
+    {
+        // Clear search state first (holds references to TreeNodeViewModel)
+        _searchCoordinator.ClearSearchState();
+
+        // Clear filter state
+        _filterExpansionSnapshot = null;
+        _filterCoordinator.CancelPending();
+
+        // Clear TreeView selection and temporarily disconnect ItemsSource
+        // to force Avalonia to release all TreeViewItem containers
+        if (_treeView is not null)
+        {
+            _treeView.SelectedItem = null;
+            _treeView.ItemsSource = null;
+        }
+
+        // Recursively clear all tree nodes to break circular references and release memory
+        foreach (var node in _viewModel.TreeNodes)
+            node.ClearRecursive();
+        _viewModel.TreeNodes.Clear();
+
+        // Reconnect ItemsSource
+        if (_treeView is not null)
+            _treeView.ItemsSource = _viewModel.TreeNodes;
+
+        // Clear current tree descriptor reference (this is the second copy of the tree)
+        _currentTree = null;
+
+        // Clear icon cache to release bitmaps
+        _iconCache.Clear();
+
+        // Force GC to collect released objects immediately
+        // This is intentional - user expects memory to drop when switching projects
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
     }
 
     private async Task RefreshTreeAsync()
@@ -1214,7 +1259,9 @@ public partial class MainWindow : Window
             if (_treeView is not null)
                 _treeView.SelectedItem = null;
 
-            // Clear old tree nodes - InlineCollections will be GC'd with the nodes
+            // Recursively clear old tree nodes to release memory (DisplayInlines, Children, Icons)
+            foreach (var node in _viewModel.TreeNodes)
+                node.ClearRecursive();
             _viewModel.TreeNodes.Clear();
 
             _currentTree = result;
@@ -1238,6 +1285,10 @@ public partial class MainWindow : Window
             root.IsExpanded = true;
 
             _searchCoordinator.UpdateSearchMatches();
+
+            // Suggest GC to collect old tree objects after building new one
+            // Using non-blocking mode to avoid UI freeze
+            GC.Collect(1, GCCollectionMode.Optimized, blocking: false);
         }
         finally
         {
