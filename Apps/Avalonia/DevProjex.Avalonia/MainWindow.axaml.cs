@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -74,6 +75,11 @@ public partial class MainWindow : Window
     private int _filterApplyVersion;
     private CancellationTokenSource? _refreshCts;
 
+    // Event handler delegates for proper unsubscription
+    private EventHandler? _languageChangedHandler;
+    private EventHandler? _themeChangedHandler;
+    private PropertyChangedEventHandler? _viewModelPropertyChangedHandler;
+
     public MainWindow(CommandLineOptions startupOptions, AvaloniaAppServices services)
     {
         _startupOptions = startupOptions;
@@ -112,7 +118,7 @@ public partial class MainWindow : Window
         AddHandler(PointerWheelChangedEvent, OnWindowPointerWheelChanged, RoutingStrategies.Tunnel, true);
 
         _searchCoordinator = new TreeSearchCoordinator(_viewModel, _treeView ?? throw new InvalidOperationException());
-        _filterCoordinator = new NameFilterCoordinator(ApplyFilterRealtime);
+        _filterCoordinator = new NameFilterCoordinator(ApplyFilterRealtimeWithToken);
         _themeBrushCoordinator = new ThemeBrushCoordinator(this, _viewModel, () => _topMenuBar?.MainMenuControl);
         _selectionCoordinator = new SelectionSyncCoordinator(
             _viewModel,
@@ -123,28 +129,28 @@ public partial class MainWindow : Window
             TryElevateAndRestart,
             () => _currentPath);
 
-        Closed += (_, _) =>
-        {
-            PropertyChanged -= OnWindowPropertyChanged;
-            _filterCoordinator.Dispose();
-            _refreshCts?.Cancel();
-            _refreshCts?.Dispose();
-        };
+        Closed += OnWindowClosed;
         Deactivated += OnDeactivated;
 
         _elevationAttempted = startupOptions.ElevationAttempted;
 
-        _localization.LanguageChanged += (_, _) => ApplyLocalization();
+        // Store event handlers for proper unsubscription
+        _languageChangedHandler = (_, _) => ApplyLocalization();
+        _localization.LanguageChanged += _languageChangedHandler;
+
         var app = global::Avalonia.Application.Current;
         if (app is not null)
-            app.ActualThemeVariantChanged += OnThemeChanged;
+        {
+            _themeChangedHandler = OnThemeChanged;
+            app.ActualThemeVariantChanged += _themeChangedHandler;
+        }
 
         InitializeFonts();
         _selectionCoordinator.HookOptionListeners(_viewModel.RootFolders);
         _selectionCoordinator.HookOptionListeners(_viewModel.Extensions);
         _selectionCoordinator.HookIgnoreListeners(_viewModel.IgnoreOptions);
 
-        _viewModel.PropertyChanged += (_, args) =>
+        _viewModelPropertyChangedHandler = (_, args) =>
         {
             if (args.PropertyName == nameof(MainWindowViewModel.SearchQuery))
                 _searchCoordinator.UpdateSearchMatches();
@@ -160,6 +166,7 @@ public partial class MainWindow : Window
             else if (args.PropertyName == nameof(MainWindowViewModel.ThemePopoverOpen))
                 HandleThemePopoverStateChange();
         };
+        _viewModel.PropertyChanged += _viewModelPropertyChangedHandler;
 
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
@@ -167,6 +174,39 @@ public partial class MainWindow : Window
 
         // Hook menu item submenu opening to apply brushes directly
         AddHandler(MenuItem.SubmenuOpenedEvent, _themeBrushCoordinator.HandleSubmenuOpened, RoutingStrategies.Bubble);
+    }
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        // Unsubscribe from window events
+        PropertyChanged -= OnWindowPropertyChanged;
+
+        // Unsubscribe from localization service
+        if (_languageChangedHandler is not null)
+            _localization.LanguageChanged -= _languageChangedHandler;
+
+        // Unsubscribe from application theme changes
+        var app = global::Avalonia.Application.Current;
+        if (app is not null && _themeChangedHandler is not null)
+            app.ActualThemeVariantChanged -= _themeChangedHandler;
+
+        // Unsubscribe from ViewModel
+        if (_viewModelPropertyChangedHandler is not null)
+            _viewModel.PropertyChanged -= _viewModelPropertyChangedHandler;
+
+        // Dispose coordinators
+        _filterCoordinator.Dispose();
+
+        // Cancel and dispose refresh token
+        _refreshCts?.Cancel();
+        _refreshCts?.Dispose();
+
+        // Clear icon cache to release memory
+        _iconCache.Clear();
+
+        // Clear tree references
+        _currentTree = null;
+        _filterExpansionSnapshot = null;
     }
 
     private void OnThemeChanged(object? sender, EventArgs e)
@@ -757,7 +797,13 @@ public partial class MainWindow : Window
         _treeView?.Focus();
     }
 
-    private async void ApplyFilterRealtime()
+    private void ApplyFilterRealtimeWithToken(CancellationToken cancellationToken)
+    {
+        // Fire-and-forget with cancellation support
+        _ = ApplyFilterRealtimeAsync(cancellationToken);
+    }
+
+    private async Task ApplyFilterRealtimeAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -770,7 +816,12 @@ public partial class MainWindow : Window
             if (hasQuery && _filterExpansionSnapshot is null)
                 _filterExpansionSnapshot = CaptureExpandedNodes();
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             await RefreshTreeAsync();
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (version != _filterApplyVersion)
                 return;
             _searchCoordinator.UpdateHighlights(query);
@@ -798,6 +849,11 @@ public partial class MainWindow : Window
         {
             await ShowErrorAsync(ex.Message);
         }
+    }
+
+    private void ApplyFilterRealtime()
+    {
+        _ = ApplyFilterRealtimeAsync(CancellationToken.None);
     }
 
     private void OnSearchKeyDown(object? sender, KeyEventArgs e)
@@ -1116,6 +1172,8 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(_currentPath)) return;
 
+        using var _ = PerformanceMetrics.Measure("RefreshTreeAsync");
+
         // Cancel any previous refresh operation to avoid race conditions
         _refreshCts?.Cancel();
         var cts = new CancellationTokenSource();
@@ -1140,8 +1198,13 @@ public partial class MainWindow : Window
         Cursor = new Cursor(StandardCursorType.Wait);
         try
         {
+            BuildTreeResult result;
+
             // Build the tree off the UI thread to keep the window responsive on large folders.
-            var result = await Task.Run(() => _buildTree.Execute(new BuildTreeRequest(_currentPath, options)), cancellationToken);
+            using (PerformanceMetrics.Measure("BuildTree"))
+            {
+                result = await Task.Run(() => _buildTree.Execute(new BuildTreeRequest(_currentPath, options)), cancellationToken);
+            }
 
             // Check if this operation was superseded by a newer one
             cancellationToken.ThrowIfCancellationRequested();
@@ -1151,9 +1214,7 @@ public partial class MainWindow : Window
             if (_treeView is not null)
                 _treeView.SelectedItem = null;
 
-            // Clear old tree nodes and their InlineCollections
-            foreach (var node in _viewModel.TreeNodes.SelectMany(n => n.Flatten()))
-                node.DisplayInlines.Clear();
+            // Clear old tree nodes - InlineCollections will be GC'd with the nodes
             _viewModel.TreeNodes.Clear();
 
             _currentTree = result;

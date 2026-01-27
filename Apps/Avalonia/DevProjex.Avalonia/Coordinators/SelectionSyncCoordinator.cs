@@ -60,23 +60,67 @@ public sealed class SelectionSyncCoordinator
 
     public void HookOptionListeners(ObservableCollection<SelectionOptionViewModel> options)
     {
-        options.CollectionChanged += (_, _) =>
+        // Subscribe to existing items
+        foreach (var item in options)
+            item.CheckedChanged += OnOptionCheckedChanged;
+
+        // Handle collection changes - properly unsubscribe old and subscribe new
+        options.CollectionChanged += (_, e) =>
         {
-            foreach (var item in options)
-                item.CheckedChanged -= OnOptionCheckedChanged;
-            foreach (var item in options)
-                item.CheckedChanged += OnOptionCheckedChanged;
+            // Unsubscribe from removed items
+            if (e.OldItems is not null)
+            {
+                foreach (SelectionOptionViewModel item in e.OldItems)
+                    item.CheckedChanged -= OnOptionCheckedChanged;
+            }
+
+            // Subscribe to new items
+            if (e.NewItems is not null)
+            {
+                foreach (SelectionOptionViewModel item in e.NewItems)
+                    item.CheckedChanged += OnOptionCheckedChanged;
+            }
+
+            // Handle Reset action (Clear)
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                // Re-subscribe to all current items after reset
+                foreach (var item in options)
+                    item.CheckedChanged += OnOptionCheckedChanged;
+            }
         };
     }
 
     public void HookIgnoreListeners(ObservableCollection<IgnoreOptionViewModel> options)
     {
-        options.CollectionChanged += (_, _) =>
+        // Subscribe to existing items
+        foreach (var item in options)
+            item.CheckedChanged += OnIgnoreCheckedChanged;
+
+        // Handle collection changes - properly unsubscribe old and subscribe new
+        options.CollectionChanged += (_, e) =>
         {
-            foreach (var item in options)
-                item.CheckedChanged -= OnIgnoreCheckedChanged;
-            foreach (var item in options)
-                item.CheckedChanged += OnIgnoreCheckedChanged;
+            // Unsubscribe from removed items
+            if (e.OldItems is not null)
+            {
+                foreach (IgnoreOptionViewModel item in e.OldItems)
+                    item.CheckedChanged -= OnIgnoreCheckedChanged;
+            }
+
+            // Subscribe to new items
+            if (e.NewItems is not null)
+            {
+                foreach (IgnoreOptionViewModel item in e.NewItems)
+                    item.CheckedChanged += OnIgnoreCheckedChanged;
+            }
+
+            // Handle Reset action (Clear)
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                // Re-subscribe to all current items after reset
+                foreach (var item in options)
+                    item.CheckedChanged += OnIgnoreCheckedChanged;
+            }
         };
     }
 
@@ -388,14 +432,25 @@ public sealed class SelectionSyncCoordinator
         suppressFlag = true;
         try
         {
-            var list = options.ToList();
-            bool allChecked = list.Count > 0 && list.All(option => option switch
+            // Avoid ToList() allocation - iterate once with early exit
+            bool hasItems = false;
+            bool allChecked = true;
+            foreach (var option in options)
             {
-                SelectionOptionViewModel selection => selection.IsChecked,
-                IgnoreOptionViewModel ignore => ignore.IsChecked,
-                _ => false
-            });
-            setValue(allChecked);
+                hasItems = true;
+                bool isChecked = option switch
+                {
+                    SelectionOptionViewModel selection => selection.IsChecked,
+                    IgnoreOptionViewModel ignore => ignore.IsChecked,
+                    _ => false
+                };
+                if (!isChecked)
+                {
+                    allChecked = false;
+                    break;
+                }
+            }
+            setValue(hasItems && allChecked);
         }
         finally
         {

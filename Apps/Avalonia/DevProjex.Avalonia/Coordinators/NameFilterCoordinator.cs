@@ -1,23 +1,40 @@
 using System;
+using System.Threading;
 using Avalonia.Threading;
 
 namespace DevProjex.Avalonia.Coordinators;
 
 public sealed class NameFilterCoordinator : IDisposable
 {
-    private readonly Action _applyFilterRealtime;
+    private readonly Action<CancellationToken> _applyFilterRealtime;
     private readonly System.Timers.Timer _filterDebounceTimer;
+    private CancellationTokenSource? _filterCts;
+    private readonly object _ctsLock = new();
 
-    public NameFilterCoordinator(Action applyFilterRealtime)
+    public NameFilterCoordinator(Action<CancellationToken> applyFilterRealtime)
     {
         _applyFilterRealtime = applyFilterRealtime;
-        _filterDebounceTimer = new System.Timers.Timer(300)
+        _filterDebounceTimer = new System.Timers.Timer(200) // Reduced from 300ms for better responsiveness
         {
             AutoReset = false
         };
         _filterDebounceTimer.Elapsed += (_, _) =>
         {
-            Dispatcher.UIThread.Post(_applyFilterRealtime);
+            CancellationToken token;
+            lock (_ctsLock)
+            {
+                // Cancel previous operation
+                _filterCts?.Cancel();
+                _filterCts?.Dispose();
+                _filterCts = new CancellationTokenSource();
+                token = _filterCts.Token;
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (!token.IsCancellationRequested)
+                    _applyFilterRealtime(token);
+            });
         };
     }
 
@@ -27,9 +44,26 @@ public sealed class NameFilterCoordinator : IDisposable
         _filterDebounceTimer.Start();
     }
 
+    /// <summary>
+    /// Cancels any pending filter operation.
+    /// </summary>
+    public void CancelPending()
+    {
+        lock (_ctsLock)
+        {
+            _filterCts?.Cancel();
+        }
+    }
+
     public void Dispose()
     {
         _filterDebounceTimer.Stop();
         _filterDebounceTimer.Dispose();
+        lock (_ctsLock)
+        {
+            _filterCts?.Cancel();
+            _filterCts?.Dispose();
+            _filterCts = null;
+        }
     }
 }

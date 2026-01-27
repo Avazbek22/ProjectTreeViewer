@@ -72,6 +72,7 @@ public sealed class TreeSearchCoordinator
     public void ClearSearchState()
     {
         _searchMatches.Clear();
+        _searchMatches.TrimExcess(); // Release allocated memory
         _searchMatchIndex = -1;
         UpdateCurrentSearchMatch(null);
         UpdateHighlights(string.Empty);
