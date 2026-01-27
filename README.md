@@ -77,7 +77,8 @@ Typical users:
 
 ## Screenshots 🖼️
 
-> <img width="1199" height="831" alt="image" src="https://github.com/user-attachments/assets/bdecb340-6b34-4933-9b3c-e48bef659075" />
+> <img width="1203" height="835" alt="image" src="https://github.com/user-attachments/assets/14f78897-5947-4000-ac19-56e13da7c937" />
+
 
 
 ---
