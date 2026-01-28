@@ -716,6 +716,37 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    private void OnResetSettings(object? sender, RoutedEventArgs e)
+    {
+        ResetThemeSettings();
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Resets all theme presets to factory defaults and reapplies current selection.
+    /// </summary>
+    private void ResetThemeSettings()
+    {
+        _themePresetDb = _themePresetStore.ResetToDefaults();
+
+        // Reparse last selected to get current theme variant and effect
+        if (!_themePresetStore.TryParseKey(_themePresetDb.LastSelected, out var theme, out var effect))
+        {
+            theme = ThemePresetVariant.Dark;
+            effect = ThemePresetEffect.Transparent;
+        }
+
+        _currentThemeVariant = theme;
+        _currentEffectMode = effect;
+
+        // Apply default preset values to ViewModel
+        ApplyPresetValues(_themePresetStore.GetPreset(_themePresetDb, theme, effect));
+
+        // Refresh visual effects
+        _themeBrushCoordinator.UpdateTransparencyEffect();
+        _themeBrushCoordinator.UpdateDynamicThemeBrushes();
+    }
+
     private void OnAboutOpenLink(object? sender, RoutedEventArgs e)
     {
         OpenRepositoryLink();

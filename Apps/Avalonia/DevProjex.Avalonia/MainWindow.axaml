@@ -54,6 +54,7 @@
                           AboutCloseRequested="OnAboutClose"
                           AboutOpenLinkRequested="OnAboutOpenLink"
                           AboutCopyLinkRequested="OnAboutCopyLink"
+                          ResetSettingsRequested="OnResetSettings"
                           SetLightThemeRequested="OnSetLightThemeCheckbox"
                           SetDarkThemeRequested="OnSetDarkThemeCheckbox"
                           SetTransparentModeRequested="OnSetTransparentMode"

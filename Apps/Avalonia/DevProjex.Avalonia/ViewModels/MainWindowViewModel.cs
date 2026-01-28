@@ -568,6 +568,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public string MenuHelp { get; private set; } = string.Empty;
     public string MenuHelpHelp { get; private set; } = string.Empty;
     public string MenuHelpAbout { get; private set; } = string.Empty;
+    public string MenuHelpResetSettings { get; private set; } = string.Empty;
     public string HelpHelpTitle { get; private set; } = string.Empty;
     public string HelpHelpBody { get; private set; } = string.Empty;
     public string HelpAboutTitle { get; private set; } = string.Empty;
@@ -630,6 +631,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         MenuHelp = _localization["Menu.Help"];
         MenuHelpHelp = _localization["Menu.Help.Help"];
         MenuHelpAbout = _localization["Menu.Help.About"];
+        MenuHelpResetSettings = _localization["Menu.Help.ResetSettings"];
         HelpHelpTitle = _localization["Help.Help.Title"];
         HelpHelpBody = _helpContentProvider.GetHelpBody(_localization.CurrentLanguage);
         HelpAboutTitle = _localization["Help.About.Title"];
@@ -690,6 +692,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         RaisePropertyChanged(nameof(MenuHelp));
         RaisePropertyChanged(nameof(MenuHelpHelp));
         RaisePropertyChanged(nameof(MenuHelpAbout));
+        RaisePropertyChanged(nameof(MenuHelpResetSettings));
         RaisePropertyChanged(nameof(HelpHelpTitle));
         RaisePropertyChanged(nameof(HelpHelpBody));
         RaisePropertyChanged(nameof(HelpAboutTitle));
