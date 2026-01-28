@@ -50,6 +50,7 @@ public partial class TopMenuBarView : UserControl
     public event EventHandler<RoutedEventArgs>? AboutCloseRequested;
     public event EventHandler<RoutedEventArgs>? AboutOpenLinkRequested;
     public event EventHandler<RoutedEventArgs>? AboutCopyLinkRequested;
+    public event EventHandler<RoutedEventArgs>? ResetSettingsRequested;
     public event EventHandler<RoutedEventArgs>? SetLightThemeRequested;
     public event EventHandler<RoutedEventArgs>? SetDarkThemeRequested;
     public event EventHandler<RoutedEventArgs>? SetTransparentModeRequested;
@@ -160,6 +161,8 @@ public partial class TopMenuBarView : UserControl
     private void OnHelp(object? sender, RoutedEventArgs e) => HelpRequested?.Invoke(sender, e);
 
     private void OnAbout(object? sender, RoutedEventArgs e) => AboutRequested?.Invoke(sender, e);
+
+    private void OnResetSettings(object? sender, RoutedEventArgs e) => ResetSettingsRequested?.Invoke(sender, e);
 
     private void OnThemePopupOpened(object? sender, EventArgs e)
     {
